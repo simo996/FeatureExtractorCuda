@@ -14,6 +14,16 @@ Also, you must be SURE that the kernel you are using is listed on the same guide
 
 In my case I installed Ubuntu 16.04 and had to downgrade the Kernel to 4.10.0-42
 
+### OpenCV
+
+To acquire images the project uses the OpenCv library; to install it on a Linux system:
+* Download OpenCv 3.4.1 and extract it
+* Create a folder "build" and enter into it `cd build`
+* `cmake ..` for creating the make file in the parent directory
+* `make` to compile the library
+* `sudo make install` to export openCv into the system libraries
+	After this you can delete the downloaded folder 
+
 ### Cuda
 
 On my laptop I have a dedicated Nvidia GPU and the Intel's integrated CPU and I wanted to use the latter to manage rendering of every applications leaving the Nvidia GPU to run only Cuda SW avoiding system freeze that could happen with time consuming operations.
