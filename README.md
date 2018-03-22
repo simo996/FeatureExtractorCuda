@@ -16,13 +16,18 @@ In my case I installed Ubuntu 16.04 and had to downgrade the Kernel to 4.10.0-42
 
 ### OpenCV
 
-To acquire images the project uses the OpenCv library; to install it on a Linux system:
+To acquire images the project uses the OpenCv library
+I just used the script provided at https://milq.github.io/install-opencv-ubuntu-debian/
+
+To install openCv from source file on a Linux system:
 * Download OpenCv 3.4.1 and extract it
 * Create a folder "build" and enter into it `cd build`
 * `cmake ..` for creating the make file in the parent directory
 * `make` to compile the library
 * `sudo make install` to export openCv into the system libraries
 	After this you can delete the downloaded folder 
+
+Detailed installation guide at https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html
 
 ### Cuda
 
