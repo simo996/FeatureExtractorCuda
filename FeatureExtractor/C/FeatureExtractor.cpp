@@ -34,7 +34,7 @@ void readMRImage(Mat image, struct ImageData imgData, const char * filename)
 		{
 			fprintf(stderr, "NOT a grayscale medical image\n");
 			exit(-1);
-		}	
+		}
 	}
 }
 
