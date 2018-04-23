@@ -60,19 +60,21 @@ int compress(int * inputArray, int * outputArray, int length)
 	{
 		occurrences = 0;
 		j = i+1;
-		while(inputArray[i] == inputArray [j])
+		// Count multiple occurrences of the same number
+		while((inputArray[i] != -1) && (inputArray[i] == inputArray [j]))
 		{
 			occurrences++;
 			deletions++;
 			inputArray[j] = -1; // destroy from collection
 			j++;
 		}
+		// Increment quantity
 		inputArray[i]=inputArray[i]+occurrences;
 
 	}
 
-	int dimension =length-deletions;
-	j = 0;
+	j = 0; // in the end equals to Length-deletions
+	// Copy non -1 numbers in the output vector
 	for (int i = 0; i < length; i++)
 	{
 		if(inputArray[i] != -1)
@@ -81,7 +83,7 @@ int compress(int * inputArray, int * outputArray, int length)
 			j++;
 		}
 	}
-	return dimension;
+	return j;
 }
 
 /* Program Routines */
@@ -137,13 +139,11 @@ void readFile(const char *filename, int *dataOut)
 
 int main(int argc, char const *argv[])
 {
-
-	// TODO Analyze options
-
 	Mat imageMatrix; // Matrix representation of the image
 	ImageData imgData; // MetaData about the image
 
-	//initialControls(argc,argv);
+	//initialControls(argc,argv);  TODO Analyze given options
+
 	/* read image and extract metadata
 	readMRImage(imageMatrix,imgData, argv[1]);
 
@@ -175,7 +175,7 @@ int main(int argc, char const *argv[])
 	int numberOfPairs = (imgData.columns-1) * (imgData.rows);
 	assert(numberOfPairs==12);
 
-	int codifiedMatrix[numberOfPairs];
+	int * codifiedMatrix=(int *) malloc(sizeof(int)*numberOfPairs);
 	int k=0;
 	int referenceGrayLevel;
 	int neighborGrayLevel;
@@ -205,12 +205,14 @@ int main(int argc, char const *argv[])
 	printArray(codifiedMatrix,numberOfPairs);
 
 	// THIRD STEP: Compress
-	int metaGLCM[numberOfPairs]; // some dimension in excess
-	int metaGlcmLength = compress(codifiedMatrix, metaGLCM, numberOfPairs);
+	int * compressedGLCM = (int *) malloc (sizeof(int)*numberOfPairs); // some dimension in excess
+	int metaGlcmLength = compress(codifiedMatrix, compressedGLCM, numberOfPairs);
 
+	int metaGLCM[metaGlcmLength];
+	memcpy(metaGLCM, compressedGLCM, metaGlcmLength * sizeof(int));
+	// Copy the meaningful part from compressedGLCM
 	cout << endl << "Final MetaGLCM";
 	printArray(metaGLCM,metaGlcmLength);
-	
-	// from now on metaGLCM[metaGlcmLenght]
+	// from now on metaGLCM[metaGlcmLength]
 	return 0;
 }
