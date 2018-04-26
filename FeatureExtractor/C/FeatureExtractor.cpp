@@ -17,7 +17,24 @@ struct ImageData{
 	int rows;
 	int columns;
 	int grayLevel; // 16_U, 16_S
+};
+
+struct GLCMData
+{
 	int distance;
+	// Values necessary to identify neighbor pixel
+	int shiftX;
+	int shiftY;
+	// Sub Borders in the windows according to direction
+	int borderX;
+	int borderY;
+	int numberOfPairs;
+};
+
+struct GrayPair{
+	int grayLevelI;
+	int grayLevelJ;
+	int multiplicity;
 };
 
 /* Support Code */
@@ -86,6 +103,29 @@ int compress(int * inputArray, int * outputArray, int length)
 	return j;
 }
 
+struct GrayPair unPack(const int value, const int numberOfPairs, const int maxGrayLevel)
+{
+  struct GrayPair couple;
+  int roundDivision = value / numberOfPairs; // risultato intero
+  couple.multiplicity = value - roundDivision * numberOfPairs;
+  couple.grayLevelI = roundDivision / maxGrayLevel; // risultato intero
+  couple.grayLevelJ = roundDivision - (maxGrayLevel * couple.grayLevelI);
+  return couple;
+}
+
+// FEATURES
+double media(const int* metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+{
+  double media =-1;
+  struct GrayPair coppia;
+  int * occorrenze = (int *) malloc(2*numberOfPairs*sizeof(int));
+  for (int i = 0; i < length; i++)
+  {
+    coppia = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+    
+  }
+}
+
 /* Program Routines */
 
 void initialControls(int argc, char const *argv[])
@@ -109,7 +149,6 @@ void readMRImage(Mat image, struct ImageData imgData, const char * filename)
 	{	
 		imgData.rows = image.rows;
 		imgData.columns = image.cols;
-		imgData.distance = 1; // Default 
 		if(image.channels() == 1)
 			imgData.grayLevel = image.depth();	
 		else 
@@ -154,7 +193,6 @@ int main(int argc, char const *argv[])
 	imgData.rows = 4;
 	imgData.columns = 4;
 	imgData.grayLevel = 4;
-	imgData.distance = 1;
 	imageMatrix = Mat(4,4,CV_32S,&testData);
 
 	// Test To see if correctly loaded in MAT
@@ -171,22 +209,29 @@ int main(int argc, char const *argv[])
 
 	// Start Creating the first GLCM
 	// 4x4 0° 1 pixel distanza
+	struct GLCMData glcm0;
+	glcm0.distance = 1;
+	glcm0.shiftY = 0;
+	glcm0.shiftX = 1;
+	// TODO change dimensions to reflect windows, not image
+	glcm0.borderX = (imgData.columns - (glcm0.distance * glcm0.shiftX));
+	glcm0.borderY = (imgData.rows - (glcm0.distance * glcm0.shiftY));
+	int numberOfPairs = glcm0.borderX * glcm0.borderY;
+	assert(numberOfPairs == 12);
 
-	int numberOfPairs = (imgData.columns-1) * (imgData.rows);
-	assert(numberOfPairs==12);
-
+	// Generation of the metaGLCM
 	int * codifiedMatrix=(int *) malloc(sizeof(int)*numberOfPairs);
 	int k=0;
 	int referenceGrayLevel;
 	int neighborGrayLevel;
 
 	// FIRST STEP: codify all pairs
-	for (int i = 0; i < imgData.rows; i++)
+	for (int i = 0; i < glcm0.borderY ; i++)
 	{
-		for (int j = 0; j < imgData.columns-1; j++)
+		for (int j = 0; j < glcm0.borderX; j++)
 		{
 			referenceGrayLevel = imageMatrix.at<int>(i,j);
-			neighborGrayLevel = imageMatrix.at<int>(i,j+1);
+			neighborGrayLevel = imageMatrix.at<int>(i+glcm0.shiftY,j+glcm0.shiftX);
 
 			codifiedMatrix[k] = ((referenceGrayLevel*imgData.grayLevel) + 
 			neighborGrayLevel) * (numberOfPairs+1); // +1 teoricamente non serve
