@@ -8,7 +8,6 @@
 #include <algorithm> 
 // OpenCv Libraries for loading MRImages
 #include <opencv2/opencv.hpp>
-#include "GLCM.h"
 
 using namespace cv; // Loading MRI images
 using namespace std;
@@ -47,7 +46,7 @@ struct GrayPair unPack(const int value, const int numberOfPairs, const int maxGr
 {
   struct GrayPair couple;
   int roundDivision = value / numberOfPairs; // risultato intero
-  couple.multiplicity = value - roundDivision * numberOfPairs;
+  couple.multiplicity = (value - roundDivision * numberOfPairs)+1;
   couple.grayLevelI = roundDivision / maxGrayLevel; // risultato intero
   couple.grayLevelJ = roundDivision - (maxGrayLevel * couple.grayLevelI);
   return couple;
@@ -102,6 +101,7 @@ void initializeGLCM(struct GLCMData glcm0, int distance, int shiftX, int shiftY)
 	
 }
 
+// Add identical elements into a new element
 // Return the length of the compressed metaglcm
 int compress(int * inputArray, int * outputArray, const int length)
 {
@@ -139,6 +139,22 @@ int compress(int * inputArray, int * outputArray, const int length)
 	return j;
 }
 
+// Adapt the GLCM to include ulterior elements already codified
+// Will return the modified array and its length
+int addElements(int * metaGLCM, int * elementsToAdd, int * outputArray, const int initialLength, const int numElements)
+{
+	sort(elementsToAdd, numElements);
+
+	// First identical elements will be compressed
+
+
+	// Same pair with different molteplicity will be compressed
+	GrayPair actualElementToAdd;
+	for (int i = 0; i < numElements; ++i) {
+		//actualElementToAdd = unPack(numElements [i]);
+	}
+	return -1;
+}
 
 
 // Reduce the molteplicity into the metaGLCM of elements given
@@ -281,7 +297,7 @@ int main(int argc, char const *argv[])
 			neighborGrayLevel = imageMatrix.at<int>(i+glcm0.shiftY,j+glcm0.shiftX);
 
 			codifiedMatrix[k] = (((referenceGrayLevel*imgData.grayLevel) + 
-			neighborGrayLevel) * (numberOfPairs)) + 1; // +1 teoricamente non serve
+			neighborGrayLevel) * (numberOfPairs)) ; // +1 teoricamente non serve
 			k++;
 		}
 	}
