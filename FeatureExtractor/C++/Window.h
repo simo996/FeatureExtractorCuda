@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include "GLCM.h"
 
-using namespace std;
-
 /* Class that represents a single windows in an image 
 	Will generate GLCMs for each direction and demand feature computation
 	Will recycle GLCMs shifting 2 pixel left

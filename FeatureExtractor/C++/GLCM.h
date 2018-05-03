@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-using namespace std;
-
 /* Class that represents a single GLCM with its angle and distance */
 class GLCM
 {
 	public:
-		int * MetaGLCM;
+		int * metaGLCM;
 		// Values necessary to identify neighbor pixel
 		// A pair for each direction 0°, 90°, 45°, 135°
 		int shiftX;
@@ -16,8 +14,9 @@ class GLCM
 		int length; // number of DIFFERENT gray level pairs
 		void initializeData(int shiftX, int shiftY, int grayLevels, int windowColumns, int windowRows);
 		int codify(int * imageElements, int length);
+		int compress();
 		void sort();
-		int dwarf();
+		void dwarf();
 	private:
 		int distance; // shift size to identify neighbor pixel
 		int numberOfPairs; // number of pixel pairs to be found

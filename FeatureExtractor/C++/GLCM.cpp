@@ -1,35 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstring>
 // OpenCv Libraries for loading MRImages
 #include "GLCM.h"
 
 // shiftX, shiftY given from the creator (the image Window)
-void initializeData(int shiftX, int shiftY, int grayLevels, int windowColumns, int windowRows);
+void GLCM::initializeData(int shiftX, int shiftY, int grayLevels, int windowColumns, int windowRows)
 {
-	distance = 1; // Always 1 
-	this.shiftX = shiftX;
-	this.shiftY = shiftY;
-	this.maxGrayLevel = grayLevels; // image depth 
-	computeBorders();
-	numberOfPairs = computePairsNumber();
+	distance = 1; // Always 1 ??
+	this->shiftX = shiftX;
+	this->shiftY = shiftY;
+	this->maxGrayLevel = grayLevels; // image depth
 	borderX = computeBorderX(int windowColumns, int windowRows);
 	borderY = computeBorderY(int windowColumns, int windowRows);
+	numberOfPairs = computePairsNumber();
 }
 
-int computeBorderX(int windowColumns, int windowRows)
+int GLCM::computeBorderX(int windowColumns, int windowRows)
 {
 	int border = windowColumns - (distance * shiftX);
 	return border;
 }
 
-int computeBorderY(int windowColumns, int windowRows)
+int GLCM::computeBorderY(int windowColumns, int windowRows)
 {
-	int border = window.Rows - (glcm0.distance * glcm0.shiftY);
+	int border = windowRows - (distance * shiftY);
 	return border;
 }
 
 
-int computePairsNumber()
+int GLCM::computePairsNumber()
 {
 	numberOfPairs = borderX * borderY;
 	return numberOfPairs;
@@ -38,7 +38,7 @@ int computePairsNumber()
 // Actual work
 
 // Create initial representation codifying each physical pair present in the window
-int codify(int * imageElements, int length){
+int GLCM::codify(int * imageElements, int length){
 	// IMAGEELEMENTS MUST BE A LINARIZED MATRIX of the pixels
 	int * codifiedMatrix=(int *) malloc(sizeof(int)*numberOfPairs);
 	int k=0;
@@ -70,12 +70,12 @@ int codify(int * imageElements, int length){
 	free(compressedGLCM);
 }
 
-void sort(){
+void GLCM::sort(){
 	sort(metaGLCM, length);
 }
 
 // Will reduce MetaGLCM to only useful elements
-void compress(int * inputArray, int * outputArray, const int length)
+int GLCM::compress(int * inputArray, int * outputArray, const int length)
 {
 	int occurrences = 0;
 	int deletions = 0;
@@ -119,7 +119,7 @@ void compress(int * inputArray, int * outputArray, const int length)
 // Reduce the molteplicity into the metaGLCM of elements given
 // ASSUMPTION all given elements can be found in metaGLCM
 // Return the length of the reduced and compressed list
-void dwarf(int * listElements, int lengthElements)
+void GLCM::dwarf(int * listElements, int lengthElements)
 {
 	// both arrays need to be ordered
 	sort(listElements, lengthElements);
@@ -153,6 +153,6 @@ void dwarf(int * listElements, int lengthElements)
 	}
 	if (needToCompress)
 	{
-		compress(...);
+		// compress(...);
 	}
 }
