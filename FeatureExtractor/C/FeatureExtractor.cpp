@@ -19,6 +19,11 @@ struct ImageData{
 	int grayLevel; // 16_U, 16_S
 };
 
+struct WindowData{
+	int rows;
+	int columns;
+};
+
 struct GLCMData
 {
 	int distance;
@@ -37,9 +42,21 @@ struct GrayPair{
 	int multiplicity;
 };
 
+// Extract from a pair of gray levels i,g and their multiplicity
+struct GrayPair unPack(const int value, const int numberOfPairs, const int maxGrayLevel)
+{
+  struct GrayPair couple;
+  int roundDivision = value / numberOfPairs; // risultato intero
+  couple.multiplicity = value - roundDivision * numberOfPairs;
+  couple.grayLevelI = roundDivision / maxGrayLevel; // risultato intero
+  couple.grayLevelJ = roundDivision - (maxGrayLevel * couple.grayLevelI);
+  return couple;
+}
+
+
 /* Support Code */
 
-void printArray(int * vector, int length)
+void printArray(const int * vector, const int length)
 {
 	cout << endl;
 	for (int i = 0; i < length; i++)
@@ -47,6 +64,19 @@ void printArray(int * vector, int length)
 		cout << vector[i] << " ";
 	}
 	cout << endl;
+}
+
+void printMetaGlcm(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel){
+	GrayPair actual;
+	for (int i = 0; i < length; ++i)
+	{
+		actual = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+		cout << endl << "i: " << actual.grayLevelI 
+			<< "\tj: " << actual.grayLevelJ 
+			<< "\tmult: " << actual.multiplicity ;
+	}
+	cout << endl;
+
 }
 
 void sort(int * vector, int length) // Will modify the input vector
@@ -66,8 +96,14 @@ void sort(int * vector, int length) // Will modify the input vector
 	}
 }
 
+/* GLCM Code */
+void initializeGLCM(struct GLCMData glcm0, int distance, int shiftX, int shiftY)
+{
+	
+}
+
 // Return the length of the compressed metaglcm
-int compress(int * inputArray, int * outputArray, int length)
+int compress(int * inputArray, int * outputArray, const int length)
 {
 	int occurrences = 0;
 	int deletions = 0;
@@ -103,15 +139,26 @@ int compress(int * inputArray, int * outputArray, int length)
 	return j;
 }
 
-struct GrayPair unPack(const int value, const int numberOfPairs, const int maxGrayLevel)
+
+
+// Reduce the molteplicity into the metaGLCM of elements given
+// ASSUMPTION all given elements can be found in metaGLCM
+void dwarf(int * metaGLCM, int * listElements, int lengthGlcm, int lengthElements)
 {
-  struct GrayPair couple;
-  int roundDivision = value / numberOfPairs; // risultato intero
-  couple.multiplicity = value - roundDivision * numberOfPairs;
-  couple.grayLevelI = roundDivision / maxGrayLevel; // risultato intero
-  couple.grayLevelJ = roundDivision - (maxGrayLevel * couple.grayLevelI);
-  return couple;
+	// both arrays need to be ordered
+	sort(listElements, lengthElements);
+	int j = 0;
+	for (int i = 0; i < lengthElements; ++i)
+	{
+		while(metaGLCM[j] != listElements [i]){
+			j++;
+		}
+		//int multiplicity = listElements[i].unPack(...).multiplicity;
+		// metaGLCM[j]-=multiplicity;
+	}
 }
+
+
 
 // FEATURES
 double media(const int* metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
@@ -180,7 +227,7 @@ int main(int argc, char const *argv[])
 {
 	Mat imageMatrix; // Matrix representation of the image
 	ImageData imgData; // MetaData about the image
-
+	WindowData window;
 	//initialControls(argc,argv);  TODO Analyze given options
 
 	/* read image and extract metadata
@@ -205,17 +252,17 @@ int main(int argc, char const *argv[])
 		}
 		cout << endl;
 	}
-
-
+	window.rows = 4; 
+	window.columns = 4;
 	// Start Creating the first GLCM
 	// 4x4 0° 1 pixel distanza
-	struct GLCMData glcm0;
+	GLCMData glcm0;
 	glcm0.distance = 1;
 	glcm0.shiftY = 0;
 	glcm0.shiftX = 1;
 	// TODO change dimensions to reflect windows, not image
-	glcm0.borderX = (imgData.columns - (glcm0.distance * glcm0.shiftX));
-	glcm0.borderY = (imgData.rows - (glcm0.distance * glcm0.shiftY));
+	glcm0.borderX = (window.columns - (glcm0.distance * glcm0.shiftX));
+	glcm0.borderY = (window.rows - (glcm0.distance * glcm0.shiftY));
 	int numberOfPairs = glcm0.borderX * glcm0.borderY;
 	assert(numberOfPairs == 12);
 
@@ -233,8 +280,8 @@ int main(int argc, char const *argv[])
 			referenceGrayLevel = imageMatrix.at<int>(i,j);
 			neighborGrayLevel = imageMatrix.at<int>(i+glcm0.shiftY,j+glcm0.shiftX);
 
-			codifiedMatrix[k] = ((referenceGrayLevel*imgData.grayLevel) + 
-			neighborGrayLevel) * (numberOfPairs+1); // +1 teoricamente non serve
+			codifiedMatrix[k] = (((referenceGrayLevel*imgData.grayLevel) + 
+			neighborGrayLevel) * (numberOfPairs)) + 1; // +1 teoricamente non serve
 			k++;
 		}
 	}
@@ -259,5 +306,10 @@ int main(int argc, char const *argv[])
 	cout << endl << "Final MetaGLCM";
 	printArray(metaGLCM,metaGlcmLength);
 	// from now on metaGLCM[metaGlcmLength]
+
+	printMetaGlcm(metaGLCM, metaGlcmLength, numberOfPairs, imgData.grayLevel);
+
+	int sample[2]={195,2};
+
 	return 0;
 }
