@@ -279,7 +279,22 @@ void dwarf(int * metaGLCM, int * listElements, int lengthGlcm, int lengthElement
 	}
 }
 
+int codifySummedPairs(const int * metaGLCM, int * outputList, const int elements, const int numberOfPairs, const int maxGrayLevel ){
+	int finalLength;
 
+	// TODO 
+
+	return finalLength;
+}
+
+int codifySubtractedPairs(const int * metaGLCM, int * outputList, const int elements, const int numberOfPairs, const int maxGrayLevel ){
+	int finalLength;
+
+	// TODO 
+
+
+	return finalLength;
+}
 
 // FEATURES
 
