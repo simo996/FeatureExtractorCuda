@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h> // see Max_int
 #include <unistd.h> // Command Options
+#include <math.h> 
+
 // File c++ libraries
 #include <fstream>
 #include <iostream>
@@ -41,6 +44,12 @@ struct GrayPair{
 	int multiplicity;
 };
 
+struct AggregatedPair{
+	int aggregatedGrayLevels; //i+j or abs(i-j)
+	int multiplicity;
+};
+
+
 // Extract from a pair of gray levels i,g and their multiplicity
 struct GrayPair unPack(const int value, const int numberOfPairs, const int maxGrayLevel)
 {
@@ -50,7 +59,16 @@ struct GrayPair unPack(const int value, const int numberOfPairs, const int maxGr
   couple.grayLevelI = roundDivision / maxGrayLevel; // risultato intero
   couple.grayLevelJ = roundDivision - (maxGrayLevel * couple.grayLevelI);
   return couple;
-}
+};
+
+struct AggregatedPair aggregatedPairUnPack(const int value, const int numberOfPairs)
+{
+	struct AggregatedPair pair;
+	int roundDivision = value / numberOfPairs;
+	pair.aggregatedGrayLevels = roundDivision; // risultato intero
+	pair.multiplicity = value - roundDivision * numberOfPairs ;
+	return pair;
+};
 
 
 /* Support Code */
@@ -139,21 +157,107 @@ int compress(int * inputArray, int * outputArray, const int length)
 	return j;
 }
 
+// Same as compress but changing the InputArray and returning the final length
+int localCompress(int * inputArray, const int length)
+{
+	int occurrences = 0;
+	int deletions = 0;
+	int j = 1;
+
+	for (int i = 0; i < length; i++)
+	{
+		occurrences = 0;
+		j = i+1;
+		// Count multiple occurrences of the same number
+		while((inputArray[i] != INT_MAX) && (inputArray[i] == inputArray [j]))
+		{
+			occurrences++;
+			deletions++;
+			inputArray[j] = INT_MAX; // for destroying
+			j++;
+		}
+		// Increment quantity
+		if(inputArray[j] != INT_MAX){
+			inputArray[i]=inputArray[i]+occurrences;
+		}
+
+	}
+
+	sort(inputArray,length);
+	// After |length| numbers there should be only INT_MAX
+	return length-deletions;
+}
+
+// Same pair with different multeplicty collapsed into a single element
+int compressMultiplicity(int * inputArray, const int length, const int numberOfPairs, const int imgGrayLevel){
+	int occurrences = 0;
+	int deletions = 0;
+	int j = 1;
+
+	for (int i = 0; i < length; i++)
+	{
+		occurrences = 0;
+		j = i+1;
+		// Count multiple occurrences of the same number
+				//DIVISIONE PER ZERO, PER GIOVE, CRASHA
+		while((inputArray[i] != INT_MAX) && (inputArray[i] % inputArray [j]) < numberOfPairs)
+		{
+			occurrences+=unPack(inputArray[j],numberOfPairs,imgGrayLevel).multiplicity;
+			deletions++;
+			inputArray[j] = INT_MAX; // for destroying
+			j++;
+		}
+		// Increment quantity
+		if(occurrences>=numberOfPairs){
+			fprintf(stderr, "Error while compressing minding the multiplicity\n");
+			fprintf(stderr, "Summed Multiplicity: %d\n",occurrences);
+			fprintf(stderr, "Element: %d\n",inputArray[i]);
+
+			exit(-1);
+		}
+		if(inputArray[j] != INT_MAX){
+			inputArray[i] = inputArray[i]+occurrences;
+		}
+
+	}
+
+	sort(inputArray,length);
+	// After |length| numbers there should be only INT_MAX
+	return length-deletions;
+
+}
+
 // Adapt the GLCM to include ulterior elements already codified
 // Will return the modified array and its length
-int addElements(int * metaGLCM, int * elementsToAdd, int * outputArray, const int initialLength, const int numElements)
+int addElements(int * metaGLCM, int * elementsToAdd, int * outputArray, const int initialLength, const int numElements, const int numberOfPairs, const int grayLevel)
 {
-	sort(elementsToAdd, numElements);
 
-	// First identical elements will be compressed
+	// Combine the 2 arrays
+	int sumLength= numElements + initialLength;
+
+	int i,j;
+	for ( i = 0; i < initialLength; ++i) {
+		outputArray[i] = metaGLCM[i];
+	}
+	for(j=0; j< numElements; j++)
+	{
+		outputArray[i]= elementsToAdd[j];
+		i++;
+	}
+	printArray(outputArray,sumLength);
+
+	// Sort and compress identical pairs
+	sort(outputArray, sumLength); // Required for successive compresses
+	int reducedLength = localCompress(outputArray, sumLength);
+	printArray(outputArray,reducedLength);
 
 
 	// Same pair with different molteplicity will be compressed
-	GrayPair actualElementToAdd;
-	for (int i = 0; i < numElements; ++i) {
-		//actualElementToAdd = unPack(numElements [i]);
-	}
-	return -1;
+
+	// PERCHÈ NON RITORNA???
+	int finalReducedLength = compressMultiplicity(outputArray,reducedLength,numberOfPairs,grayLevel);
+	printArray(outputArray,finalReducedLength);
+	return finalReducedLength;
 }
 
 
@@ -164,6 +268,7 @@ void dwarf(int * metaGLCM, int * listElements, int lengthGlcm, int lengthElement
 	// both arrays need to be ordered
 	sort(listElements, lengthElements);
 	int j = 0;
+	
 	for (int i = 0; i < lengthElements; ++i)
 	{
 		while(metaGLCM[j] != listElements [i]){
@@ -177,16 +282,362 @@ void dwarf(int * metaGLCM, int * listElements, int lengthGlcm, int lengthElement
 
 
 // FEATURES
-double media(const int* metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+
+double computeASM(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
 {
-  double media =-1;
-  struct GrayPair coppia;
-  int * occorrenze = (int *) malloc(2*numberOfPairs*sizeof(int));
-  for (int i = 0; i < length; i++)
-  {
-    coppia = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+	double angularSecondMoment = 0;
+	GrayPair actualPair;
+	double actualPairProbability;    
+	
+	for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        angularSecondMoment += pow((actualPairProbability),2);
+    }
+    return angularSecondMoment;
+
+}
+
+double computeAutocorrelation(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+{
+	double autocorrelation = 0;
+	GrayPair actualPair;
+	double actualPairProbability;
     
-  }
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        autocorrelation += actualPair.grayLevelI * actualPair. grayLevelJ * actualPairProbability;
+    }
+    return autocorrelation;
+}
+
+
+double computeEntropy(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+{
+	double entropy = 1;
+	GrayPair actualPair;
+	double actualPairProbability;    
+	for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        entropy += actualPairProbability * log(actualPairProbability); 
+        // No pairs with 0 probability, so log is safe
+    }
+    return (-1*entropy);
+}
+
+double computeMaximumProbability(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+{
+	double maxProb;
+	GrayPair actualPair = unPack(metaGLCM[0], numberOfPairs, maxGrayLevel);
+	double actualPairProbability = actualPair.multiplicity/numberOfPairs;
+	maxProb = actualPairProbability;
+
+    for(int i=1 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+
+        if(actualPairProbability > maxProb)
+        {
+        	maxProb = actualPairProbability;
+        }
+    }
+    return maxProb;
+}
+
+double computeHomogeneity(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+{
+	double homogeneity = 0;
+	GrayPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        homogeneity += actualPairProbability /
+         (1 + fabs(actualPair.grayLevelI - actualPair.grayLevelJ));
+        
+    }
+    return homogeneity;
+}
+
+
+double computeContrast(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+{
+	double contrast = 0;
+	GrayPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        contrast += actualPairProbability 
+        * (pow(fabs(actualPair.grayLevelI - actualPair.grayLevelJ), 2));
+        
+    }
+    return contrast;
+}
+
+double computeCorrelation(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel, const double muX, const double muY, const double sigmaX, const double sigmaY)
+{
+	double correlation = 0;
+	GrayPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        correlation += ((actualPair.grayLevelI - muX) * (actualPair.grayLevelJ - muY) * actualPairProbability )
+        /(sigmaX * sigmaY);
+        
+    }
+    return correlation;
+}
+
+double computeClusterProminecence(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel, const double muX, const double muY)
+{
+	double clusterProminecence = 0;
+	GrayPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        clusterProminecence += pow ((actualPair.grayLevelI + actualPair.grayLevelJ -muX - muY), 4) * actualPairProbability;
+    }
+    return clusterProminecence;
+}
+
+double computeClusterShade(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel, const double muX, const double muY)
+{
+	double clusterShade = 0;
+	GrayPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        clusterShade += pow ((actualPair.grayLevelI + actualPair.grayLevelJ -muX - muY), 3) * actualPairProbability;
+    }
+    return clusterShade;
+}
+
+double computeSumOfSquares(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel, const double mu)
+{
+	double sumSquares = 0;
+	GrayPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        sumSquares += pow ((actualPair.grayLevelI - mu), 2) * actualPairProbability;
+    }
+    return sumSquares;
+}
+
+double computeInverceDifferentMomentNormalized(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+{
+	double inverceDifference = 0;
+	GrayPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        inverceDifference += actualPairProbability / 
+        (((1+pow(actualPair.grayLevelI - actualPair.grayLevelJ),2))/maxGrayLevel);
+    }
+    return inverceDifference;
+}
+
+// SUM Aggregated features
+double computeSumAverage(const int * summedMetaGLCM, const int length, const int numberOfPairs)
+{
+	double result = 0;
+	AggregatedPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = aggregatedPairUnPack(summedMetaGLCM[i], numberOfPairs);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        result += actualPair.aggregatedGrayLevels * actualPairProbability;
+    }
+    return result;
+}
+
+double computeSumEntropy(const int * summedMetaGLCM, const int length, const int numberOfPairs)
+{
+	double result = 0;
+	AggregatedPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = aggregatedPairUnPack(summedMetaGLCM[i], numberOfPairs);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        result += log(actualPair.aggregatedGrayLevels) * actualPairProbability;
+    }
+    return result;
+}
+
+double computeSumVariance(const int * summedMetaGLCM, const int length, const int numberOfPairs, const double sumEntropy)
+{
+	double result = 0;
+	AggregatedPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = aggregatedPairUnPack(summedMetaGLCM[i], numberOfPairs);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        result += ((actualPair.aggregatedGrayLevels - sumEntropy)^2) 
+        * actualPairProbability;
+    }
+    return result;
+}
+
+double computeDifferenceEntropy(const int * aggregatedMetaGLCM, const int length, const int numberOfPairs)
+{
+	double result = 0;
+	AggregatedPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = aggregatedPairUnPack(aggregatedMetaGLCM[i], numberOfPairs);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        result += log(actualPairProbability) * actualPairProbability;
+    }
+    return -1*result;
+}
+
+double computeDifferenceVariance(const int * aggregatedMetaGLCM, const int length, const int numberOfPairs)
+{
+	double result = 0;
+	AggregatedPair actualPair;
+	double actualPairProbability;
+
+    for(int i=0 ; i<length; i++)
+    {
+        actualPair = aggregatedPairUnPack(aggregatedMetaGLCM[i], numberOfPairs);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+        
+        result += (actualPair.aggregatedGrayLevels^2) * actualPairProbability;
+    }
+    return result;
+}
+
+
+// Mean of all probabilities
+double computeMean(const int* metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+{	
+	double mu = 0;
+  	GrayPair actualPair;
+	double actualPairProbability;
+
+	for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+    	
+    	muX += actualPairProbability; 
+ 	}
+ 	return mu;
+}
+
+// Mean of
+double computeMuX(const int* metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+{	
+	double muX = 0;
+  	GrayPair actualPair;
+	double actualPairProbability;
+
+	for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+    	
+    	muX += actualPair.grayLevelI * actualPairProbability; 
+ 	}
+ 	return muX;
+}
+
+double computeMuY(const int* metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
+{	
+	double muY = 0;
+  	GrayPair actualPair;
+	double actualPairProbability;
+
+	for(int i=0 ; i<length; i++)
+    {
+        actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+        actualPairProbability = actualPair.multiplicity/numberOfPairs;
+    	
+    	muY += actualPair.grayLevelJ * actualPairProbability; 
+ 	}
+ 	return muY;
+}
+
+double computeSigmaX(const int* metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel, const double muX)
+{	
+	double sigmaX = 0;
+  	GrayPair actualPair;
+	double actualPairProbability;
+
+	for(int i=0 ; i<length; i++)
+	{
+		actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+		actualPairProbability = actualPair.multiplicity/numberOfPairs;
+
+		sigmaX += ((actualPair.grayLevelI - muX)^2) * actualPairProbability; 
+ 	}
+
+ 	return sqrt(sigmaX);
+}
+
+double computeSigmaY(const int* metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel, const double muY)
+{	
+	double sigmaY = 0;
+  	GrayPair actualPair;
+	double actualPairProbability;
+
+	for(int i=0 ; i<length; i++)
+	{
+		actualPair = unPack(metaGLCM[i], numberOfPairs, maxGrayLevel);
+		actualPairProbability = actualPair.multiplicity/numberOfPairs;
+
+		sigmaY += ((actualPair.grayLevelJ - muY)^2) * actualPairProbability; 
+ 	}
+
+ 	return sqrt(sigmaY);
 }
 
 /* Program Routines */
@@ -238,6 +689,16 @@ void readFile(const char *filename, int *dataOut)
 	}
 }
 
+bool testAddElements(int * metaGLCM, int metaGlcmLength, const int numberOfPairs, const int grayLevel)
+{
+	int sample[4]={48,144,122, 121};
+	int * tempAdd = (int *) malloc(sizeof(int)*(4+metaGlcmLength));
+	int temp = addElements(metaGLCM, sample, tempAdd,  metaGlcmLength, 4,numberOfPairs, grayLevel);
+	// PER QUALCHE STRANO MOTIVO LA SECONDA COMPRESS NON RITORNA
+	printArray(tempAdd, temp);
+	printMetaGlcm(tempAdd, temp, numberOfPairs, grayLevel);
+	return true;
+}
 
 int main(int argc, char const *argv[])
 {
@@ -268,7 +729,7 @@ int main(int argc, char const *argv[])
 		}
 		cout << endl;
 	}
-	window.rows = 4; 
+	window.rows = 4;
 	window.columns = 4;
 	// Start Creating the first GLCM
 	// 4x4 0° 1 pixel distanza
@@ -283,8 +744,8 @@ int main(int argc, char const *argv[])
 	assert(numberOfPairs == 12);
 
 	// Generation of the metaGLCM
-	int * codifiedMatrix=(int *) malloc(sizeof(int)*numberOfPairs);
-	int k=0;
+	int * codifiedMatrix =(int *) malloc(sizeof(int)*numberOfPairs);
+	int k = 0;
 	int referenceGrayLevel;
 	int neighborGrayLevel;
 
@@ -296,8 +757,8 @@ int main(int argc, char const *argv[])
 			referenceGrayLevel = imageMatrix.at<int>(i,j);
 			neighborGrayLevel = imageMatrix.at<int>(i+glcm0.shiftY,j+glcm0.shiftX);
 
-			codifiedMatrix[k] = (((referenceGrayLevel*imgData.grayLevel) + 
-			neighborGrayLevel) * (numberOfPairs)) ; // +1 teoricamente non serve
+			codifiedMatrix[k] = (((referenceGrayLevel*imgData.grayLevel) +
+			neighborGrayLevel) * (numberOfPairs)) ;
 			k++;
 		}
 	}
@@ -313,19 +774,26 @@ int main(int argc, char const *argv[])
 	printArray(codifiedMatrix,numberOfPairs);
 
 	// THIRD STEP: Compress
-	int * compressedGLCM = (int *) malloc (sizeof(int)*numberOfPairs); // some dimension in excess
-	int metaGlcmLength = compress(codifiedMatrix, compressedGLCM, numberOfPairs);
+	int metaGlcmLength = localCompress(codifiedMatrix, numberOfPairs);
 
 	int metaGLCM[metaGlcmLength];
-	memcpy(metaGLCM, compressedGLCM, metaGlcmLength * sizeof(int));
 	// Copy the meaningful part from compressedGLCM
+	memcpy(metaGLCM, codifiedMatrix, metaGlcmLength * sizeof(int));
+	free(codifiedMatrix);
+
 	cout << endl << "Final MetaGLCM";
 	printArray(metaGLCM,metaGlcmLength);
 	// from now on metaGLCM[metaGlcmLength]
 
 	printMetaGlcm(metaGLCM, metaGlcmLength, numberOfPairs, imgData.grayLevel);
 
-	int sample[2]={195,2};
+	// TEST FOR ADDING CODIFIED ELEMENTS
+
+
+	//DIVISIONE PER ZERO, PER GIOVE, CRASHA
+	if(testAddElements(metaGLCM,metaGlcmLength, numberOfPairs, imgData.grayLevel))
 
 	return 0;
 }
+
+
