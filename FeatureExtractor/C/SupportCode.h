@@ -7,5 +7,8 @@
 
 void printArray(const int * vector, const int length);
 void sort(int * vector, int length);
+int compress(int * inputArray, int * outputArray, const int length);
+int localCompress(int * inputArray, const int length);
+int getElementFromLinearMatrix(const int * input, const int nRows, const int nColumns, const int i, const int j);
 
 #endif //FEATURESEXTRACTOR_SUPPORTCODE_H

@@ -5,6 +5,7 @@
 #include "SupportCode.h"
 #include <math.h>
 #include <iostream>
+#include <assert.h>
 
 using namespace std;
 
@@ -18,6 +19,7 @@ void printArray(const int * vector, const int length)
     cout << endl;
 }
 
+/* Simple sort of an array */
 void sort(int * vector, int length) // Will modify the input vector
 {
     int swap;
@@ -32,3 +34,84 @@ void sort(int * vector, int length) // Will modify the input vector
     }
 }
 
+/*  Increment multiplicity of identical elements
+    Redundant input items will be substituted with -1
+    Return the number of unique pairs
+*/
+int compress(int * inputArray, int * outputArray, const int length)
+{
+    int occurrences = 0;
+    int deletions = 0;
+    int j = 1;
+
+    for (int i = 0; i < length; i++)
+    {
+        occurrences = 0;
+        j = i+1;
+        // Count multiple occurrences of the same number
+        while((inputArray[i] != -1) && (inputArray[i] == inputArray [j]))
+        {
+            occurrences++;
+            deletions++;
+            inputArray[j] = -1; // destroy from collection
+            j++;
+        }
+        // Increment quantity
+        inputArray[i] = inputArray[i] + occurrences;
+    }
+
+    j = 0; // in the end equals to Length-deletions
+    // Copy non -1 numbers in the output vector
+    for (int i = 0; i < length; i++)
+    {
+        if(inputArray[i] != -1)
+        {
+            outputArray[j] = inputArray[i];
+            j++;
+        }
+    }
+    return j;
+}
+
+/*  Increment multiplicity of identical elements
+    Redundant input items will be substituted with MAXINT
+    Return the number of unique pairs that will occupy initial positions
+*/
+int localCompress(int * inputArray, const int length)
+{
+    int occurrences = 0;
+    int deletions = 0;
+    int j = 1;
+
+    for (int i = 0; i < length; i++)
+    {
+        occurrences = 0;
+        j = i+1;
+        // Count multiple occurrences of the same number
+        while((inputArray[i] != INT_MAX) && (inputArray[i] == inputArray [j]))
+        {
+            occurrences++;
+            deletions++;
+            inputArray[j] = INT_MAX; // for destroying
+            j++;
+        }
+        // Increment quantity
+        if(inputArray[j] != INT_MAX){
+            inputArray[i]=inputArray[i]+occurrences;
+        }
+
+    }
+
+    sort(inputArray,length);
+    // After |length| numbers there should be only INT_MAX
+    return length-deletions;
+}
+
+/* 
+    Return the (i,j)th element of a linearized matrix
+*/
+int getElementFromLinearMatrix(const int * input, const int nRows, const int nColumns, const int i, const int j)
+{
+    assert ((i <= nRows) && (j <= nColumns));
+    return input[(i * nColumns) + j];
+}
