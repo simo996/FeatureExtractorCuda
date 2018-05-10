@@ -6,6 +6,7 @@
 #include <climits>
 #include <stdlib.h>
 #include <cstdio>
+#include <cstring>
 
 #include "MetaGLCM.h"
 #include "SupportCode.h"
@@ -22,75 +23,66 @@ void printMetaGlcm(const int * metaGLCM, const int length, const int numberOfPai
 
 }
 
-
-
-// Add identical elements into a new element
-// Return the length of the compressed metaglcm
-int compress(int * inputArray, int * outputArray, const int length)
+// Object version
+void printMetaGlcm(const struct GLCM metaGLCM, const int maxGrayLevel)
 {
-    int occurrences = 0;
-    int deletions = 0;
-    int j = 1;
-
-    for (int i = 0; i < length; i++)
+    std::cout << std::endl;
+    for (int i = 0; i < metaGLCM.numberOfUniquePairs; ++i)
     {
-        occurrences = 0;
-        j = i+1;
-        // Count multiple occurrences of the same number
-        while((inputArray[i] != -1) && (inputArray[i] == inputArray [j]))
-        {
-            occurrences++;
-            deletions++;
-            inputArray[j] = -1; // destroy from collection
-            j++;
-        }
-        // Increment quantity
-        inputArray[i]=inputArray[i]+occurrences;
-
+        printPair(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
     }
+    std::cout << std::endl;
 
-    j = 0; // in the end equals to Length-deletions
-    // Copy non -1 numbers in the output vector
-    for (int i = 0; i < length; i++)
-    {
-        if(inputArray[i] != -1)
-        {
-            outputArray[j] = inputArray[i];
-            j++;
-        }
-    }
-    return j;
 }
 
-// Same as compress but changing the InputArray and returning the final length
-int localCompress(int * inputArray, const int length)
+// Initialized MetaData of the GLCM
+struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowRows, const int windowColumns)
 {
-    int occurrences = 0;
-    int deletions = 0;
-    int j = 1;
+    GLCM output;
+    output.distance = distance;
+    output.shiftX = shiftX;
+    output.shiftY = shiftY;
+    output.borderX = (windowColumns - (distance * shiftX));
+    output.borderY = (windowRows - (distance * shiftY));
+    output.numberOfPairs = output.borderX * output.borderY;
 
-    for (int i = 0; i < length; i++)
+    // Inutile inizializzare questo campo
+    output.numberOfUniquePairs = output.numberOfPairs;
+    return output;
+}
+
+// From a linearized vector of every pixel pair and an initialized GLCM
+// it will generate the minimal representation of the MetaGLCM
+void initializeMetaGLCMElements(struct GLCM metaGLCM, int * pixelPairs, int grayLevel)
+{
+    // Allocate space for every different pair
+    int * codifiedMatrix = (int *) malloc(sizeof(int) * metaGLCM.numberOfPairs);
+    int k = 0;
+    int referenceGrayLevel;
+    int neighborGrayLevel;
+
+    // Codify every single pair
+    for (int i = 0; i < metaGLCM.borderY ; i++)
     {
-        occurrences = 0;
-        j = i+1;
-        // Count multiple occurrences of the same number
-        while((inputArray[i] != INT_MAX) && (inputArray[i] == inputArray [j]))
+        for (int j = 0; j < metaGLCM.borderX; j++)
         {
-            occurrences++;
-            deletions++;
-            inputArray[j] = INT_MAX; // for destroying
-            j++;
-        }
-        // Increment quantity
-        if(inputArray[j] != INT_MAX){
-            inputArray[i]=inputArray[i]+occurrences;
-        }
 
+            referenceGrayLevel = getElementFromLinearMatrix(pixelPairs, 
+                metaGLCM.borderY, metaGLCM.borderX, i, j);
+            neighborGrayLevel = getElementFromLinearMatrix(pixelPairs, 
+                metaGLCM.borderY, metaGLCM.borderX, i + metaGLCM.shiftY, j + metaGLCM.shiftX);
+
+            codifiedMatrix[k] = (((referenceGrayLevel * grayLevel) +
+            neighborGrayLevel) * (metaGLCM.numberOfPairs)) ;
+            k++;
+        }
     }
 
-    sort(inputArray,length);
-    // After |length| numbers there should be only INT_MAX
-    return length-deletions;
+    metaGLCM.numberOfUniquePairs = localCompress(codifiedMatrix, k);
+    // IS ALLOCATION INSIDE A FUNCTION SAFE ???
+    metaGLCM.elements = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
+    memcpy(metaGLCM.elements, codifiedMatrix, metaGLCM.numberOfUniquePairs * sizeof(int));
+    free(codifiedMatrix);
 }
 
 // Same pair with different multeplicty collapsed into a single element
@@ -184,19 +176,40 @@ void dwarf(int * metaGLCM, int * listElements, int lengthGlcm, int lengthElement
     }
 }
 
-int codifySummedPairs(const int * metaGLCM, int * outputList, const int elements, const int numberOfPairs, const int maxGrayLevel ){
-    int finalLength;
-
-    // TODO
-
+/*
+    From a metaGLCM will codify the sum of its grayPair levels
+    outputList will contain aggregatedPairs (obtained with sum)
+*/
+int codifySummedPairs(const GLCM metaGLCM, int * outputList, const int maxGrayLevel )
+{
+    GrayPair actualPair;
+    // Navigate every unique gray pair and represent their sum 
+    for (int i = 0; i < metaGLCM.numberOfUniquePairs; ++i)
+    {
+        actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+        outputList[i] = (actualPair.grayLevelI+actualPair.grayLevelJ) * metaGLCM.numberOfPairs;
+    }
+    // Need to compress identical generated elements
+    sort(outputList, metaGLCM.numberOfPairs);
+    int finalLength = localCompress(outputList, metaGLCM.numberOfPairs);
     return finalLength;
 }
 
-int codifySubtractedPairs(const int * metaGLCM, int * outputList, const int elements, const int numberOfPairs, const int maxGrayLevel ){
-    int finalLength;
-
-    // TODO
-
-
+/*
+    From a metaGLCM will codify the difference of its grayPair levels
+    outputList will contain aggregatedPairs (obtained with difference)
+*/
+int codifySubtractedPairs(const GLCM metaGLCM, int * outputList, const int maxGrayLevel )
+{
+    GrayPair actualPair;
+    // Navigate every unique gray pair and represent their sum 
+    for (int i = 0; i < metaGLCM.numberOfUniquePairs; ++i)
+    {
+        actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+        outputList[i] = abs(actualPair.grayLevelI - actualPair.grayLevelJ) * metaGLCM.numberOfPairs;
+    }
+    // Need to compress identical generated elements
+    sort(outputList, metaGLCM.numberOfPairs);
+    int finalLength = localCompress(outputList, metaGLCM.numberOfPairs);
     return finalLength;
 }
