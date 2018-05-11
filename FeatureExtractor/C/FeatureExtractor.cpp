@@ -89,7 +89,7 @@ bool testAddElements(int * metaGLCM, int metaGlcmLength, const int numberOfPairs
 	int temp = addElements(metaGLCM, sample, tempAdd,  metaGlcmLength, 4,numberOfPairs, grayLevel);
 	// PER QUALCHE STRANO MOTIVO LA SECONDA COMPRESS NON RITORNA
 	printArray(tempAdd, temp);
-	printMetaGlcm(tempAdd, temp, numberOfPairs, grayLevel);
+	//printMetaGlcm(tempAdd, temp, numberOfPairs, grayLevel);
 	return true;
 }
 
@@ -110,7 +110,14 @@ int main(int argc, char const *argv[])
 	imgData.rows = 4;
 	imgData.columns = 4;
 	imgData.grayLevel = 4;
+
+	window.rows = 4;
+	window.columns = 4;
+
 	imageMatrix = Mat(4,4,CV_32S,&testData);
+
+	// Linearized matrix of pixels
+	int * inputPixels = (int *) malloc(sizeof(int) * window.rows * window.columns);
 
 	// Test To see if correctly loaded in MAT
 	cout << "Img = " << endl;
@@ -119,72 +126,30 @@ int main(int argc, char const *argv[])
 		for (int j = 0; j < imgData.columns; j++)
 		{
 			cout << imageMatrix.at<int>(i,j) <<" " ;
+			inputPixels[i * (window.columns -1) + j] = imageMatrix.at<int>(i,j);
 		}
 		cout << endl;
 	}
-	window.rows = 4;
-	window.columns = 4;
 	// Start Creating the first GLCM
 	// 4x4 0° 1 pixel distanza
-	GLCMData glcm0;
-	glcm0.distance = 1;
-	glcm0.shiftY = 0;
-	glcm0.shiftX = 1;
-	// TODO change dimensions to reflect windows, not image
-	glcm0.borderX = (window.columns - (glcm0.distance * glcm0.shiftX));
-	glcm0.borderY = (window.rows - (glcm0.distance * glcm0.shiftY));
-	int numberOfPairs = glcm0.borderX * glcm0.borderY;
-	assert(numberOfPairs == 12);
+	int distance = 1;
+	int shiftY = 0;
+	int shiftX = 1;
 
-	// Generation of the metaGLCM
-	int * codifiedMatrix =(int *) malloc(sizeof(int)*numberOfPairs);
-	int k = 0;
-	int referenceGrayLevel;
-	int neighborGrayLevel;
-
-	// FIRST STEP: codify all pairs
-	for (int i = 0; i < glcm0.borderY ; i++)
-	{
-		for (int j = 0; j < glcm0.borderX; j++)
-		{
-			referenceGrayLevel = imageMatrix.at<int>(i,j);
-			neighborGrayLevel = imageMatrix.at<int>(i+glcm0.shiftY,j+glcm0.shiftX);
-
-			codifiedMatrix[k] = (((referenceGrayLevel*imgData.grayLevel) +
-			neighborGrayLevel) * (numberOfPairs)) ;
-			k++;
-		}
-	}
+	GLCM glcm0x0;
+	initializeMetaGLCM(&glcm0x0, distance, shiftX, shiftY, window.rows, window.columns);
+	printGLCMData(glcm0x0);
+	initializeMetaGLCMElements(&glcm0x0, inputPixels, imgData.grayLevel);
 
 	// See the output
 	cout << "Codified metaGlcm";
-	printArray(codifiedMatrix,numberOfPairs);
+	printMetaGlcm(glcm0x0, imgData.grayLevel);
 
-	// SECOND STEP: Order
-	//int orderedCodifiedMatrix[numberOfPairs];
-	sort(codifiedMatrix, numberOfPairs);
-	cout << endl << "Ordered Codified metaGlcm";
-	printArray(codifiedMatrix,numberOfPairs);
-
-	// THIRD STEP: Compress
-	int metaGlcmLength = localCompress(codifiedMatrix, numberOfPairs);
-
-	int metaGLCM[metaGlcmLength];
-	// Copy the meaningful part from compressedGLCM
-	memcpy(metaGLCM, codifiedMatrix, metaGlcmLength * sizeof(int));
-	free(codifiedMatrix);
-
-	cout << endl << "Final MetaGLCM";
-	printArray(metaGLCM,metaGlcmLength);
-	// from now on metaGLCM[metaGlcmLength]
-
-	printMetaGlcm(metaGLCM, metaGlcmLength, numberOfPairs, imgData.grayLevel);
-
-
+	/*
 	double features[16];
-    computeFeatures(features,metaGLCM,metaGlcmLength,numberOfPairs, imgData.grayLevel);
+    computeFeatures(features,glcm0x0.elements,glcm0x0.numberOfPairs,numberOfPairs, imgData.grayLevel);
 	printFeatures(features);
-
+	*/
 	return 0;
 }
 

@@ -6,6 +6,7 @@
 #include <math.h>
 #include <iostream>
 #include <assert.h>
+#include <climits>
 
 using namespace std;
 
@@ -36,9 +37,9 @@ void sort(int * vector, int length) // Will modify the input vector
 
 /*  Increment multiplicity of identical elements
     Redundant input items will be substituted with -1
-    Return the number of unique pairs
+    Copy into output array just unique elements
 */
-int compress(int * inputArray, int * outputArray, const int length)
+void compress(int * inputArray, int * outputArray, const int length)
 {
     int occurrences = 0;
     int deletions = 0;
@@ -70,12 +71,43 @@ int compress(int * inputArray, int * outputArray, const int length)
             j++;
         }
     }
-    return j;
+}
+
+/* Will count how many different elements can be found into a sorted array
+ * Require an ordered array */
+int findUnique(int * inputArray, const int length)
+{
+    int duplicated = 0;
+    int unique = 0;
+    int similar, j;
+    for (int i = 0; i < length; ++i)
+    {
+        j= i+1;
+        similar = -1;
+        while (inputArray[i] == inputArray[j])
+        {
+            if( inputArray[i] == inputArray[j])
+            {
+                similar = 1;
+                j++;
+            }
+        }
+
+        if (similar == -1) // No similar elements found
+        {
+            duplicated++;
+            i = j; // move to the last identical element
+        } else{
+            unique++;
+        }
+    }
+    return unique+duplicated;
 }
 
 /*  Increment multiplicity of identical elements
     Redundant input items will be substituted with MAXINT
     Return the number of unique pairs that will occupy initial positions
+    REQUIRES: a sorted array
 */
 int localCompress(int * inputArray, const int length)
 {
@@ -115,3 +147,16 @@ int getElementFromLinearMatrix(const int * input, const int nRows, const int nCo
     assert ((i <= nRows) && (j <= nColumns));
     return input[(i * nColumns) + j];
 }
+
+/*
+void linearizeMatrix(const int nRows, const int nColumns, const int  input[][nColumns], int * output)
+{
+    for (int i = 0; i < nRows; ++i)
+    {
+        for(int j = 0 ; j < nColumns; j++)
+        {
+            output [i * nColumns + j] = input[i][j];
+        }
+    }
+}
+ */
