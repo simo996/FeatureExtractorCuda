@@ -35,44 +35,6 @@ void sort(int * vector, int length) // Will modify the input vector
     }
 }
 
-/*  Increment multiplicity of identical elements
-    Redundant input items will be substituted with -1
-    Copy into output array just unique elements
-*/
-void compress(int * inputArray, int * outputArray, const int length)
-{
-    int occurrences = 0;
-    int deletions = 0;
-    int j = 1;
-
-    for (int i = 0; i < length; i++)
-    {
-        occurrences = 0;
-        j = i+1;
-        // Count multiple occurrences of the same number
-        while((inputArray[i] != -1) && (inputArray[i] == inputArray [j]))
-        {
-            occurrences++;
-            deletions++;
-            inputArray[j] = -1; // destroy from collection
-            j++;
-        }
-        // Increment quantity
-        inputArray[i] = inputArray[i] + occurrences;
-    }
-
-    j = 0; // in the end equals to Length-deletions
-    // Copy non -1 numbers in the output vector
-    for (int i = 0; i < length; i++)
-    {
-        if(inputArray[i] != -1)
-        {
-            outputArray[j] = inputArray[i];
-            j++;
-        }
-    }
-}
-
 /* Will count how many different elements can be found into a sorted array
  * Require an ordered array */
 int findUnique(int * inputArray, const int length)
@@ -139,7 +101,7 @@ int localCompress(int * inputArray, const int length)
     return length-deletions;
 }
 
-/* 
+/*
     Return the (i,j)th element of a linearized matrix
 */
 int getElementFromLinearMatrix(const int * input, const int nRows, const int nColumns, const int i, const int j)
@@ -160,3 +122,42 @@ void linearizeMatrix(const int nRows, const int nColumns, const int  input[][nCo
     }
 }
  */
+
+/*
+ * Copy into output array just unique elements
+ * Increment multiplicity of identical elements
+ * Redundant input items will be substituted with -1
+*/
+void compress(int * inputArray, int * outputArray, const int length)
+{
+    int occurrences = 0;
+    int deletions = 0;
+    int j = 1;
+
+    for (int i = 0; i < length; i++)
+    {
+        occurrences = 0;
+        j = i+1;
+        // Count multiple occurrences of the same number
+        while((inputArray[i] != -1) && (inputArray[i] == inputArray [j]))
+        {
+            occurrences++;
+            deletions++;
+            inputArray[j] = -1; // destroy from collection
+            j++;
+        }
+        // Increment quantity
+        inputArray[i] = inputArray[i] + occurrences;
+    }
+
+    j = 0; // in the end equals to Length-deletions
+    // Copy non -1 numbers in the output vector
+    for (int i = 0; i < length; i++)
+    {
+        if(inputArray[i] != -1)
+        {
+            outputArray[j] = inputArray[i];
+            j++;
+        }
+    }
+}

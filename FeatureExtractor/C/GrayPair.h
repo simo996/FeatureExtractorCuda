@@ -20,6 +20,7 @@ struct GrayPair unPack(const int value, const int numberOfPairs, const int maxGr
 struct AggregatedPair aggregatedPairUnPack(const int value, const int numberOfPairs);
 
 void printPair(const int value, const int numberOfPairs, const int maxGrayLevel);
+void printPair(const struct GrayPair pair, const int numberOfPairs, const int maxGrayLevel);
 void printAggregatedPair(const int value, const int numberOfPairs);
 
 #endif //FEATURESEXTRACTOR_GRAYPAIR_H

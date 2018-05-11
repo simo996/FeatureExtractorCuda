@@ -23,6 +23,18 @@ void printMetaGlcm(const int * metaGLCM, const int length, const int numberOfPai
 
 }
 
+void printGLCMData(const GLCM input)
+{
+    std::cout << std::endl;
+    std::cout << "Shift X : " << input.shiftX << std::endl;
+    std::cout << "Shift Y: " << input.shiftY  << std::endl;
+    std::cout << "Border X: "<< input.borderX  << std::endl;
+    std::cout << "Border Y:" << input.borderY  << std::endl;
+    std::cout << "Number of Elements: " << input.numberOfPairs  << std::endl;
+    std::cout << "Number of unique elements: " << input.numberOfUniquePairs  << std::endl;
+    std::cout << std::endl;
+}
+
 // Object version
 void printMetaGlcm(const struct GLCM metaGLCM, const int maxGrayLevel)
 {
@@ -39,49 +51,67 @@ void printMetaGlcm(const struct GLCM metaGLCM, const int maxGrayLevel)
 struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowRows, const int windowColumns)
 {
     GLCM output;
-    output.distance = distance;
-    output.shiftX = shiftX;
-    output.shiftY = shiftY;
-    output.borderX = (windowColumns - (distance * shiftX));
-    output.borderY = (windowRows - (distance * shiftY));
-    output.numberOfPairs = output.borderX * output.borderY;
+    initializeMetaGLCM(&output, distance, shiftX, shiftY, windowRows, windowColumns);
+    return output;
+}
+
+// Initialized MetaData of the GLCM
+void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const int shiftY, const int windowRows, const int windowColumns)
+{
+    glcm->distance = distance;
+    glcm->shiftX = shiftX;
+    glcm->shiftY = shiftY;
+    glcm->borderX = (windowColumns - (distance * shiftX));
+    glcm->borderY = (windowRows - (distance * shiftY));
+    glcm->numberOfPairs = glcm->borderX * glcm->borderY;
 
     // Inutile inizializzare questo campo
-    output.numberOfUniquePairs = output.numberOfPairs;
-    return output;
+    glcm->numberOfUniquePairs = glcm->numberOfPairs;
 }
 
 // From a linearized vector of every pixel pair and an initialized GLCM
 // it will generate the minimal representation of the MetaGLCM
-void initializeMetaGLCMElements(struct GLCM metaGLCM, int * pixelPairs, int grayLevel)
+void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs, const int grayLevel)
 {
     // Allocate space for every different pair
-    int * codifiedMatrix = (int *) malloc(sizeof(int) * metaGLCM.numberOfPairs);
+    int * codifiedMatrix = (int *) malloc(sizeof(int) * metaGLCM->numberOfPairs);
     int k = 0;
     int referenceGrayLevel;
     int neighborGrayLevel;
 
     // Codify every single pair
-    for (int i = 0; i < metaGLCM.borderY ; i++)
+    for (int i = 0; i < metaGLCM->borderY ; i++)
     {
-        for (int j = 0; j < metaGLCM.borderX; j++)
+        for (int j = 0; j < metaGLCM->borderX; j++)
         {
-
+            // TODO FIX INCORRECT ALGORITHM
+                    /* incongruence between window's fixed size for getting an element
+                     * and sub-borders depending on the dimension used
+                    */
+            // Extract the two pixels in the pair
             referenceGrayLevel = getElementFromLinearMatrix(pixelPairs, 
-                metaGLCM.borderY, metaGLCM.borderX, i, j);
+                metaGLCM->borderY, metaGLCM->borderX, i, j);
             neighborGrayLevel = getElementFromLinearMatrix(pixelPairs, 
-                metaGLCM.borderY, metaGLCM.borderX, i + metaGLCM.shiftY, j + metaGLCM.shiftX);
+                metaGLCM->borderY, metaGLCM->borderX, i + metaGLCM->shiftY, j + metaGLCM->shiftX);
 
             codifiedMatrix[k] = (((referenceGrayLevel * grayLevel) +
-            neighborGrayLevel) * (metaGLCM.numberOfPairs)) ;
+            neighborGrayLevel) * (metaGLCM->numberOfPairs)) ;
             k++;
         }
     }
 
-    metaGLCM.numberOfUniquePairs = localCompress(codifiedMatrix, k);
+    printArray(codifiedMatrix, k);
+
+    sort(codifiedMatrix, metaGLCM->numberOfPairs);
+
+    metaGLCM->numberOfUniquePairs = findUnique(codifiedMatrix, metaGLCM->numberOfPairs);
+
     // IS ALLOCATION INSIDE A FUNCTION SAFE ???
-    metaGLCM.elements = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
-    memcpy(metaGLCM.elements, codifiedMatrix, metaGLCM.numberOfUniquePairs * sizeof(int));
+    metaGLCM->elements = (int *) malloc(sizeof(int) * metaGLCM->numberOfUniquePairs);
+
+    // copy the unique elements
+    compress(codifiedMatrix,  metaGLCM->elements, metaGLCM->numberOfPairs);
+
     free(codifiedMatrix);
 }
 

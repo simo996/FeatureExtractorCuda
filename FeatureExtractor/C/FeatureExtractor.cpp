@@ -126,7 +126,7 @@ int main(int argc, char const *argv[])
 		for (int j = 0; j < imgData.columns; j++)
 		{
 			cout << imageMatrix.at<int>(i,j) <<" " ;
-			inputPixels[i * (window.columns -1) + j] = imageMatrix.at<int>(i,j);
+			inputPixels[i * (window.columns) + j] = imageMatrix.at<int>(i,j);
 		}
 		cout << endl;
 	}
@@ -145,11 +145,10 @@ int main(int argc, char const *argv[])
 	cout << "Codified metaGlcm";
 	printMetaGlcm(glcm0x0, imgData.grayLevel);
 
-	/*
 	double features[16];
-    computeFeatures(features,glcm0x0.elements,glcm0x0.numberOfPairs,numberOfPairs, imgData.grayLevel);
+    computeFeatures(features,glcm0x0, imgData.grayLevel);
 	printFeatures(features);
-	*/
+
 	return 0;
 }
 

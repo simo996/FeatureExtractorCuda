@@ -35,6 +35,14 @@ void printPair(const int value, const int numberOfPairs, const int maxGrayLevel)
     std::cout << "\tmult: " << temp.multiplicity << std::endl;
 }
 
+void printPair(const struct GrayPair pair, const int numberOfPairs, const int maxGrayLevel)
+{
+    std::cout << "Codifica: " << (((pair.grayLevelI * maxGrayLevel + pair.grayLevelJ) * numberOfPairs) + pair.multiplicity-1);
+    std::cout << "\ti: "<< pair.grayLevelI;
+    std::cout << "\tj: " << pair.grayLevelJ;
+    std::cout << "\tmult: " << pair.multiplicity << std::endl;
+}
+
 void printAggregatedPair(const int value, const int numberOfPairs, const int maxGrayLevel)
 {
     AggregatedPair temp = aggregatedPairUnPack(value, numberOfPairs);
