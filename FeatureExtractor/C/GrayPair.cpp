@@ -22,7 +22,7 @@ struct AggregatedPair aggregatedPairUnPack(const int value, const int numberOfPa
     struct AggregatedPair pair;
     int roundDivision = value / numberOfPairs;
     pair.aggregatedGrayLevels = roundDivision; // risultato intero
-    pair.multiplicity = value - roundDivision * numberOfPairs ;
+    pair.multiplicity = value - roundDivision * numberOfPairs +1;
     return pair;
 }
 
@@ -43,10 +43,17 @@ void printPair(const struct GrayPair pair, const int numberOfPairs, const int ma
     std::cout << "\tmult: " << pair.multiplicity << std::endl;
 }
 
-void printAggregatedPair(const int value, const int numberOfPairs, const int maxGrayLevel)
+void printAggregatedPair(const int value, const int numberOfPairs)
 {
     AggregatedPair temp = aggregatedPairUnPack(value, numberOfPairs);
-    std::cout << "K: "<< temp.aggregatedGrayLevels;
+    std::cout << "Codifica: "<< value;
+    std::cout << "\tK: "<< temp.aggregatedGrayLevels;
     std::cout << "\tmult: " << temp.multiplicity << std::endl;
 }
 
+void printAggregatedPair(const struct AggregatedPair pair, const int numberOfPairs)
+{
+    std::cout << "Codifica: "<< (pair.aggregatedGrayLevels * numberOfPairs) + pair.multiplicity + 1;
+    std::cout << "\tK: "<< pair.aggregatedGrayLevels;
+    std::cout << "\tmult: " << pair.multiplicity << std::endl;
+}
