@@ -111,13 +111,12 @@ int main(int argc, char const *argv[])
 	imgData.columns = 4;
 	imgData.grayLevel = 4;
 
-	window.rows = 4;
-	window.columns = 4;
+	int windowDimension = 4;
 
 	imageMatrix = Mat(4,4,CV_32S,&testData);
 
 	// Linearized matrix of pixels
-	int * inputPixels = (int *) malloc(sizeof(int) * window.rows * window.columns);
+	int * inputPixels = (int *) malloc(sizeof(int) * pow(windowDimension,2));
 
 	// Test To see if correctly loaded in MAT
 	cout << "Img = " << endl;
@@ -125,8 +124,8 @@ int main(int argc, char const *argv[])
 	{
 		for (int j = 0; j < imgData.columns; j++)
 		{
-			cout << imageMatrix.at<int>(i,j) <<" " ;
-			inputPixels[i * (window.columns) + j] = imageMatrix.at<int>(i,j);
+			cout << imageMatrix.at<int>(i,j) << " " ;
+			inputPixels[i * (windowDimension) + j] = imageMatrix.at<int>(i,j);
 		}
 		cout << endl;
 	}
@@ -137,8 +136,7 @@ int main(int argc, char const *argv[])
 	int shiftX = 1;
 
 	GLCM glcm0x0;
-	initializeMetaGLCM(&glcm0x0, distance, shiftX, shiftY, window.rows, window.columns);
-	printGLCMData(glcm0x0);
+	initializeMetaGLCM(&glcm0x0, distance, shiftX, shiftY, windowDimension);
 	initializeMetaGLCMElements(&glcm0x0, inputPixels, imgData.grayLevel);
 
 	// See the output
@@ -147,7 +145,7 @@ int main(int argc, char const *argv[])
 
 	double features[16];
     computeFeatures(features,glcm0x0, imgData.grayLevel);
-	printFeatures(features);
+	printFeatures(features);	
 
 	return 0;
 }
