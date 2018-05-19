@@ -405,7 +405,7 @@ void computeFeatures(double * output, const struct GLCM metaGLCM, const int maxG
 	output[10]= computeInverceDifferentMomentNormalized(metaGLCM, maxGrayLevel);
 
 	int * summedPairs =  (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
-	int summedPairsLength = codifySummedPairs(metaGLCM, summedPairs, maxGrayLevel);
+	int summedPairsLength = codifySummedPairs(metaGLCM, summedPairs);
 	output[11]= computeSumAverage(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs);
 	output[12]= computeSumEntropy(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs);
 	output[13]= computeSumVariance(summedPairs, summedPairsLength, metaGLCM.numberOfPairs, output[12]);
@@ -413,7 +413,7 @@ void computeFeatures(double * output, const struct GLCM metaGLCM, const int maxG
 
 	/*
 	int * subtractredPairs = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
-	int subtractedPairsLength = codifySubtractedPairs(metaGLCM, subtractredPairs, maxGrayLevel);
+	int subtractedPairsLength = codifySubtractedPairs(metaGLCM, subtractredPairs);
 	for(int i=0; i < subtractedPairsLength; i++)
 	{
 		printAggregatedPair(subtractredPairs[i], metaGLCM.numberOfPairs);

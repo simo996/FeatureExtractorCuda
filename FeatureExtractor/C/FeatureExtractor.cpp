@@ -82,17 +82,6 @@ void readFile(const char *filename, int *dataOut)
 	}
 }
 
-bool testAddElements(int * metaGLCM, int metaGlcmLength, const int numberOfPairs, const int grayLevel)
-{
-	int sample[4]={48,144,122, 121};
-	int * tempAdd = (int *) malloc(sizeof(int)*(4+metaGlcmLength));
-	int temp = addElements(metaGLCM, sample, tempAdd,  metaGlcmLength, 4,numberOfPairs, grayLevel);
-	// PER QUALCHE STRANO MOTIVO LA SECONDA COMPRESS NON RITORNA
-	printArray(tempAdd, temp);
-	//printMetaGlcm(tempAdd, temp, numberOfPairs, grayLevel);
-	return true;
-}
-
 int main(int argc, char const *argv[])
 {
 	Mat imageMatrix; // Matrix representation of the image
@@ -136,12 +125,16 @@ int main(int argc, char const *argv[])
 	int shiftX = 1;
 
 	GLCM glcm0x0;
-	initializeMetaGLCM(&glcm0x0, distance, shiftX, shiftY, windowDimension);
-	initializeMetaGLCMElements(&glcm0x0, inputPixels, imgData.grayLevel);
+	initializeMetaGLCM(&glcm0x0, distance, shiftX, shiftY, windowDimension, imgData.grayLevel);
+	initializeMetaGLCMElements(&glcm0x0, inputPixels);
 
 	// See the output
-	cout << "Codified metaGlcm";
-	printMetaGlcm(glcm0x0, imgData.grayLevel);
+	cout << "\nCodified metaGlcm";
+	printMetaGlcm(glcm0x0);
+
+	// Add elements into an existing GLCM
+	int sample[4]={48,144,122, 121};
+	//addElements(&glcm0x0, sample, 4);
 
 	double features[16];
     computeFeatures(features,glcm0x0, imgData.grayLevel);

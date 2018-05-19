@@ -12,16 +12,6 @@
 #include "SupportCode.h"
 #include "GrayPair.h"
 
-void printMetaGlcm(const int * metaGLCM, const int length, const int numberOfPairs, const int maxGrayLevel)
-{
-	std::cout << std::endl;
-	for (int i = 0; i < length; ++i)
-	{
-		printPair(metaGLCM[i], numberOfPairs, maxGrayLevel);
-	}
-	std::cout << std::endl;
-
-}
 
 void printGLCMData(const GLCM input)
 {
@@ -37,27 +27,27 @@ void printGLCMData(const GLCM input)
 }
 
 // Object version
-void printMetaGlcm(const struct GLCM metaGLCM, const int maxGrayLevel)
+void printMetaGlcm(const struct GLCM metaGLCM)
 {
 	std::cout << std::endl;
 	for (int i = 0; i < metaGLCM.numberOfUniquePairs; ++i)
 	{
-		printPair(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		printPair(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 	}
 	std::cout << std::endl;
 
 }
 
 // Initialized MetaData of the GLCM
-struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowDimension)
+struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel)
 {
 	GLCM output;
-	initializeMetaGLCM(&output, distance, shiftX, shiftY, windowDimension);
+	initializeMetaGLCM(&output, distance, shiftX, shiftY, windowDimension, grayLevel);
 	return output;
 }
 
 // Initialized MetaData of the GLCM
-void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const int shiftY, const int windowDimension)
+void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel)
 {
 	glcm->distance = distance;
 	glcm->shiftX = shiftX;
@@ -66,6 +56,7 @@ void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const
 	glcm->borderX = (windowDimension - (distance * shiftX));
 	glcm->borderY = (windowDimension - (distance * shiftY));
 	glcm->numberOfPairs = glcm->borderX * glcm->borderY;
+	glcm->maxGrayLevel = grayLevel;
 
 	// Inutile inizializzare questo campo
 	glcm->numberOfUniquePairs = glcm->numberOfPairs;
@@ -73,7 +64,7 @@ void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const
 
 // From a linearized vector of every pixel pair and an initialized GLCM
 // it will generate the minimal representation of the MetaGLCM
-void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs, const int grayLevel)
+void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs)
 {
 	// Allocate space for every different pair
 	int * codifiedMatrix = (int *) malloc(sizeof(int) * metaGLCM->numberOfPairs);
@@ -86,15 +77,11 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs, 
 	{
 		for (int j = 0; j < metaGLCM->borderX; j++)
 		{
-			// TODO FIX INCORRECT ALGORITHM
-					/* incongruence between window's fixed size for getting an element
-					 * and sub-borders depending on the dimension used
-					*/
 			// Extract the two pixels in the pair
 			referenceGrayLevel = pixelPairs [(i * metaGLCM->windowDimension) + j];
 			neighborGrayLevel = pixelPairs [(i + metaGLCM->shiftY) * metaGLCM->windowDimension + (j + metaGLCM->shiftX)];
 
-			codifiedMatrix[k] = (((referenceGrayLevel * grayLevel) +
+			codifiedMatrix[k] = (((referenceGrayLevel * metaGLCM->maxGrayLevel) +
 			neighborGrayLevel) * (metaGLCM->numberOfPairs)) ;
 			k++;
 		}
@@ -104,6 +91,10 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs, 
 	int finalLength = localCompress(codifiedMatrix, metaGLCM->numberOfPairs);
 	codifiedMatrix = (int *) realloc(codifiedMatrix, sizeof(int) * finalLength);
 	metaGLCM->elements = codifiedMatrix;
+	if(metaGLCM->elements == NULL){
+		fprintf(stderr, "Couldn't Realloc the array while codifying\n");
+		exit(-1);
+	}
 	metaGLCM->numberOfUniquePairs = finalLength;
 }
 
@@ -111,7 +102,8 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs, 
 	Compress codified gray pairs with different multeplicty into a single element
 	Requires: sorted array with unique elements
 */
-void compressMultiplicity(struct GLCM * metaGLCM, const int imgGrayLevel){
+void compressMultiplicity(struct GLCM * metaGLCM)
+{
 
 }
 
@@ -120,7 +112,7 @@ void compressMultiplicity(struct GLCM * metaGLCM, const int imgGrayLevel){
 	After the insertion the same pair, codified with different 
 	multiplicity, will be merged
 */
-void addElements(struct GLCM * metaGLCM, int * elementsToAdd, int elementsLength, const int imgGrayLevel)
+void addElements(struct GLCM * metaGLCM, int * elementsToAdd, int elementsLength)
 {
 	int incrementedLength = metaGLCM->numberOfUniquePairs + elementsLength;
 
@@ -159,13 +151,13 @@ void dwarf(int * metaGLCM, int * listElements, int lengthGlcm, int lengthElement
 	From a metaGLCM will codify the sum of its grayPair levels
 	outputList will contain aggregatedPairs (obtained with sum)
 */
-int codifySummedPairs(const GLCM metaGLCM, int * outputList, const int maxGrayLevel )
+int codifySummedPairs(const GLCM metaGLCM, int * outputList)
 {
 	GrayPair actualPair;
 	// Navigate every unique gray pair and represent their sum 
 	for (int i = 0; i < metaGLCM.numberOfUniquePairs; ++i)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		outputList[i] = (actualPair.grayLevelI+actualPair.grayLevelJ) * metaGLCM.numberOfPairs + actualPair.multiplicity;
 	}
 	// Need to compress same pairs, even with different multiplicity
@@ -178,13 +170,13 @@ int codifySummedPairs(const GLCM metaGLCM, int * outputList, const int maxGrayLe
 	From a metaGLCM will codify the difference of its grayPair levels
 	outputList will contain aggregatedPairs (obtained with difference)
 */
-int codifySubtractedPairs(const GLCM metaGLCM, int * outputList, const int maxGrayLevel )
+int codifySubtractedPairs(const GLCM metaGLCM, int * outputList)
 {
 	GrayPair actualPair;
 	// Navigate every unique gray pair and represent their sum 
 	for (int i = 0; i < metaGLCM.numberOfUniquePairs; ++i)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		outputList[i] = abs(actualPair.grayLevelI - actualPair.grayLevelJ) * metaGLCM.numberOfPairs + actualPair.multiplicity;
 	}
 	printArray(outputList, metaGLCM.numberOfUniquePairs);

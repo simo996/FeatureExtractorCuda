@@ -12,23 +12,27 @@ struct GLCM
     // Values necessary to identify neighbor pixel
     int shiftX;
     int shiftY;
+    int windowDimension;
     // Sub Borders in the windows according to direction
     int borderX;
     int borderY;
     int numberOfPairs;
     int numberOfUniquePairs;
+    int maxGrayLevel; // Private field, for convenience
 };
 
-struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowRows, const int windowColumns);
-void initializeMetaGLCM(GLCM * input, const int distance, const int shiftX, const int shiftY, const int windowRows, const int windowColumns);
-void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs, const int grayLevel);
-void printMetaGlcm(const struct GLCM metaGLCM, const int maxGrayLevel);
-void printGLCMData(const GLCM input);
-int compressMultiplicity(int * inputArray, const int length, const int numberOfPairs, const int imgGrayLevel);
-int addElements(int * metaGLCM, int * elementsToAdd, int * outputArray, const int initialLength, const int numElements, const int numberOfPairs, const int grayLevel);
-void dwarf(int * metaGLCM, int * listElements, int lengthGlcm, int lengthElements);
-int codifySummedPairs(const int * metaGLCM, int * outputList, const int elements, const int numberOfPairs, const int maxGrayLevel );
-int codifySubtractedPairs(const int * metaGLCM, int * outputList, const int elements, const int numberOfPairs, const int maxGrayLevel );
+struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel);
+void initializeMetaGLCM(struct GLCM * input, const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel);
+void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs);
 
+void printGLCMData(const GLCM input);
+void printMetaGlcm(const struct GLCM metaGLCM);
+
+void compressMultiplicity(struct GLCM * metaGLCM);
+void addElements(struct GLCM * metaGLCM, int * elementsToAdd, int elementsLength);
+void dwarf(int * metaGLCM, int * listElements, int lengthGlcm, int lengthElements);
+
+int codifySummedPairs(const GLCM metaGLCM, int * outputList);
+int codifySubtractedPairs(const GLCM metaGLCM, int * outputList);
 
 #endif //FEATURESEXTRACTOR_METAGLCM_H
