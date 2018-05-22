@@ -132,14 +132,14 @@ int main(int argc, char const *argv[])
 	cout << "\nCodified metaGlcm";
 	printMetaGlcm(glcm0x0);
 
-	// Add elements into an existing GLCM
-	int sample[4]={48,144,122, 121};
-	//addElements(&glcm0x0, sample, 4);
-
-	double features[16];
-    computeFeatures(features,glcm0x0, imgData.grayLevel);
+	/*
+	Add elements into an existing GLCM
+	int sample[4]={48, 144, 122, 121};
+	addElements(&glcm0x0, sample, 4);
+	*/ 
+	double features[17];
+	computeFeatures(features,glcm0x0, imgData.grayLevel);
 	printFeatures(features);	
-
 	return 0;
 }
 
