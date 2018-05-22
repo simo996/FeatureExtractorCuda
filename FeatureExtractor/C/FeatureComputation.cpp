@@ -110,7 +110,7 @@ double computeContrast(const struct GLCM metaGLCM)
 	double result = 0;
 	GrayPair actualPair;
 	double actualPairProbability;
-	printGLCMData(metaGLCM);
+	
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
 		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
@@ -128,7 +128,7 @@ double computeDissimilarity(const struct GLCM metaGLCM)
 	double result = 0;
 	GrayPair actualPair;
 	double actualPairProbability;
-	printGLCMData(metaGLCM);
+
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
 		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);

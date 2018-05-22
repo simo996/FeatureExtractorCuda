@@ -43,6 +43,17 @@ void printMetaGlcm(const struct GLCM metaGLCM)
 
 }
 
+void printAggrregatedMetaGlcm(const int * aggregatedList, const int length, const int numberOfUniquePairs)
+{
+	std::cout << std::endl;
+	for (int i = 0; i < length; ++i)
+	{
+		printAggregatedPair(aggregatedList[i], numberOfUniquePairs);
+	}
+	std::cout << std::endl;
+
+}
+
 // Initialized MetaData of the GLCM
 struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel)
 {
@@ -230,6 +241,9 @@ int codifySummedPairs(const GLCM metaGLCM, int * outputList)
 	sort(outputList, metaGLCM.numberOfUniquePairs);
 	int finalLength = compressAggregatedMultiplicity(outputList, metaGLCM.numberOfUniquePairs, metaGLCM.numberOfPairs);
 
+    std::cout << "\nSummed MetaGLCM: ";
+    printAggrregatedMetaGlcm(outputList, finalLength, metaGLCM.numberOfPairs);
+
 	return finalLength;
 }
 
@@ -248,12 +262,10 @@ int codifySubtractedPairs(const GLCM metaGLCM, int * outputList)
 	}
 	// Need to compress identical generated elements
 	sort(outputList, metaGLCM.numberOfUniquePairs);
-	printArray(outputList, metaGLCM.numberOfUniquePairs);
 	int finalLength = compressAggregatedMultiplicity(outputList, metaGLCM.numberOfUniquePairs, metaGLCM.numberOfPairs);
-	printArray(outputList, finalLength);
-	for (int i = 0; i < finalLength; ++i) {
-		printAggregatedPair(outputList[i], metaGLCM.numberOfUniquePairs);
-	}
+
+	std::cout << "\nSubtracted MetaGLCM: ";
+	printAggrregatedMetaGlcm(outputList, finalLength, metaGLCM.numberOfPairs);
 
 	return finalLength;
 }

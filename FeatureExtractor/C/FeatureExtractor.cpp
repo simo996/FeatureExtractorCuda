@@ -128,6 +128,9 @@ int main(int argc, char const *argv[])
 	initializeMetaGLCM(&glcm0x0, distance, shiftX, shiftY, windowDimension, imgData.grayLevel);
 	initializeMetaGLCMElements(&glcm0x0, inputPixels);
 
+	// See metadata
+	cout << "\nMetadata on GLCM" ;
+	printGLCMData(glcm0x0);
 	// See the output
 	cout << "\nCodified metaGlcm";
 	printMetaGlcm(glcm0x0);

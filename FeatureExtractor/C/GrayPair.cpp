@@ -22,7 +22,7 @@ struct AggregatedPair aggregatedPairUnPack(const int value, const int numberOfPa
 	struct AggregatedPair pair;
 	int roundDivision = value / numberOfPairs;
 	pair.aggregatedGrayLevels = roundDivision; // risultato intero
-	pair.multiplicity = value - roundDivision * numberOfPairs +1;
+	pair.multiplicity = value - (roundDivision * numberOfPairs) +1;
 	return pair;
 }
 

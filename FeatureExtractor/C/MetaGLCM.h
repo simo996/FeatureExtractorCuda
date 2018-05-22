@@ -28,9 +28,11 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs);
 void printGLCMData(const GLCM input);
 void printGLCMData(struct GLCM * input);
 void printMetaGlcm(const struct GLCM metaGLCM);
+void printAggrregatedMetaGlcm(const int * aggregatedList, const int length, const int numberOfUniquePairs);
 
-void compressMultiplicity(struct GLCM * metaGLCM);
 int compressAggregatedMultiplicity(int * summedPairs, int length, const int numberOfPairs);
+// Senza senso ne implementazione
+void compressMultiplicity(struct GLCM * metaGLCM);
 void addElements(struct GLCM * metaGLCM, int * elementsToAdd, int elementsLength);
 void dwarf(int * metaGLCM, int * listElements, int lengthGlcm, int lengthElements);
 
