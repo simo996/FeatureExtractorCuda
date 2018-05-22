@@ -13,7 +13,7 @@
 
 using namespace std;
 
-double computeASM(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeASM(const struct GLCM metaGLCM)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -21,7 +21,7 @@ double computeASM(const struct GLCM metaGLCM, const int maxGrayLevel)
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 		result += pow((actualPairProbability),2);
 	}
@@ -29,7 +29,7 @@ double computeASM(const struct GLCM metaGLCM, const int maxGrayLevel)
 	return result;
 }
 
-double computeAutocorrelation(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeAutocorrelation(const struct GLCM metaGLCM)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -37,7 +37,7 @@ double computeAutocorrelation(const struct GLCM metaGLCM, const int maxGrayLevel
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += actualPair.grayLevelI * actualPair. grayLevelJ * actualPairProbability;
@@ -46,7 +46,7 @@ double computeAutocorrelation(const struct GLCM metaGLCM, const int maxGrayLevel
 }
 
 
-double computeEntropy(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeEntropy(const struct GLCM metaGLCM)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -54,7 +54,7 @@ double computeEntropy(const struct GLCM metaGLCM, const int maxGrayLevel)
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += actualPairProbability * log(actualPairProbability);
@@ -64,16 +64,16 @@ double computeEntropy(const struct GLCM metaGLCM, const int maxGrayLevel)
 	return (-1 * result);
 }
 
-double computeMaximumProbability(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeMaximumProbability(const struct GLCM metaGLCM)
 {
 	double maxProb;
-	GrayPair actualPair = unPack(metaGLCM.elements[0], metaGLCM.numberOfPairs, maxGrayLevel);
+	GrayPair actualPair = unPack(metaGLCM.elements[0], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 	double actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 	maxProb = actualPairProbability;
 
 	for(int i=1 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		if(actualPairProbability > maxProb)
@@ -85,7 +85,7 @@ double computeMaximumProbability(const struct GLCM metaGLCM, const int maxGrayLe
 	return maxProb;
 }
 
-double computeHomogeneity(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeHomogeneity(const struct GLCM metaGLCM)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -93,7 +93,7 @@ double computeHomogeneity(const struct GLCM metaGLCM, const int maxGrayLevel)
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += actualPairProbability /
@@ -105,7 +105,7 @@ double computeHomogeneity(const struct GLCM metaGLCM, const int maxGrayLevel)
 }
 
 
-double computeContrast(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeContrast(const struct GLCM metaGLCM)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -113,7 +113,7 @@ double computeContrast(const struct GLCM metaGLCM, const int maxGrayLevel)
 	printGLCMData(metaGLCM);
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += actualPairProbability
@@ -123,7 +123,7 @@ double computeContrast(const struct GLCM metaGLCM, const int maxGrayLevel)
 	return result;
 }
 
-double computeDissimilarity(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeDissimilarity(const struct GLCM metaGLCM)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -131,7 +131,7 @@ double computeDissimilarity(const struct GLCM metaGLCM, const int maxGrayLevel)
 	printGLCMData(metaGLCM);
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += actualPairProbability *
@@ -141,7 +141,7 @@ double computeDissimilarity(const struct GLCM metaGLCM, const int maxGrayLevel)
 	return result;
 }
 
-double computeInverceDifferentMomentNormalized(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeInverceDifferentMomentNormalized(const struct GLCM metaGLCM)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -149,18 +149,18 @@ double computeInverceDifferentMomentNormalized(const struct GLCM metaGLCM, const
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += actualPairProbability /
-							 ((1+pow((actualPair.grayLevelI - actualPair.grayLevelJ),2))/maxGrayLevel);
+							 ((1+pow((actualPair.grayLevelI - actualPair.grayLevelJ),2))/metaGLCM.maxGrayLevel);
 	}
 
 	return result;
 }
 
 /* FEATURES WITH MEANS */
-double computeCorrelation(const struct GLCM metaGLCM, const int maxGrayLevel, const double muX, const double muY, const double sigmaX, const double sigmaY)
+double computeCorrelation(const struct GLCM metaGLCM, const double muX, const double muY, const double sigmaX, const double sigmaY)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -168,7 +168,7 @@ double computeCorrelation(const struct GLCM metaGLCM, const int maxGrayLevel, co
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += ((actualPair.grayLevelI - muX) * (actualPair.grayLevelJ - muY) * actualPairProbability )
@@ -179,7 +179,7 @@ double computeCorrelation(const struct GLCM metaGLCM, const int maxGrayLevel, co
 	return result;
 }
 
-double computeClusterProminecence(const struct GLCM metaGLCM, const int maxGrayLevel, const double muX, const double muY)
+double computeClusterProminecence(const struct GLCM metaGLCM, const double muX, const double muY)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -187,7 +187,7 @@ double computeClusterProminecence(const struct GLCM metaGLCM, const int maxGrayL
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += pow ((actualPair.grayLevelI + actualPair.grayLevelJ -muX - muY), 4) * actualPairProbability;
@@ -196,7 +196,7 @@ double computeClusterProminecence(const struct GLCM metaGLCM, const int maxGrayL
 	return result;
 }
 
-double computeClusterShade(const struct GLCM metaGLCM, const int maxGrayLevel, const double muX, const double muY)
+double computeClusterShade(const struct GLCM metaGLCM, const double muX, const double muY)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -204,7 +204,7 @@ double computeClusterShade(const struct GLCM metaGLCM, const int maxGrayLevel, c
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += pow ((actualPair.grayLevelI + actualPair.grayLevelJ -muX - muY), 3) * actualPairProbability;
@@ -213,7 +213,7 @@ double computeClusterShade(const struct GLCM metaGLCM, const int maxGrayLevel, c
 	return result;
 }
 
-double computeSumOfSquares(const struct GLCM metaGLCM, const int maxGrayLevel, const double mu)
+double computeSumOfSquares(const struct GLCM metaGLCM, const double mu)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -221,7 +221,7 @@ double computeSumOfSquares(const struct GLCM metaGLCM, const int maxGrayLevel, c
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += pow ((actualPair.grayLevelI - mu), 2) * actualPairProbability;
@@ -316,7 +316,7 @@ double computeDifferenceVariance(const int * aggregatedMetaGLCM, const int lengt
 
 
 // Mean of all probabilities
-double computeMean(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeMean(const struct GLCM metaGLCM)
 {
 	double mu = 0;
 	GrayPair actualPair;
@@ -324,7 +324,7 @@ double computeMean(const struct GLCM metaGLCM, const int maxGrayLevel)
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		mu += actualPairProbability;
@@ -333,7 +333,7 @@ double computeMean(const struct GLCM metaGLCM, const int maxGrayLevel)
 }
 
 // Mean of
-double computeMuX(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeMuX(const struct GLCM metaGLCM)
 {
 	double muX = 0;
 	GrayPair actualPair;
@@ -341,7 +341,7 @@ double computeMuX(const struct GLCM metaGLCM, const int maxGrayLevel)
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		muX += actualPair.grayLevelI * actualPairProbability;
@@ -349,7 +349,7 @@ double computeMuX(const struct GLCM metaGLCM, const int maxGrayLevel)
 	return muX;
 }
 
-double computeMuY(const struct GLCM metaGLCM, const int maxGrayLevel)
+double computeMuY(const struct GLCM metaGLCM)
 {
 	double muY = 0;
 	GrayPair actualPair;
@@ -357,7 +357,7 @@ double computeMuY(const struct GLCM metaGLCM, const int maxGrayLevel)
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		muY += actualPair.grayLevelJ * actualPairProbability;
@@ -365,7 +365,7 @@ double computeMuY(const struct GLCM metaGLCM, const int maxGrayLevel)
 	return muY;
 }
 
-double computeSigmaX(const struct GLCM metaGLCM, const int maxGrayLevel, const double muX)
+double computeSigmaX(const struct GLCM metaGLCM, const double muX)
 {
 	double sigmaX = 0;
 	GrayPair actualPair;
@@ -373,7 +373,7 @@ double computeSigmaX(const struct GLCM metaGLCM, const int maxGrayLevel, const d
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		sigmaX += pow((actualPair.grayLevelI - muX),2) * actualPairProbability;
@@ -382,7 +382,7 @@ double computeSigmaX(const struct GLCM metaGLCM, const int maxGrayLevel, const d
 	return sqrt(sigmaX);
 }
 
-double computeSigmaY(const struct GLCM metaGLCM, const int maxGrayLevel, const double muY)
+double computeSigmaY(const struct GLCM metaGLCM, const double muY)
 {
 	double sigmaY = 0;
 	GrayPair actualPair;
@@ -390,7 +390,7 @@ double computeSigmaY(const struct GLCM metaGLCM, const int maxGrayLevel, const d
 
 	for(int i=0 ; i < metaGLCM.numberOfUniquePairs; i++)
 	{
-		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, maxGrayLevel);
+		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		sigmaY += pow((actualPair.grayLevelJ - muY),2) * actualPairProbability;
@@ -400,28 +400,28 @@ double computeSigmaY(const struct GLCM metaGLCM, const int maxGrayLevel, const d
 }
 
 
-void computeFeatures(double * output, const struct GLCM metaGLCM, const int maxGrayLevel)
+void computeFeatures(double * output, const struct GLCM metaGLCM)
 {
-	output[0]= computeASM(metaGLCM, maxGrayLevel);
-	output[1]= computeAutocorrelation(metaGLCM, maxGrayLevel);
-	output[2]= computeEntropy(metaGLCM, maxGrayLevel);
-	output[3]= computeMaximumProbability(metaGLCM,maxGrayLevel);
-	output[4]= computeHomogeneity(metaGLCM, maxGrayLevel);
-	output[5]= computeContrast(metaGLCM, maxGrayLevel);
-	output[6]= computeDissimilarity(metaGLCM, maxGrayLevel);
+	output[0]= computeASM(metaGLCM);
+	output[1]= computeAutocorrelation(metaGLCM);
+	output[2]= computeEntropy(metaGLCM);
+	output[3]= computeMaximumProbability(metaGLCM);
+	output[4]= computeHomogeneity(metaGLCM);
+	output[5]= computeContrast(metaGLCM);
+	output[6]= computeDissimilarity(metaGLCM);
 
 	double muX, muY, mu, sigmaX, sigmaY;
-	mu = computeMean(metaGLCM, maxGrayLevel);
-	muX = computeMuX(metaGLCM, maxGrayLevel);
-	muY = computeMuY(metaGLCM, maxGrayLevel);
-	sigmaX = computeSigmaX(metaGLCM, maxGrayLevel, muX);
-	sigmaY = computeSigmaY(metaGLCM, maxGrayLevel, muY);
+	mu = computeMean(metaGLCM);
+	muX = computeMuX(metaGLCM);
+	muY = computeMuY(metaGLCM);
+	sigmaX = computeSigmaX(metaGLCM, muX);
+	sigmaY = computeSigmaY(metaGLCM, muY);
 
-	output[7]= computeCorrelation(metaGLCM, maxGrayLevel, muX, muY, sigmaX, sigmaY);
-	output[8]= computeClusterProminecence(metaGLCM, maxGrayLevel, muX, muY);
-	output[9]= computeClusterShade(metaGLCM, maxGrayLevel, muX, muY);
-	output[10]= computeSumOfSquares(metaGLCM, maxGrayLevel, mu);
-	output[11]= computeInverceDifferentMomentNormalized(metaGLCM, maxGrayLevel);
+	output[7]= computeCorrelation(metaGLCM, muX, muY, sigmaX, sigmaY);
+	output[8]= computeClusterProminecence(metaGLCM, muX, muY);
+	output[9]= computeClusterShade(metaGLCM, muX, muY);
+	output[10]= computeSumOfSquares(metaGLCM, mu);
+	output[11]= computeInverceDifferentMomentNormalized(metaGLCM);
 
 	int * summedPairs =  (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
 	int summedPairsLength = codifySummedPairs(metaGLCM, summedPairs);

@@ -138,7 +138,7 @@ int main(int argc, char const *argv[])
 	addElements(&glcm0x0, sample, 4);
 	*/ 
 	double features[17];
-	computeFeatures(features,glcm0x0, imgData.grayLevel);
+	computeFeatures(features,glcm0x0);
 	printFeatures(features);	
 	return 0;
 }
