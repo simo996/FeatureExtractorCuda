@@ -26,7 +26,12 @@ void printGLCMData(const GLCM input)
 	std::cout << std::endl;
 }
 
-// Object version
+void printGLCMData(struct GLCM * input)
+{
+	printGLCMData(*input);
+}
+
+
 void printMetaGlcm(const struct GLCM metaGLCM)
 {
 	std::cout << std::endl;
@@ -99,43 +104,104 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs)
 }
 
 /* 
-	Compress codified gray pairs with different multeplicty into a single element
+	Compress codified gray pairs with different multiplicty into a single element
 	Requires: sorted array with unique elements
 */
 void compressMultiplicity(struct GLCM * metaGLCM)
 {
+	int countSimilar = 0, i=0 ,j=0; 
+	GrayPair actual, next;
+	while(i < metaGLCM->numberOfUniquePairs)
+	{
+		j=i+1;
+		// WARNING L'UNPACK di 2 coppie diverse ha senso solo se ottenuti con lo stesso numberOfPairs
+		actual = unPack(metaGLCM->elements[i], metaGLCM->numberOfPairs, metaGLCM->maxGrayLevel);
+		next = unPack(metaGLCM->elements[j], metaGLCM->numberOfPairs, metaGLCM->maxGrayLevel);
+		printPair(metaGLCM->elements[i], metaGLCM->numberOfPairs, metaGLCM->maxGrayLevel);
+		while(compareEqualsGrayPairs(actual,next))
+		{
+			metaGLCM->elements[i] += next.multiplicity; 
+			metaGLCM->elements[j] = INT_MAX; // Will be destroyed by sort&resize
+			countSimilar++; 
+			j++; // next element
+			next = unPack(metaGLCM->elements[j], metaGLCM->numberOfPairs, metaGLCM->maxGrayLevel);
+		}
+		i=j;
 
+	}
+	sort(metaGLCM->elements, metaGLCM->numberOfUniquePairs);
+	metaGLCM->numberOfUniquePairs = metaGLCM->numberOfUniquePairs - countSimilar;
 }
 
 /* 
-	Add to a metaGLCM an array of codified gray pairs
+	Will combine same aggregated pairs that differ for their multiplicity
+*/
+int compressAggregatedMultiplicity(int * summedPairs, int length, const int numberOfPairs)
+{
+	int countSimilar = 0, i=0 ,j=0; 
+	AggregatedPair actual, next;
+
+	while(i < length)
+	{
+		j=i+1;
+		// WARNING L'UNPACK di 2 coppie diverse ha senso solo se ottenuti con lo stesso numberOfPairs
+		actual = aggregatedPairUnPack(summedPairs[i], numberOfPairs);
+		next = aggregatedPairUnPack(summedPairs[j], numberOfPairs);
+		while(compareEqualsAggregatedPairs(actual, next))
+		{
+			summedPairs[i] += next.multiplicity; 
+			summedPairs[j] = INT_MAX; // Will be destroyed by sort&resize
+			countSimilar++; 
+			j++; // next element
+			next = aggregatedPairUnPack(summedPairs[j], numberOfPairs);
+		}
+		i=j;
+
+	}
+	int finalLength = length - countSimilar;
+	sort(summedPairs, length); // Shift Exluded elements to right
+	summedPairs = (int *) realloc(summedPairs, sizeof(int) * finalLength);
+	return finalLength;
+}
+
+/*	Add to a metaGLCM an array of codified gray pairs
 	After the insertion the same pair, codified with different 
 	multiplicity, will be merged
 */
 void addElements(struct GLCM * metaGLCM, int * elementsToAdd, int elementsLength)
 {
-	int incrementedLength = metaGLCM->numberOfUniquePairs + elementsLength;
+	// New total number of elements
+	int newSize = metaGLCM->numberOfPairs + elementsLength;
 
-	metaGLCM->elements = (int *) realloc(metaGLCM->elements, sizeof(int) * incrementedLength);
-	if(metaGLCM->elements == NULL){
-		fprintf(stderr, "Couldn't Realloc the array\n");
-		exit(-1);
-	}
+	// Physical space necessary to embedd actual list and new elements
+	int enlargedLength = metaGLCM->numberOfUniquePairs + elementsLength;
+	
+	// Enlarge actual pair list
+	metaGLCM->elements = (int *) realloc(metaGLCM->elements, sizeof(int) 
+		* enlargedLength);
+	printGLCMData(metaGLCM);
+
 	// Copy the added elements in the new cells
 	for(int i=0; i < elementsLength; i++)
 	{
 		metaGLCM->elements[i + metaGLCM->numberOfUniquePairs] =
 			elementsToAdd[i];
 	}
-	printArray(metaGLCM->elements, incrementedLength);
-	sort(metaGLCM->elements, incrementedLength);
-	printArray(metaGLCM->elements, incrementedLength);
+	sort(metaGLCM->elements, enlargedLength);
+
+	/*
 	// First, compress identical elements
-	int reducedLength = localCompress(metaGLCM->elements, incrementedLength);
+	int reducedLength = localCompress(metaGLCM->elements, enlargedLength);
 	metaGLCM->elements = (int *) realloc(metaGLCM->elements, sizeof(int) * reducedLength);
-	metaGLCM->numberOfPairs = reducedLength;
+	metaGLCM->numberOfUniquePairs = reducedLength;
 	printArray(metaGLCM->elements, reducedLength);
+	printGLCMData(metaGLCM);
 	// Second, compress same pair with different multiplicity
+	compressMultiplicity(metaGLCM);
+	metaGLCM->numberOfPairs = newSize; // Change after compression because it determines decodifcation of pairs
+	printMetaGlcm(*metaGLCM);
+	printGLCMData(metaGLCM);
+	*/
 
 }
 
@@ -158,11 +224,12 @@ int codifySummedPairs(const GLCM metaGLCM, int * outputList)
 	for (int i = 0; i < metaGLCM.numberOfUniquePairs; ++i)
 	{
 		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
-		outputList[i] = (actualPair.grayLevelI+actualPair.grayLevelJ) * metaGLCM.numberOfPairs + actualPair.multiplicity;
+		outputList[i] = (actualPair.grayLevelI + actualPair.grayLevelJ) * metaGLCM.numberOfPairs + actualPair.multiplicity -1;
 	}
-	// Need to compress same pairs, even with different multiplicity
+	// Need to compress identical generated elements
 	sort(outputList, metaGLCM.numberOfUniquePairs);
-	int finalLength = localCompress(outputList, metaGLCM.numberOfUniquePairs);
+	int finalLength = compressAggregatedMultiplicity(outputList, metaGLCM.numberOfUniquePairs, metaGLCM.numberOfPairs);
+
 	return finalLength;
 }
 
@@ -177,14 +244,16 @@ int codifySubtractedPairs(const GLCM metaGLCM, int * outputList)
 	for (int i = 0; i < metaGLCM.numberOfUniquePairs; ++i)
 	{
 		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
-		outputList[i] = abs(actualPair.grayLevelI - actualPair.grayLevelJ) * metaGLCM.numberOfPairs + actualPair.multiplicity;
+		outputList[i] = abs(actualPair.grayLevelI - actualPair.grayLevelJ) * metaGLCM.numberOfPairs + actualPair.multiplicity -1;
 	}
-	printArray(outputList, metaGLCM.numberOfUniquePairs);
 	// Need to compress identical generated elements
 	sort(outputList, metaGLCM.numberOfUniquePairs);
 	printArray(outputList, metaGLCM.numberOfUniquePairs);
-	int finalLength = localCompress(outputList, metaGLCM.numberOfUniquePairs);
+	int finalLength = compressAggregatedMultiplicity(outputList, metaGLCM.numberOfUniquePairs, metaGLCM.numberOfPairs);
 	printArray(outputList, finalLength);
+	for (int i = 0; i < finalLength; ++i) {
+		printAggregatedPair(outputList[i], metaGLCM.numberOfUniquePairs);
+	}
 
 	return finalLength;
 }
