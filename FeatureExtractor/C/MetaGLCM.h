@@ -10,12 +10,12 @@ struct GLCM
 	int * elements;
     int distance;
     // Values necessary to identify neighbor pixel
-    int shiftX;
-    int shiftY;
+    int shiftRows;
+    int shiftColumns;
     int windowDimension;
     // Sub Borders in the windows according to direction
-    int borderX;
-    int borderY;
+    int borderRows;
+    int borderColumns;
     int numberOfPairs;
     int numberOfUniquePairs;
     int maxGrayLevel; // Private field, for convenience

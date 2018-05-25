@@ -32,18 +32,6 @@ struct WindowData{
 	int columns;
 };
 
-struct GLCMData
-{
-	int distance;
-	// Values necessary to identify neighbor pixel
-	int shiftX;
-	int shiftY;
-	// Sub Borders in the windows according to direction
-	int borderX;
-	int borderY;
-	int numberOfPairs;
-};
-
 
 void readMRImage(Mat image, struct ImageData imgData, const char * filename)
 {
@@ -121,11 +109,11 @@ int main(int argc, char const *argv[])
 	// Start Creating the first GLCM
 	// 4x4 0° 1 pixel distanza
 	int distance = 1;
-	int shiftY = 0;
-	int shiftX = 1;
+	int shiftRows = 0;
+	int shiftColumns = 1;
 
 	GLCM glcm0x0;
-	initializeMetaGLCM(&glcm0x0, distance, shiftX, shiftY, windowDimension, imgData.grayLevel);
+	initializeMetaGLCM(&glcm0x0, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
 	initializeMetaGLCMElements(&glcm0x0, inputPixels);
 
 	// See metadata

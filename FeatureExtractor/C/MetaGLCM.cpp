@@ -16,11 +16,11 @@
 void printGLCMData(const GLCM input)
 {
 	std::cout << std::endl;
-	std::cout << "Shift X : " << input.shiftX << std::endl;
-	std::cout << "Shift Y: " << input.shiftY  << std::endl;
+	std::cout << "Shift rows : " << input.shiftRows << std::endl;
+	std::cout << "Shift columns: " << input.shiftColumns  << std::endl;
 	std::cout << "Father Window dimension: "<< input.windowDimension  << std::endl;
-	std::cout << "Border X: "<< input.borderX  << std::endl;
-	std::cout << "Border Y:" << input.borderY  << std::endl;
+	std::cout << "Border Rows: "<< input.borderRows  << std::endl;
+	std::cout << "Border Columns: " << input.borderColumns  << std::endl;
 	std::cout << "Number of Elements: " << input.numberOfPairs  << std::endl;
 	std::cout << "Number of unique elements: " << input.numberOfUniquePairs  << std::endl;
 	std::cout << std::endl;
@@ -66,12 +66,12 @@ struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int s
 void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel)
 {
 	glcm->distance = distance;
-	glcm->shiftX = shiftX;
-	glcm->shiftY = shiftY;
+	glcm->shiftRows = shiftX;
+	glcm->shiftColumns = shiftY;
 	glcm->windowDimension = windowDimension;
-	glcm->borderX = (windowDimension - (distance * shiftX));
-	glcm->borderY = (windowDimension - (distance * shiftY));
-	glcm->numberOfPairs = glcm->borderX * glcm->borderY;
+	glcm->borderColumns = (windowDimension - (distance * shiftY));
+	glcm->borderRows = (windowDimension - (distance * shiftX));
+	glcm->numberOfPairs = glcm->borderRows * glcm->borderColumns;
 	glcm->maxGrayLevel = grayLevel;
 
 	// Inutile inizializzare questo campo
@@ -89,13 +89,13 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs)
 	int neighborGrayLevel;
 
 	// Codify every single pair
-	for (int i = 0; i < metaGLCM->borderY ; i++)
+	for (int i = 0; i < metaGLCM->borderRows ; i++)
 	{
-		for (int j = 0; j < metaGLCM->borderX; j++)
+		for (int j = 0; j < metaGLCM->borderColumns; j++)
 		{
 			// Extract the two pixels in the pair
 			referenceGrayLevel = pixelPairs [(i * metaGLCM->windowDimension) + j];
-			neighborGrayLevel = pixelPairs [(i + metaGLCM->shiftY) * metaGLCM->windowDimension + (j + metaGLCM->shiftX)];
+			neighborGrayLevel = pixelPairs [(i + metaGLCM->shiftRows) * metaGLCM->windowDimension + (j + metaGLCM->shiftColumns)];
 
 			codifiedMatrix[k] = (((referenceGrayLevel * metaGLCM->maxGrayLevel) +
 			neighborGrayLevel) * (metaGLCM->numberOfPairs)) ;
