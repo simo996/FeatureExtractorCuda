@@ -69,8 +69,8 @@ void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const
 	glcm->shiftRows = shiftX;
 	glcm->shiftColumns = shiftY;
 	glcm->windowDimension = windowDimension;
-	glcm->borderColumns = (windowDimension - (distance * shiftY));
-	glcm->borderRows = (windowDimension - (distance * shiftX));
+	glcm->borderColumns = (windowDimension - (distance * abs(shiftY)));
+	glcm->borderRows = (windowDimension - (distance * abs(shiftX)));
 	glcm->numberOfPairs = glcm->borderRows * glcm->borderColumns;
 	glcm->maxGrayLevel = grayLevel;
 
@@ -88,14 +88,22 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs)
 	int referenceGrayLevel;
 	int neighborGrayLevel;
 
+	// Define subBorders offset depending on orientation
+	int initialRowOffset = 0; // for 0°,45°,90°
+	if((metaGLCM->shiftRows * metaGLCM->shiftColumns) > 0) // 135°
+		initialRowOffset = 1; 
+	int initialColumnOffset = 1; // for 45°,90°,135°
+	if((metaGLCM->shiftRows == 0) && (metaGLCM->shiftColumns > 0))
+		initialColumnOffset = 0; // for 0°
+	std::cout << "RowOffset: " << initialRowOffset << "\tColOffset: " << initialColumnOffset;
 	// Codify every single pair
 	for (int i = 0; i < metaGLCM->borderRows ; i++)
 	{
 		for (int j = 0; j < metaGLCM->borderColumns; j++)
 		{
 			// Extract the two pixels in the pair
-			referenceGrayLevel = pixelPairs [(i * metaGLCM->windowDimension) + j];
-			neighborGrayLevel = pixelPairs [(i + metaGLCM->shiftRows) * metaGLCM->windowDimension + (j + metaGLCM->shiftColumns)];
+			referenceGrayLevel = pixelPairs [((i + initialRowOffset) * metaGLCM->windowDimension) + (j + initialColumnOffset)];
+			neighborGrayLevel = pixelPairs [((i + initialRowOffset) + metaGLCM->shiftRows) * metaGLCM->windowDimension + (j + initialColumnOffset + metaGLCM->shiftColumns)];
 
 			codifiedMatrix[k] = (((referenceGrayLevel * metaGLCM->maxGrayLevel) +
 			neighborGrayLevel) * (metaGLCM->numberOfPairs)) ;
