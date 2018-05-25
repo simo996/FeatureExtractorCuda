@@ -40,7 +40,7 @@ double computeAutocorrelation(const struct GLCM metaGLCM)
 		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
-		result += actualPair.grayLevelI * actualPair. grayLevelJ * actualPairProbability;
+		result += (actualPair.grayLevelI * actualPair. grayLevelJ * actualPairProbability);
 	}
 	return result;
 }
@@ -153,7 +153,7 @@ double computeInverceDifferentMomentNormalized(const struct GLCM metaGLCM)
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += actualPairProbability /
-							 ((1+pow((actualPair.grayLevelI - actualPair.grayLevelJ),2))/metaGLCM.maxGrayLevel);
+							 (1 + (pow((actualPair.grayLevelI - actualPair.grayLevelJ),2))/metaGLCM.maxGrayLevel);
 	}
 
 	return result;
@@ -243,6 +243,7 @@ double computeSumAverage(const int * summedMetaGLCM, const int length, const int
 	{
 		actualPair = aggregatedPairUnPack(summedMetaGLCM[i], numberOfPairs);
 		actualPairProbability = ((double) actualPair.multiplicity)/numberOfPairs;
+
 		result += actualPair.aggregatedGrayLevels * actualPairProbability;
 	}
 	return result;
@@ -329,7 +330,7 @@ double computeMean(const struct GLCM metaGLCM)
 
 		mu += actualPairProbability;
 	}
-	return mu;
+	return mu; // VA DIVISO PER QUALCOSA, SE NO E' 1 COME SOMMA DI TUTTE LE PROBABILITA'
 }
 
 // Mean of
@@ -403,7 +404,7 @@ double computeSigmaY(const struct GLCM metaGLCM, const double muY)
 void computeFeatures(double * output, const struct GLCM metaGLCM)
 {
 	output[0]= computeASM(metaGLCM);
-	output[1]= computeAutocorrelation(metaGLCM);
+	output[1]= computeAutocorrelation(metaGLCM); // FIXARE
 	output[2]= computeEntropy(metaGLCM);
 	output[3]= computeMaximumProbability(metaGLCM);
 	output[4]= computeHomogeneity(metaGLCM);
@@ -411,7 +412,7 @@ void computeFeatures(double * output, const struct GLCM metaGLCM)
 	output[6]= computeDissimilarity(metaGLCM);
 
 	double muX, muY, mu, sigmaX, sigmaY;
-	mu = computeMean(metaGLCM);
+	mu = computeMean(metaGLCM); // FIXARE
 	muX = computeMuX(metaGLCM);
 	muY = computeMuY(metaGLCM);
 	sigmaX = computeSigmaX(metaGLCM, muX);
@@ -420,14 +421,14 @@ void computeFeatures(double * output, const struct GLCM metaGLCM)
 	output[7]= computeCorrelation(metaGLCM, muX, muY, sigmaX, sigmaY);
 	output[8]= computeClusterProminecence(metaGLCM, muX, muY);
 	output[9]= computeClusterShade(metaGLCM, muX, muY);
-	output[10]= computeSumOfSquares(metaGLCM, mu);
-	output[11]= computeInverceDifferentMomentNormalized(metaGLCM);
+	output[10]= computeSumOfSquares(metaGLCM, mu); // Fixare MU
+	output[11]= computeInverceDifferentMomentNormalized(metaGLCM); // CIRCA GIUSTO? Impreciso
 
 	int * summedPairs =  (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
 	int summedPairsLength = codifySummedPairs(metaGLCM, summedPairs);
-	output[12]= computeSumAverage(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs);
-	output[13]= computeSumEntropy(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs);
-	output[14]= computeSumVariance(summedPairs, summedPairsLength, metaGLCM.numberOfPairs, output[12]);
+	output[12]= computeSumAverage(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs); // ERRORE
+	output[13]= computeSumEntropy(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs); // OK
+	output[14]= computeSumVariance(summedPairs, summedPairsLength, metaGLCM.numberOfPairs, output[12]); // ERRORE
 	free(summedPairs);
 
 	int * subtractredPairs = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
@@ -442,25 +443,25 @@ void computeFeatures(double * output, const struct GLCM metaGLCM)
 void printFeatures(double * features)
 {
 	cout << endl;
-	cout << "ASM: " << features[0] << endl;
-	cout << "AUTOCORRELATION: " << features[1] << endl;
-	cout << "ENTROPY: " << features[2] << endl;
-	cout << "MAXIMUM PROBABILITY: " << features[3] << endl;
-	cout << "HOMOGENEITY: " << features[4] << endl;
-	cout << "CONTRAST: " << features[5] << endl;
-	cout << "DISSIMILARITY: " << features[6] << endl;
+	cout << "ASM: \t" << features[0] << endl;
+	cout << "AUTOCORRELATION: \t" << features[1] << endl;
+	cout << "ENTROPY: \t" << features[2] << endl;
+	cout << "MAXIMUM PROBABILITY: \t" << features[3] << endl;
+	cout << "HOMOGENEITY: \t" << features[4] << endl;
+	cout << "CONTRAST: \t" << features[5] << endl;
+	cout << "DISSIMILARITY: \t" << features[6] << endl;
 
-	cout << "\nCORRELATION: " << features[7] << endl;
-	cout << "CLUSTER PROMINECENCE: " << features[8] << endl;
-	cout << "CLUSTER SHADE: " << features[9] << endl;
-	cout << "SUM OF SQUARES: " << features[10] << endl;
-	cout << "IDM: " << features[11] << endl;
+	cout << "CORRELATION: \t" << features[7] << endl;
+	cout << "CLUSTER PROMINECENCE: \t" << features[8] << endl;
+	cout << "CLUSTER SHADE: \t" << features[9] << endl;
+	cout << "SUM OF SQUARES: \t" << features[10] << endl;
+	cout << "IDM normalized: \t" << features[11] << endl;
 	
-	cout << "\nSUM AVERAGE: " << features[12] << endl;
-	cout << "SUM ENTROPY: " << features[13] << endl;
-	cout << "SUM VARIANCE: " << features[14] << endl;
+	cout << "SUM AVERAGE: \t" << features[12] << endl;
+	cout << "SUM ENTROPY: \t" << features[13] << endl;
+	cout << "SUM VARIANCE: \t" << features[14] << endl;
 
-	cout << "\nDIFF ENTROPY: " << features[15] << endl;
-	cout << "DIFF VARIANCE: " << features[16] << endl;
+	cout << "DIFF ENTROPY: \t" << features[15] << endl;
+	cout << "DIFF VARIANCE: \t" << features[16] << endl;
 
 }
