@@ -73,6 +73,7 @@ struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int s
 {
 	GLCM output;
 	initializeMetaGLCM(&output, distance, shiftX, shiftY, windowDimension, grayLevel, false);
+<<<<<<< HEAD
 	return output;
 }
 
@@ -84,6 +85,19 @@ struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int s
 	return output;
 }
 
+=======
+	return output;
+}
+
+// Explicit struct version
+struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel, bool simmetric)
+{
+	GLCM output;
+	initializeMetaGLCM(&output, distance, shiftX, shiftY, windowDimension, grayLevel, simmetric);
+	return output;
+}
+
+>>>>>>> e1d9826bc5e8fe12062720d0cd74c0580105ff13
 // Implicit pointer version
 void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel)
 {
