@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <cstdio>
 #include <cstring>
+#include <assert.h>
 
 #include "MetaGLCM.h"
 #include "SupportCode.h"
@@ -21,6 +22,14 @@ void printGLCMData(const GLCM input)
 	std::cout << "Father Window dimension: "<< input.windowDimension  << std::endl;
 	std::cout << "Border Rows: "<< input.borderRows  << std::endl;
 	std::cout << "Border Columns: " << input.borderColumns  << std::endl;
+	std::cout << "Simmetric: ";
+	if(input.simmetric){
+		std::cout << "Yes" << std::endl;
+	}
+	else{
+		std::cout << "No" << std::endl;
+	}
+
 	std::cout << "Number of Elements: " << input.numberOfPairs  << std::endl;
 	std::cout << "Number of unique elements: " << input.numberOfUniquePairs  << std::endl;
 	std::cout << std::endl;
@@ -54,16 +63,36 @@ void printAggrregatedMetaGlcm(const int * aggregatedList, const int length, cons
 
 }
 
-// Initialized MetaData of the GLCM
+/*	INITIALIZATION METHODS 
+	Obtain essential parameters for constructing MetaGLMC
+	Optional parameter: simmetric (default = NO)
+
+*/
+// Implicit struct version
 struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel)
 {
 	GLCM output;
-	initializeMetaGLCM(&output, distance, shiftX, shiftY, windowDimension, grayLevel);
+	initializeMetaGLCM(&output, distance, shiftX, shiftY, windowDimension, grayLevel, false);
 	return output;
 }
 
-// Initialized MetaData of the GLCM
+// Explicit struct version
+struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel, bool simmetric)
+{
+	GLCM output;
+	initializeMetaGLCM(&output, distance, shiftX, shiftY, windowDimension, grayLevel, simmetric);
+	return output;
+}
+
+// Implicit pointer version
 void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel)
+{
+	initializeMetaGLCM(glcm, distance, shiftX, shiftY, windowDimension, grayLevel,
+		false); // DEFAULT = ASIMMETRIC
+}
+
+// Explicit pointer version
+void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel, bool simmetric)
 {
 	glcm->distance = distance;
 	glcm->shiftRows = shiftX;
@@ -71,6 +100,7 @@ void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const
 	glcm->windowDimension = windowDimension;
 	glcm->borderColumns = (windowDimension - (distance * abs(shiftY)));
 	glcm->borderRows = (windowDimension - (distance * abs(shiftX)));
+	glcm->simmetric = simmetric;
 	glcm->numberOfPairs = glcm->borderRows * glcm->borderColumns;
 	glcm->maxGrayLevel = grayLevel;
 
@@ -80,22 +110,36 @@ void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const
 
 // From a linearized vector of every pixel pair and an initialized GLCM
 // it will generate the minimal representation of the MetaGLCM
+
+
 void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs)
 {
 	// Allocate space for every different pair
-	int * codifiedMatrix = (int *) malloc(sizeof(int) * metaGLCM->numberOfPairs);
+	int actualNumberOfPairs;
+
+	if(metaGLCM->simmetric)
+	{
+		actualNumberOfPairs = 2 * metaGLCM->numberOfPairs;
+	}
+	else
+	{
+		actualNumberOfPairs = metaGLCM->numberOfPairs;
+
+	}
+	int * codifiedMatrix = (int *) malloc(sizeof(int) * actualNumberOfPairs);
+	
 	int k = 0;
 	int referenceGrayLevel;
 	int neighborGrayLevel;
 
 	// Define subBorders offset depending on orientation
-	int initialRowOffset = 0; // for 0°,45°,90°
+	int initialColumnOffset = 0; // for 0°,45°,90°
 	if((metaGLCM->shiftRows * metaGLCM->shiftColumns) > 0) // 135°
-		initialRowOffset = 1; 
-	int initialColumnOffset = 1; // for 45°,90°,135°
+		initialColumnOffset = 1;
+	int initialRowOffset = 1; // for 45°,90°,135°
 	if((metaGLCM->shiftRows == 0) && (metaGLCM->shiftColumns > 0))
-		initialColumnOffset = 0; // for 0°
-	std::cout << "RowOffset: " << initialRowOffset << "\tColOffset: " << initialColumnOffset;
+		initialRowOffset = 0; // for 0°
+	//std::cout << "DEBUG -\tRowOffset: " << initialRowOffset << "\tColOffset: " << initialColumnOffset;
 	// Codify every single pair
 	for (int i = 0; i < metaGLCM->borderRows ; i++)
 	{
@@ -105,14 +149,20 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs)
 			referenceGrayLevel = pixelPairs [((i + initialRowOffset) * metaGLCM->windowDimension) + (j + initialColumnOffset)];
 			neighborGrayLevel = pixelPairs [((i + initialRowOffset) + metaGLCM->shiftRows) * metaGLCM->windowDimension + (j + initialColumnOffset + metaGLCM->shiftColumns)];
 
-			codifiedMatrix[k] = (((referenceGrayLevel * metaGLCM->maxGrayLevel) +
-			neighborGrayLevel) * (metaGLCM->numberOfPairs)) ;
+			codifiedMatrix[k] = (((referenceGrayLevel * metaGLCM->maxGrayLevel) + 
+				neighborGrayLevel) * (metaGLCM->numberOfPairs)) ;
+			if(metaGLCM->simmetric)
+			{
+				codifiedMatrix[k+1] = (((neighborGrayLevel * metaGLCM->maxGrayLevel) + 
+					referenceGrayLevel) * (metaGLCM->numberOfPairs)) ;
+				k++;
+			}
 			k++;
 		}
 	}
-	
-	sort(codifiedMatrix, metaGLCM->numberOfPairs);
-	int finalLength = localCompress(codifiedMatrix, metaGLCM->numberOfPairs);
+	sort(codifiedMatrix, actualNumberOfPairs);
+	int finalLength = localCompress(codifiedMatrix, actualNumberOfPairs);
+	assert(finalLength > 0);
 	codifiedMatrix = (int *) realloc(codifiedMatrix, sizeof(int) * finalLength);
 	metaGLCM->elements = codifiedMatrix;
 	if(metaGLCM->elements == NULL){
@@ -155,7 +205,7 @@ void compressMultiplicity(struct GLCM * metaGLCM)
 /* 
 	Will combine same aggregated pairs that differ for their multiplicity
 */
-int compressAggregatedMultiplicity(int * summedPairs, int length, const int numberOfPairs)
+int compressAggregatedMultiplicity(int * aggregatedPairs, int length, const int numberOfPairs)
 {
 	int countSimilar = 0, i=0 ,j=0; 
 	AggregatedPair actual, next;
@@ -164,65 +214,33 @@ int compressAggregatedMultiplicity(int * summedPairs, int length, const int numb
 	{
 		j=i+1;
 		// WARNING L'UNPACK di 2 coppie diverse ha senso solo se ottenuti con lo stesso numberOfPairs
-		actual = aggregatedPairUnPack(summedPairs[i], numberOfPairs);
-		next = aggregatedPairUnPack(summedPairs[j], numberOfPairs);
+		actual = aggregatedPairUnPack(aggregatedPairs[i], numberOfPairs);
+		next = aggregatedPairUnPack(aggregatedPairs[j], numberOfPairs);
 		while(compareEqualsAggregatedPairs(actual, next))
 		{
-			summedPairs[i] += next.multiplicity; 
-			summedPairs[j] = INT_MAX; // Will be destroyed by sort&resize
+			aggregatedPairs[i] += next.multiplicity; 
+			aggregatedPairs[j] = INT_MAX; // Will be destroyed by sort&resize
 			countSimilar++; 
 			j++; // next element
-			next = aggregatedPairUnPack(summedPairs[j], numberOfPairs);
+			next = aggregatedPairUnPack(aggregatedPairs[j], numberOfPairs);
 		}
 		i=j;
 
 	}
 	int finalLength = length - countSimilar;
-	sort(summedPairs, length); // Shift Exluded elements to right
-	summedPairs = (int *) realloc(summedPairs, sizeof(int) * finalLength);
+	assert(finalLength > 0);
+	sort(aggregatedPairs, length); // Shift Exluded elements to right
+    int * newDataPointer = (int *) realloc(aggregatedPairs, sizeof(int) * finalLength);
+    if (!newDataPointer){
+        printf("\n\nGROSSO BRUTTO ERRORE D'ALLOCAZIONE");
+    }
+    else
+    {
+        aggregatedPairs = newDataPointer;
+    }
 	return finalLength;
 }
 
-/*	Add to a metaGLCM an array of codified gray pairs
-	After the insertion the same pair, codified with different 
-	multiplicity, will be merged
-*/
-void addElements(struct GLCM * metaGLCM, int * elementsToAdd, int elementsLength)
-{
-	// New total number of elements
-	int newSize = metaGLCM->numberOfPairs + elementsLength;
-
-	// Physical space necessary to embedd actual list and new elements
-	int enlargedLength = metaGLCM->numberOfUniquePairs + elementsLength;
-	
-	// Enlarge actual pair list
-	metaGLCM->elements = (int *) realloc(metaGLCM->elements, sizeof(int) 
-		* enlargedLength);
-	printGLCMData(metaGLCM);
-
-	// Copy the added elements in the new cells
-	for(int i=0; i < elementsLength; i++)
-	{
-		metaGLCM->elements[i + metaGLCM->numberOfUniquePairs] =
-			elementsToAdd[i];
-	}
-	sort(metaGLCM->elements, enlargedLength);
-
-	/*
-	// First, compress identical elements
-	int reducedLength = localCompress(metaGLCM->elements, enlargedLength);
-	metaGLCM->elements = (int *) realloc(metaGLCM->elements, sizeof(int) * reducedLength);
-	metaGLCM->numberOfUniquePairs = reducedLength;
-	printArray(metaGLCM->elements, reducedLength);
-	printGLCMData(metaGLCM);
-	// Second, compress same pair with different multiplicity
-	compressMultiplicity(metaGLCM);
-	metaGLCM->numberOfPairs = newSize; // Change after compression because it determines decodifcation of pairs
-	printMetaGlcm(*metaGLCM);
-	printGLCMData(metaGLCM);
-	*/
-
-}
 
 
 // Reduce the molteplicity into the metaGLCM of elements given
@@ -245,10 +263,10 @@ int codifySummedPairs(const GLCM metaGLCM, int * outputList)
 		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		outputList[i] = (actualPair.grayLevelI + actualPair.grayLevelJ) * metaGLCM.numberOfPairs + actualPair.multiplicity -1;
 	}
-	// Need to compress identical generated elements
+    // Need to compress identical generated elements
 	sort(outputList, metaGLCM.numberOfUniquePairs);
 	int finalLength = compressAggregatedMultiplicity(outputList, metaGLCM.numberOfUniquePairs, metaGLCM.numberOfPairs);
-
+    assert(finalLength > 0);
     std::cout << "\nSummed MetaGLCM: ";
     printAggrregatedMetaGlcm(outputList, finalLength, metaGLCM.numberOfPairs);
 
@@ -271,9 +289,11 @@ int codifySubtractedPairs(const GLCM metaGLCM, int * outputList)
 	// Need to compress identical generated elements
 	sort(outputList, metaGLCM.numberOfUniquePairs);
 	int finalLength = compressAggregatedMultiplicity(outputList, metaGLCM.numberOfUniquePairs, metaGLCM.numberOfPairs);
+    assert(finalLength > 0);
 
 	std::cout << "\nSubtracted MetaGLCM: ";
 	printAggrregatedMetaGlcm(outputList, finalLength, metaGLCM.numberOfPairs);
 
 	return finalLength;
 }
+

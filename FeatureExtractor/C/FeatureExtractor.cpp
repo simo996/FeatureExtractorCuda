@@ -86,6 +86,53 @@ void processMetaGLCM(struct GLCM * metaGLCM, const int * inputPixels)
 	printFeatures(features);
 }
 
+// TEST METHOD
+void computeSomeGLCMs(int * inputPixels, int grayLevel)
+{
+	int windowDimension = 4;
+	// Start Creating the first GLCM
+	// 4x4 0° 1 pixel distanza
+	int distance = 1;
+	int shiftRows = 0;
+	int shiftColumns = 1;
+
+	GLCM glcm0;
+	initializeMetaGLCM(&glcm0, distance, shiftRows, shiftColumns, windowDimension, grayLevel);
+	processMetaGLCM(&glcm0, inputPixels);
+
+	// Start Creating the second GLCM
+	// 4x4 90° 1 pixel distanza
+	distance = 1;
+	shiftRows = -1;
+	shiftColumns = 0;
+
+	GLCM glcm90;
+	initializeMetaGLCM(&glcm90, distance, shiftRows, shiftColumns, windowDimension, grayLevel);
+	processMetaGLCM(&glcm90, inputPixels);
+
+	// Start Creating the third GLCM
+	// 4x4 45° 1 pixel distanza
+	distance = 1;
+	shiftRows = -1;
+	shiftColumns = 1;
+
+	GLCM glcm45;
+	initializeMetaGLCM(&glcm45, distance, shiftRows, shiftColumns, windowDimension, grayLevel);
+	processMetaGLCM(&glcm45, inputPixels);
+
+	/* TODO FIX BORDELLO NELL'HEAP, CHE CAUSA LA MORTE DI QUESTO
+	// Start Creating the third GLCM
+	// 4x4 135° 1 pixel distanza
+	distance = 1;
+	shiftRows = -1;
+	shiftColumns = -1;
+
+	GLCM glcm135;
+	initializeMetaGLCM(&glcm135, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
+	processMetaGLCM(&glcm135, inputPixels);
+	 */
+}
+
 int main(int argc, char const *argv[])
 {
 	Mat imageMatrix; // Matrix representation of the image
@@ -129,43 +176,14 @@ int main(int argc, char const *argv[])
 	int shiftColumns = 1;
 
 	GLCM glcm0;
-	initializeMetaGLCM(&glcm0, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
+	initializeMetaGLCM(&glcm0, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel, false);
 	processMetaGLCM(&glcm0, inputPixels);
 
+	// compute Other GLCMS
 
-	// Start Creating the second GLCM
-	// 4x4 90° 1 pixel distanza
-	distance = 1;
-	shiftRows = -1;
-	shiftColumns = 0;
-
-	GLCM glcm90;
-	initializeMetaGLCM(&glcm90, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
-	processMetaGLCM(&glcm90, inputPixels);
-
-	// Start Creating the third GLCM
-	// 4x4 45° 1 pixel distanza
-	distance = 1;
-	shiftRows = -1;
-	shiftColumns = 1;
-
-	GLCM glcm45;
-	initializeMetaGLCM(&glcm45, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
-	processMetaGLCM(&glcm45, inputPixels);
-
-	/*
-	// Start Creating the third GLCM
-	// 4x4 135° 1 pixel distanza
-	distance = 1;
-	shiftRows = -1;
-	shiftColumns = -1;
-
-	GLCM glcm135;
-	initializeMetaGLCM(&glcm135, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
-	processMetaGLCM(&glcm135, inputPixels);
 
 	
-	*/
+
 	return 0;
 }
 

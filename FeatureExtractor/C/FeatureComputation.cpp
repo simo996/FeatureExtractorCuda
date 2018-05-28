@@ -463,5 +463,6 @@ void printFeatures(double * features)
 
 	cout << "DIFF ENTROPY: \t" << features[15] << endl;
 	cout << "DIFF VARIANCE: \t" << features[16] << endl;
+    cout << endl;
 
 }
