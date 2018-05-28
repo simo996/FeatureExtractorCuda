@@ -70,6 +70,22 @@ void readFile(const char *filename, int *dataOut)
 	}
 }
 
+void processMetaGLCM(struct GLCM * metaGLCM, const int * inputPixels)
+{
+	initializeMetaGLCMElements(metaGLCM, inputPixels);
+
+	// See metadata
+	cout << "\nMetadata on GLCM" ;
+	printGLCMData(*metaGLCM);
+	// See the output
+	cout << "\nCodified metaGlcm";
+	printMetaGlcm(*metaGLCM);
+
+	double features[17];
+	computeFeatures(features,*metaGLCM);
+	printFeatures(features);
+}
+
 int main(int argc, char const *argv[])
 {
 	Mat imageMatrix; // Matrix representation of the image
@@ -112,25 +128,44 @@ int main(int argc, char const *argv[])
 	int shiftRows = 0;
 	int shiftColumns = 1;
 
-	GLCM glcm0x0;
-	initializeMetaGLCM(&glcm0x0, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
-	initializeMetaGLCMElements(&glcm0x0, inputPixels);
+	GLCM glcm0;
+	initializeMetaGLCM(&glcm0, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
+	processMetaGLCM(&glcm0, inputPixels);
 
-	// See metadata
-	cout << "\nMetadata on GLCM" ;
-	printGLCMData(glcm0x0);
-	// See the output
-	cout << "\nCodified metaGlcm";
-	printMetaGlcm(glcm0x0);
+
+	// Start Creating the second GLCM
+	// 4x4 90° 1 pixel distanza
+	distance = 1;
+	shiftRows = -1;
+	shiftColumns = 0;
+
+	GLCM glcm90;
+	initializeMetaGLCM(&glcm90, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
+	processMetaGLCM(&glcm90, inputPixels);
+
+	// Start Creating the third GLCM
+	// 4x4 45° 1 pixel distanza
+	distance = 1;
+	shiftRows = -1;
+	shiftColumns = 1;
+
+	GLCM glcm45;
+	initializeMetaGLCM(&glcm45, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
+	processMetaGLCM(&glcm45, inputPixels);
 
 	/*
-	Add elements into an existing GLCM
-	int sample[4]={48, 144, 122, 121};
-	addElements(&glcm0x0, sample, 4);
-	*/ 
-	double features[17];
-	computeFeatures(features,glcm0x0);
-	printFeatures(features);	
+	// Start Creating the third GLCM
+	// 4x4 135° 1 pixel distanza
+	distance = 1;
+	shiftRows = -1;
+	shiftColumns = -1;
+
+	GLCM glcm135;
+	initializeMetaGLCM(&glcm135, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
+	processMetaGLCM(&glcm135, inputPixels);
+
+	
+	*/
 	return 0;
 }
 
