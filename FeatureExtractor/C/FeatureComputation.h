@@ -14,7 +14,7 @@ double computeContrast(const struct GLCM metaGLCM);
 double computeInverceDifferentMomentNormalized(const struct GLCM metaGLCM);
 
 double computeCorrelation(const struct GLCM metaGLCM, const double muX, const double muY, const double sigmaX, const double sigmaY);
-double computeClusterProminecence(const struct GLCM metaGLCM, const double muX, const double muY);
+double computeClusterProminence(const struct GLCM metaGLCM, const double muX, const double muY);
 double computeClusterShade(const struct GLCM metaGLCM, const double muX, const double muY);
 double computeSumOfSquares(const struct GLCM metaGLCM, const double mu);
 

@@ -179,7 +179,7 @@ double computeCorrelation(const struct GLCM metaGLCM, const double muX, const do
 	return result;
 }
 
-double computeClusterProminecence(const struct GLCM metaGLCM, const double muX, const double muY)
+double computeClusterProminence(const struct GLCM metaGLCM, const double muX, const double muY)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -419,7 +419,7 @@ void computeFeatures(double * output, const struct GLCM metaGLCM)
 	sigmaY = computeSigmaY(metaGLCM, muY);
 
 	output[7]= computeCorrelation(metaGLCM, muX, muY, sigmaX, sigmaY);
-	output[8]= computeClusterProminecence(metaGLCM, muX, muY);
+	output[8]= computeClusterProminence(metaGLCM, muX, muY);
 	output[9]= computeClusterShade(metaGLCM, muX, muY);
 	output[10]= computeSumOfSquares(metaGLCM, mu); // Fixare MU
 	output[11]= computeInverceDifferentMomentNormalized(metaGLCM); // CIRCA GIUSTO? Impreciso
@@ -452,7 +452,7 @@ void printFeatures(double * features)
 	cout << "DISSIMILARITY: \t" << features[6] << endl;
 
 	cout << "CORRELATION: \t" << features[7] << endl;
-	cout << "CLUSTER PROMINECENCE: \t" << features[8] << endl;
+	cout << "CLUSTER Prominence: \t" << features[8] << endl;
 	cout << "CLUSTER SHADE: \t" << features[9] << endl;
 	cout << "SUM OF SQUARES: \t" << features[10] << endl;
 	cout << "IDM normalized: \t" << features[11] << endl;
