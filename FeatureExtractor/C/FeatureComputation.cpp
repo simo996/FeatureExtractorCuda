@@ -318,6 +318,7 @@ double computeDifferenceVariance(const int * aggregatedMetaGLCM, const int lengt
 
 
 // Mean of all probabilities
+// Same implementation of Autocorrelation
 double computeMean(const struct GLCM metaGLCM)
 {
 	double mu = 0;
@@ -368,6 +369,7 @@ double computeMuY(const struct GLCM metaGLCM)
 	return muY;
 }
 
+// Variance of (i,*)
 double computeSigmaX(const struct GLCM metaGLCM, const double muX)
 {
 	double sigmaX = 0;
@@ -385,6 +387,7 @@ double computeSigmaX(const struct GLCM metaGLCM, const double muX)
 	return sqrt(sigmaX);
 }
 
+// Variance of (*,i)
 double computeSigmaY(const struct GLCM metaGLCM, const double muY)
 {
 	double sigmaY = 0;
@@ -406,7 +409,7 @@ double computeSigmaY(const struct GLCM metaGLCM, const double muY)
 void computeFeatures(double * output, const struct GLCM metaGLCM)
 {
 	output[0]= computeASM(metaGLCM);
-	output[1]= computeAutocorrelation(metaGLCM); // FIXARE
+	output[1]= computeAutocorrelation(metaGLCM); 
 	output[2]= computeEntropy(metaGLCM);
 	output[3]= computeMaximumProbability(metaGLCM);
 	output[4]= computeHomogeneity(metaGLCM);
@@ -414,7 +417,7 @@ void computeFeatures(double * output, const struct GLCM metaGLCM)
 	output[6]= computeDissimilarity(metaGLCM);
 
 	double muX, muY, mu, sigmaX, sigmaY;
-	mu = computeMean(metaGLCM); // FIXARE
+	mu = computeMean(metaGLCM); 
 	muX = computeMuX(metaGLCM);
 	muY = computeMuY(metaGLCM);
 	sigmaX = computeSigmaX(metaGLCM, muX);
@@ -423,14 +426,14 @@ void computeFeatures(double * output, const struct GLCM metaGLCM)
 	output[7]= computeCorrelation(metaGLCM, muX, muY, sigmaX, sigmaY);
 	output[8]= computeClusterProminence(metaGLCM, muX, muY);
 	output[9]= computeClusterShade(metaGLCM, muX, muY);
-	output[10]= computeSumOfSquares(metaGLCM, mu); // Fixare MU
+	output[10]= computeSumOfSquares(metaGLCM, mu); 
 	output[11]= computeInverceDifferentMomentNormalized(metaGLCM); // CIRCA GIUSTO? Impreciso
 
 	int * summedPairs =  (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
 	int summedPairsLength = codifySummedPairs(metaGLCM, summedPairs);
-	output[12]= computeSumAverage(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs); // ERRORE
+	output[12]= computeSumAverage(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs); // giusto ?
 	output[13]= computeSumEntropy(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs); // OK
-	output[14]= computeSumVariance(summedPairs, summedPairsLength, metaGLCM.numberOfPairs, output[12]); // ERRORE
+	output[14]= computeSumVariance(summedPairs, summedPairsLength, metaGLCM.numberOfPairs, output[12]); // giusto ?
 	free(summedPairs);
 
 	int * subtractredPairs = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
@@ -439,6 +442,10 @@ void computeFeatures(double * output, const struct GLCM metaGLCM)
 	output[16]= computeDifferenceVariance(subtractredPairs, subtractedPairsLength, metaGLCM.numberOfPairs);
 	free(subtractredPairs);
 	
+	// given pair <x,y> will compute <x,*> and <*,x> marginal probabilities
+	int * xMarginalProbabilities = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
+
+	int * yMarginalProbabilities = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
 }
 
 
