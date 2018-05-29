@@ -73,7 +73,6 @@ struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int s
 {
 	GLCM output;
 	initializeMetaGLCM(&output, distance, shiftX, shiftY, windowDimension, grayLevel, false);
-<<<<<<< HEAD
 	return output;
 }
 
@@ -85,19 +84,6 @@ struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int s
 	return output;
 }
 
-=======
-	return output;
-}
-
-// Explicit struct version
-struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel, bool simmetric)
-{
-	GLCM output;
-	initializeMetaGLCM(&output, distance, shiftX, shiftY, windowDimension, grayLevel, simmetric);
-	return output;
-}
-
->>>>>>> e1d9826bc5e8fe12062720d0cd74c0580105ff13
 // Implicit pointer version
 void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel)
 {
@@ -244,14 +230,14 @@ int compressAggregatedMultiplicity(int * aggregatedPairs, int length, const int 
 	int finalLength = length - countSimilar;
 	assert(finalLength > 0);
 	sort(aggregatedPairs, length); // Shift Exluded elements to right
-    int * newDataPointer = (int *) realloc(aggregatedPairs, sizeof(int) * finalLength);
-    if (!newDataPointer){
-        printf("\n\nGROSSO BRUTTO ERRORE D'ALLOCAZIONE");
-    }
-    else
-    {
-        aggregatedPairs = newDataPointer;
-    }
+	int * newDataPointer = (int *) realloc(aggregatedPairs, sizeof(int) * finalLength);
+	if (!newDataPointer){
+		printf("\n\nGROSSO BRUTTO ERRORE D'ALLOCAZIONE");
+	}
+	else
+	{
+		aggregatedPairs = newDataPointer;
+	}
 	return finalLength;
 }
 
@@ -277,12 +263,12 @@ int codifySummedPairs(const GLCM metaGLCM, int * outputList)
 		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		outputList[i] = (actualPair.grayLevelI + actualPair.grayLevelJ) * metaGLCM.numberOfPairs + actualPair.multiplicity -1;
 	}
-    // Need to compress identical generated elements
+	// Need to compress identical generated elements
 	sort(outputList, metaGLCM.numberOfUniquePairs);
 	int finalLength = compressAggregatedMultiplicity(outputList, metaGLCM.numberOfUniquePairs, metaGLCM.numberOfPairs);
-    assert(finalLength > 0);
-    std::cout << "\nSummed MetaGLCM: ";
-    printAggrregatedMetaGlcm(outputList, finalLength, metaGLCM.numberOfPairs);
+	assert(finalLength > 0);
+	std::cout << "\nSummed MetaGLCM: ";
+	printAggrregatedMetaGlcm(outputList, finalLength, metaGLCM.numberOfPairs);
 
 	return finalLength;
 }
@@ -303,7 +289,7 @@ int codifySubtractedPairs(const GLCM metaGLCM, int * outputList)
 	// Need to compress identical generated elements
 	sort(outputList, metaGLCM.numberOfUniquePairs);
 	int finalLength = compressAggregatedMultiplicity(outputList, metaGLCM.numberOfUniquePairs, metaGLCM.numberOfPairs);
-    assert(finalLength > 0);
+	assert(finalLength > 0);
 
 	std::cout << "\nSubtracted MetaGLCM: ";
 	printAggrregatedMetaGlcm(outputList, finalLength, metaGLCM.numberOfPairs);

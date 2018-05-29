@@ -23,6 +23,7 @@ double computeASM(const struct GLCM metaGLCM)
 	{
 		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
+
 		result += pow((actualPairProbability),2);
 	}
 
@@ -40,7 +41,7 @@ double computeAutocorrelation(const struct GLCM metaGLCM)
 		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
-		result += (actualPair.grayLevelI * actualPair. grayLevelJ * actualPairProbability);
+		result += ((actualPair.grayLevelI) * (actualPair. grayLevelJ) * actualPairProbability);
 	}
 	return result;
 }
@@ -328,12 +329,12 @@ double computeMean(const struct GLCM metaGLCM)
 		actualPair = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
-		mu += actualPairProbability;
+		mu += (actualPair.grayLevelI) * (actualPair.grayLevelJ) * actualPairProbability;
 	}
-	return mu; // VA DIVISO PER QUALCOSA, SE NO E' 1 COME SOMMA DI TUTTE LE PROBABILITA'
+	return mu;
 }
 
-// Mean of
+// Mean of (i,*)
 double computeMuX(const struct GLCM metaGLCM)
 {
 	double muX = 0;
@@ -350,6 +351,7 @@ double computeMuX(const struct GLCM metaGLCM)
 	return muX;
 }
 
+// Mean of (*,i)
 double computeMuY(const struct GLCM metaGLCM)
 {
 	double muY = 0;
