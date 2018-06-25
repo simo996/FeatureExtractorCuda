@@ -105,7 +105,6 @@ double computeHomogeneity(const struct GLCM metaGLCM)
 	return result;
 }
 
-
 double computeContrast(const struct GLCM metaGLCM)
 {
 	double result = 0;
@@ -142,7 +141,7 @@ double computeDissimilarity(const struct GLCM metaGLCM)
 	return result;
 }
 
-double computeInverceDifferentMomentNormalized(const struct GLCM metaGLCM)
+double computeInverceDifferentMoment(const struct GLCM metaGLCM)
 {
 	double result = 0;
 	GrayPair actualPair;
@@ -154,7 +153,7 @@ double computeInverceDifferentMomentNormalized(const struct GLCM metaGLCM)
 		actualPairProbability = ((double) actualPair.multiplicity)/metaGLCM.numberOfPairs;
 
 		result += actualPairProbability /
-							 (1 + (pow((actualPair.grayLevelI - actualPair.grayLevelJ),2))/metaGLCM.maxGrayLevel);
+							 (1 + fabs(actualPair.grayLevelI - actualPair.grayLevelJ)/metaGLCM.maxGrayLevel);
 	}
 
 	return result;
@@ -427,7 +426,7 @@ void computeFeatures(double * output, const struct GLCM metaGLCM)
 	output[8]= computeClusterProminence(metaGLCM, muX, muY);
 	output[9]= computeClusterShade(metaGLCM, muX, muY);
 	output[10]= computeSumOfSquares(metaGLCM, mu); 
-	output[11]= computeInverceDifferentMomentNormalized(metaGLCM); // CIRCA GIUSTO? Impreciso
+	output[11]= computeInverceDifferentMoment(metaGLCM); 
 
 	int * summedPairs =  (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
 	int summedPairsLength = codifySummedPairs(metaGLCM, summedPairs);

@@ -11,7 +11,7 @@ double computeEntropy(const struct GLCM metaGLCM);
 double computeMaximumProbability(const struct GLCM metaGLCM);
 double computeHomogeneity(const struct GLCM metaGLCM);
 double computeContrast(const struct GLCM metaGLCM);
-double computeInverceDifferentMomentNormalized(const struct GLCM metaGLCM);
+double computeInverceDifferentMoment(const struct GLCM metaGLCM);
 
 double computeCorrelation(const struct GLCM metaGLCM, const double muX, const double muY, const double sigmaX, const double sigmaY);
 double computeClusterProminence(const struct GLCM metaGLCM, const double muX, const double muY);
