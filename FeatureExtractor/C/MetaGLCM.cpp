@@ -87,8 +87,7 @@ struct GLCM initializeMetaGLCM(const int distance, const int shiftX, const int s
 // Implicit pointer version
 void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const int shiftY, const int windowDimension, const int grayLevel)
 {
-	initializeMetaGLCM(glcm, distance, shiftX, shiftY, windowDimension, grayLevel,
-		false); // DEFAULT = ASIMMETRIC
+	initializeMetaGLCM(glcm, distance, shiftX, shiftY, windowDimension, grayLevel, false); // DEFAULT = ASIMMETRIC
 }
 
 // Explicit pointer version
@@ -111,7 +110,6 @@ void initializeMetaGLCM(GLCM * glcm, const int distance, const int shiftX, const
 // From a linearized vector of every pixel pair and an initialized GLCM
 // it will generate the minimal representation of the MetaGLCM
 
-
 void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs)
 {
 	// Allocate space for every different pair
@@ -126,8 +124,7 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs)
 	{
 		actualNumberOfPairs = metaGLCM->numberOfPairs;
 	}
-	int * codifiedMatrix = (int *) malloc(sizeof(int) * actualNumberOfPairs);
-	
+	int * codifiedMatrix = new int[actualNumberOfPairs];
 	int k = 0;
 	int referenceGrayLevel;
 	int neighborGrayLevel;
@@ -139,19 +136,23 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs)
 	int initialRowOffset = 1; // for 45°,90°,135°
 	if((metaGLCM->shiftRows == 0) && (metaGLCM->shiftColumns > 0))
 		initialRowOffset = 0; // for 0°
-	//std::cout << "DEBUG -\tRowOffset: " << initialRowOffset << "\tColOffset: " << initialColumnOffset;
+    printf("IRO: %d",initialRowOffset);
+    printf("\tICO: %d\n",initialColumnOffset);
+
 	// Codify every single pair
 	for (int i = 0; i < metaGLCM->borderRows ; i++)
 	{
 		for (int j = 0; j < metaGLCM->borderColumns; j++)
 		{
 			// Extract the two pixels in the pair
-			referenceGrayLevel = pixelPairs [((i + initialRowOffset) * metaGLCM->windowDimension) + (j + initialColumnOffset)];
-			neighborGrayLevel = pixelPairs [((i + initialRowOffset) + metaGLCM->shiftRows) * metaGLCM->windowDimension + (j + initialColumnOffset + metaGLCM->shiftColumns)];
-
-			codifiedMatrix[k] = (((referenceGrayLevel * metaGLCM->maxGrayLevel) + 
-				neighborGrayLevel) * (metaGLCM->numberOfPairs)) ;
-			if(metaGLCM->simmetric)
+			int referenceIndex = ((i + initialRowOffset) * metaGLCM->windowDimension) + (j + initialColumnOffset); 
+            referenceGrayLevel = pixelPairs[referenceIndex];
+            assert(referenceIndex >= 0);
+            int neighborIndex = (i * metaGLCM->windowDimension) + (j + initialColumnOffset + metaGLCM->shiftColumns);
+            assert(neighborIndex >= 0);
+            neighborGrayLevel = pixelPairs[neighborIndex];
+			codifiedMatrix[k] = (((referenceGrayLevel * metaGLCM->maxGrayLevel) + neighborGrayLevel) * (metaGLCM->numberOfPairs));
+            if(metaGLCM->simmetric) // Create the simmetric counterpart
 			{
 				codifiedMatrix[k+1] = (((neighborGrayLevel * metaGLCM->maxGrayLevel) + 
 					referenceGrayLevel) * (metaGLCM->numberOfPairs)) ;
@@ -162,14 +163,14 @@ void initializeMetaGLCMElements(struct GLCM * metaGLCM, const int * pixelPairs)
 	}
 	sort(codifiedMatrix, actualNumberOfPairs);
 	int finalLength = localCompress(codifiedMatrix, actualNumberOfPairs);
-	assert(finalLength > 0);
-	codifiedMatrix = (int *) realloc(codifiedMatrix, sizeof(int) * finalLength);
-	metaGLCM->elements = codifiedMatrix;
-	if(metaGLCM->elements == NULL){
-		fprintf(stderr, "Couldn't Realloc the array while codifying\n");
-		exit(-1);
-	}
-	metaGLCM->numberOfUniquePairs = finalLength;
+    assert(finalLength > 0);
+    codifiedMatrix = (int *) realloc(codifiedMatrix, sizeof(int) * finalLength);
+    metaGLCM->elements = codifiedMatrix;
+    if(metaGLCM->elements == NULL){
+        fprintf(stderr, "Couldn't Realloc the array while codifying\n");
+        exit(-1);
+    }
+    metaGLCM->numberOfUniquePairs = finalLength;
 }
 
 /* 
@@ -297,3 +298,42 @@ int codifySubtractedPairs(const GLCM metaGLCM, int * outputList)
 	return finalLength;
 }
 
+/* 
+	Given a codified metaGLCM, will compute <x,*> marginal probabilities
+	The elements will be put, in order, into outputList
+	The elements will be codified as (grayLevel + occurrences)
+*/
+int codifyXMarginalProbabilities(const GLCM metaGLCM, int * outputList)
+{
+
+	double grayLevelOccurrences = 0;
+	GrayPair actual, next;
+
+	int countSimilar = 0, i=0 ,j=0, k=0; 
+
+	while(i < metaGLCM.numberOfUniquePairs)
+	{
+		j=i+1;
+		actual = unPack(metaGLCM.elements[i], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
+		grayLevelOccurrences += actual.multiplicity; 
+
+		next = unPack(metaGLCM.elements[j], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
+		while(actual.grayLevelI == next.grayLevelI)
+		{
+			grayLevelOccurrences += next.multiplicity; 
+			countSimilar++; 
+			j++; // next element
+			next = unPack(metaGLCM.elements[j], metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
+		}
+		// WARNING maxGraylevel deve essere > numberOfPairs
+        // Altrimenti i livelli di grigio non sono sufficientemente distanziati
+        printPair(actual, metaGLCM.numberOfPairs, metaGLCM.maxGrayLevel);
+		outputList[i] = (actual.grayLevelI) * metaGLCM.maxGrayLevel
+		 + grayLevelOccurrences;
+		k++; // how many elements are produced
+		i=j;
+		grayLevelOccurrences = 0;
+
+	}
+	return k;
+}
