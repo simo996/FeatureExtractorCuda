@@ -10,6 +10,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <iostream>
+#include <cstdio>
 
 using namespace std;
 
@@ -428,23 +429,24 @@ void computeFeatures(double * output, const struct GLCM metaGLCM)
 	output[10]= computeSumOfSquares(metaGLCM, mu); 
 	output[11]= computeInverceDifferentMoment(metaGLCM); 
 
-	int * summedPairs =  (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
+	int * summedPairs =  new int[metaGLCM.numberOfUniquePairs];
 	int summedPairsLength = codifySummedPairs(metaGLCM, summedPairs);
 	output[12]= computeSumAverage(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs); // giusto ?
 	output[13]= computeSumEntropy(summedPairs, summedPairsLength,  metaGLCM.numberOfPairs); // OK
 	output[14]= computeSumVariance(summedPairs, summedPairsLength, metaGLCM.numberOfPairs, output[12]); // giusto ?
-	free(summedPairs);
+	delete []summedPairs;
 
-	int * subtractredPairs = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
+	int * subtractredPairs = new int[metaGLCM.numberOfUniquePairs];
 	int subtractedPairsLength = codifySubtractedPairs(metaGLCM, subtractredPairs);
 	output[15]= computeDifferenceEntropy(subtractredPairs, subtractedPairsLength, metaGLCM.numberOfPairs);
 	output[16]= computeDifferenceVariance(subtractredPairs, subtractedPairsLength, metaGLCM.numberOfPairs);
-	free(subtractredPairs);
+	delete []subtractredPairs;
 	
 	// given pair <x,y> will compute <x,*> and <*,x> marginal probabilities
-	int * xMarginalProbabilities = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
+	/*int * xMarginalProbabilities = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
 
 	int * yMarginalProbabilities = (int *) malloc(sizeof(int) * metaGLCM.numberOfUniquePairs);
+	 */
 }
 
 

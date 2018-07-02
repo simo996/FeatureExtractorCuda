@@ -90,9 +90,10 @@ void processMetaGLCM(struct GLCM * metaGLCM, const int * inputPixels)
 void computeSomeGLCMs(int * inputPixels, int grayLevel)
 {
 	int windowDimension = 4;
+	int distance = 1;
+	
 	// Start Creating the first GLCM
 	// 4x4 0° 1 pixel distanza
-	int distance = 1;
 	int shiftRows = 0;
 	int shiftColumns = 1;
 
@@ -102,7 +103,6 @@ void computeSomeGLCMs(int * inputPixels, int grayLevel)
 
 	// Start Creating the second GLCM
 	// 4x4 90° 1 pixel distanza
-	distance = 1;
 	shiftRows = -1;
 	shiftColumns = 0;
 
@@ -112,7 +112,6 @@ void computeSomeGLCMs(int * inputPixels, int grayLevel)
 
 	// Start Creating the third GLCM
 	// 4x4 45° 1 pixel distanza
-	distance = 1;
 	shiftRows = -1;
 	shiftColumns = 1;
 
@@ -123,14 +122,13 @@ void computeSomeGLCMs(int * inputPixels, int grayLevel)
 	/* TODO FIX BORDELLO NELL'HEAP, CHE CAUSA LA MORTE DI QUESTO
 	// Start Creating the third GLCM
 	// 4x4 135° 1 pixel distanza
-	distance = 1;
 	shiftRows = -1;
 	shiftColumns = -1;
 
 	GLCM glcm135;
-	initializeMetaGLCM(&glcm135, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
+	initializeMetaGLCM(&glcm135, distance, shiftRows, shiftColumns, windowDimension, grayLevel);
 	processMetaGLCM(&glcm135, inputPixels);
-	 */
+    */
 }
 
 int main(int argc, char const *argv[])
@@ -169,20 +167,29 @@ int main(int argc, char const *argv[])
 		}
 		cout << endl;
 	}
-	// Start Creating the first GLCM
-	// 4x4 0° 1 pixel distanza
+
+	// 4x4 135° 1 pixel distanza
 	int distance = 1;
-	int shiftRows = 0;
-	int shiftColumns = 1;
+	int shiftRows = -1;
+	int shiftColumns = -1;
 
-	GLCM glcm0;
-	initializeMetaGLCM(&glcm0, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel, false);
-	processMetaGLCM(&glcm0, inputPixels);
+	/*
+	GLCM glcm135;
+	initializeMetaGLCM(&glcm135, distance, shiftRows, shiftColumns, windowDimension, imgData.grayLevel);
+    initializeMetaGLCMElements(&glcm135, inputPixels);
+    cout << "\nMetadata on GLCM" ;
+    printGLCMData(&glcm135);
+    // See the output
+    cout << "\nCodified metaGlcm";
+    printMetaGlcm(glcm135);
 
+    double features[17];
+    computeFeatures(features, glcm135);
+    printFeatures(features);
+
+    */
 	// compute Other GLCMS
-
-
-	
+	computeSomeGLCMs(inputPixels, imgData.grayLevel);
 
 	return 0;
 }
