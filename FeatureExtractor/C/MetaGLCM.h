@@ -43,6 +43,9 @@ int compressAggregatedMultiplicity(int * summedPairs, int length, const int numb
 int codifySummedPairs(const GLCM metaGLCM, int * outputList);
 int codifySubtractedPairs(const GLCM metaGLCM, int * outputList);
 
+int codifyXMarginalProbabilities(const GLCM metaGLCM, int * outputList);
+int codifyYMarginalProbabilities(const GLCM metaGLCM, int * outputList);
+
 // Senza senso ne implementazione
 void compressMultiplicity(struct GLCM * metaGLCM);
 void addElements(struct GLCM * metaGLCM, int * elementsToAdd, int elementsLength);
