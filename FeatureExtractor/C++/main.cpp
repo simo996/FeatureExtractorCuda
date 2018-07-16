@@ -4,6 +4,7 @@
 #include "GrayPair.h"
 #include "GLCM.h"
 #include "WindowFeatureComputer.h"
+#include "FeatureComputer.h"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
@@ -42,14 +43,8 @@ int main() {
     int shiftRows = 0;
     int shiftColumns = 1;
 
-    GLCM glcm0(distance, shiftRows, shiftColumns, windowDimension, maxGrayLevel);
-    glcm0.printGLCMData();
-    glcm0.initializeElements(inputPixels);
-    glcm0.printGLCMElements();
-    glcm0.printAggregated();
+    FeatureComputer fc0(inputPixels, distance, shiftRows, shiftColumns, windowDimension, maxGrayLevel);
+    fc0.computeFeatures();
 
-    WindowFeatureComputer wfc;
-    map<string, double> features = wfc.computeFeatures(glcm0);
-    wfc.printFeatures(features);
     return 0;
 }
