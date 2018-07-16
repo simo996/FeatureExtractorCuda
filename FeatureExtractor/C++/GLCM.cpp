@@ -129,7 +129,8 @@ map<AggregatedGrayPair, int> GLCM::codifySummedPairs() const{
     {
         int k= mi->first.getGrayLevelI() + mi->first.getGrayLevelJ();
         AggregatedGrayPair element(k);
-        aggregatedPairs[element]+=1;
+
+        aggregatedPairs[element]+=mi->second;
     }
     return aggregatedPairs;
 }
@@ -141,7 +142,8 @@ map<AggregatedGrayPair, int> GLCM::codifySubtractedPairs() const{
     {
         int k= abs(mi->first.getGrayLevelI() - mi->first.getGrayLevelJ());
         AggregatedGrayPair element(k);
-        aggregatedPairs[element]+=1;
+
+        aggregatedPairs[element]+=mi->second;
     }
     return aggregatedPairs;
 }
