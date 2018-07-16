@@ -120,7 +120,7 @@ double WindowFeatureComputer::computeEntropy(const  GLCM& metaGLCM)
         result += actualPairProbability * log(actualPairProbability);
     }
 
-    return result;
+    return (-1 * result);
 }
 
 double WindowFeatureComputer::computeMaximumProbability(const  GLCM& metaGLCM)
