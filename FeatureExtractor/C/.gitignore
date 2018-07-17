@@ -1,5 +1,6 @@
 CMakeFiles/
 testImages/
+.idea/
 FeaturesExtractor
 testMatrix.tif
 Makefile
@@ -7,4 +8,6 @@ CMakeCache.txt
 CMakeLists.txt
 cmake_install.cmake
 results.txt
-TODO.txt
+TODO.md
+tempResult.txt
+tempResult2.txt
