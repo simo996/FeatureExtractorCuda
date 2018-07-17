@@ -68,8 +68,12 @@ void GLCM::printGLCMElements() const{
     }
 }
 
-
-int GLCM::computeColumnOffset()
+/*
+    columnOffset is a shift value used for reading the correct batch of elements
+    from given linearized input pixels; for 135° the first d (distance) elements 
+    need to be ignored
+*/
+inline int GLCM::computeColumnOffset()
 {
     int initialColumnOffset = 0; // for 0°,45°,90°
     if((shiftRows * shiftColumns) > 0) // 135°
@@ -77,7 +81,12 @@ int GLCM::computeColumnOffset()
     return initialColumnOffset;
 }
 
-int GLCM::computeRowOffset()
+/*
+    rowOffset is a shift value used for reading the correct batch of elements
+    from given linearized input pixels according to the direction in use; 
+    45/90/135° must skip d (distance) "rows"
+*/
+inline int GLCM::computeRowOffset()
 {
     int initialRowOffset = 1; // for 45°,90°,135°
     if((shiftRows == 0) && (shiftColumns > 0))
@@ -85,7 +94,25 @@ int GLCM::computeRowOffset()
     return initialRowOffset;
 }
 
+// addressing method for reference pixel; see documentation
+inline int getReferenceIndex(const int i, const int j, const int windowDimension, const int initialRowOffset,
+                      const int initialColumnOffset){
+    int index = ((i + initialRowOffset) * windowDimension) + (j + initialColumnOffset);
+    assert(index >= 0);
+    return index;
+}
 
+// addressing method for neighbor pixel; see documentation
+inline int getNeighborIndex(const int i, const int j, const int windowDimension,
+                     const int initialColumnOffset, const int shiftColumns){
+    int index = (i * windowDimension) + (j + initialColumnOffset + shiftColumns);
+    assert(index >= 0);
+    return index;
+}
+/*
+    This method puts inside the map of elements map<GrayPair, int> each 
+    frequency associated with each pair of grayLevels
+*/
 void GLCM::initializeElements(const vector<int>& inputPixels) {
     // Define subBorders offset depending on orientation
     int initialColumnOffset = computeColumnOffset();
@@ -98,16 +125,13 @@ void GLCM::initializeElements(const vector<int>& inputPixels) {
         for (int j = 0; j < getBorderColumns(); j++)
         {
             // Extract the two pixels in the pair
-                    // TODO extract addressing function
-            int referenceIndex = ((i + initialRowOffset) * windowDimension) + (j + initialColumnOffset);
+            int referenceIndex = getReferenceIndex(i, j, windowDimension, initialRowOffset, initialColumnOffset);
             referenceGrayLevel = inputPixels[referenceIndex];
-            assert(referenceIndex >= 0);
-            int neighborIndex = (i * windowDimension) + (j + initialColumnOffset + shiftColumns);
-            assert(neighborIndex >= 0);
+            int neighborIndex = getNeighborIndex(i, j, windowDimension, initialColumnOffset, shiftColumns);
             neighborGrayLevel = inputPixels[neighborIndex];
-            
+
             GrayPair actualPair(referenceGrayLevel, neighborGrayLevel);
-            grayPairsMap[actualPair]+=1;
+            grayPairsMap[actualPair] += 1;
             if(simmetric) // Create the simmetric counterpart
             {
                 GrayPair simmetricPair(neighborGrayLevel, referenceGrayLevel);
@@ -119,10 +143,15 @@ void GLCM::initializeElements(const vector<int>& inputPixels) {
 
 }
 
-// AGGREGATED representatio for sum and difference
+/*
+    This method, given the map<GrayPair, int freq> will produce 
+    map<int k, int freq> where k is the sum of both grayLevels of the GrayPair.
+    This representation is used in computeSumXXX() features
+*/
 map<AggregatedGrayPair, int> GLCM::codifySummedPairs() const{
-    typedef map<GrayPair, int>::const_iterator MapIterator;
     map<AggregatedGrayPair, int> aggregatedPairs;
+    
+    typedef map<GrayPair, int>::const_iterator MapIterator;
     for(MapIterator mi=grayPairsMap.begin(); mi!=grayPairsMap.end(); mi++)
     {
         int k= mi->first.getGrayLevelI() + mi->first.getGrayLevelJ();
@@ -133,9 +162,16 @@ map<AggregatedGrayPair, int> GLCM::codifySummedPairs() const{
     return aggregatedPairs;
 }
 
+/*
+    This method, given the map<GrayPair, int freq> will produce 
+    map<int k, int freq> where k is the absolute difference of both grayLevels
+    of the GrayPair.
+    This representation is used in computeDiffXXX() features
+*/
 map<AggregatedGrayPair, int> GLCM::codifySubtractedPairs() const{
-    typedef map<GrayPair, int>::const_iterator MapIterator;
     map<AggregatedGrayPair, int> aggregatedPairs;
+    
+    typedef map<GrayPair, int>::const_iterator MapIterator;
     for(MapIterator mi=grayPairsMap.begin(); mi!=grayPairsMap.end(); mi++)
     {
         int k= abs(mi->first.getGrayLevelI() - mi->first.getGrayLevelJ());
@@ -151,7 +187,6 @@ void GLCM::printAggregated() const{
     printGLCMAggregatedElements(codifySubtractedPairs(), false);
 }
 
-// Metodo statico ?
 void GLCM::printGLCMAggregatedElements(map<AggregatedGrayPair, int> input, bool areSummed) const{
     cout << endl;
     if(areSummed)
@@ -166,7 +201,13 @@ void GLCM::printGLCMAggregatedElements(map<AggregatedGrayPair, int> input, bool 
     }
 }
 
-// compute marginal frequency f(x)=sum(GrayPair<x, qualunque>)
+/*
+    This method, given the map<GrayPair, int freq> will produce 
+    map<int k, int freq> where k is the REFERENCE grayLevel of the GrayPair 
+    while freq is the "marginal" frequency of that level 
+    (ie. how many times k is present in all GrayPair<k, ?>)
+    This representation is used for computing features HX, HXY, HXY1, imoc
+*/
 map<int, int> GLCM::codifyXMarginalProbabilities() const{
     map<int, int> xMarginalPairs;
 
@@ -182,7 +223,13 @@ map<int, int> GLCM::codifyXMarginalProbabilities() const{
     return xMarginalPairs;
 }
 
-// compute marginal frequency f(y)=sum(GrayPair<qualunque, y>)
+/*
+    This method, given the map<GrayPair, int freq> will produce 
+    map<int k, int freq> where k is the NEIGHBOR grayLevel of the GrayPair 
+    while freq is the "marginal" frequency of that level 
+    (ie. how many times k is present in all GrayPair<?, k>)
+    This representation is used for computing features HX, HXY, HXY1, imoc
+*/
 map<int, int> GLCM::codifyYMarginalProbabilities() const{
     map<int, int> yMarginalPairs;
     

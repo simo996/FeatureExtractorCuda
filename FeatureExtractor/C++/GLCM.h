@@ -38,6 +38,7 @@ public:
     static void printMarginalProbability(map<int, int> marginalProb, char symbol);
 
     private:
+    // TODO think about encapsulating in a struct initialization data
     int maxGrayLevel;
     int numberOfPairs;
     int distance; // modulo tra reference e neighbor
