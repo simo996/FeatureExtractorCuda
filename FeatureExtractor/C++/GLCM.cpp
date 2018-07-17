@@ -12,8 +12,6 @@
 using namespace std;
 
 // Constructors
-
-
 GLCM::GLCM(int distance, int shiftRows, int shiftColumns, int windowDimension, int maxGrayLevel, bool simmetric){
     this->distance = distance;
     this->shiftRows = shiftRows;
@@ -121,7 +119,7 @@ void GLCM::initializeElements(const vector<int>& inputPixels) {
 
 }
 
-
+// AGGREGATED representatio for sum and difference
 map<AggregatedGrayPair, int> GLCM::codifySummedPairs() const{
     typedef map<GrayPair, int>::const_iterator MapIterator;
     map<AggregatedGrayPair, int> aggregatedPairs;
@@ -148,13 +146,13 @@ map<AggregatedGrayPair, int> GLCM::codifySubtractedPairs() const{
     return aggregatedPairs;
 }
 
-void GLCM::printAggregated() {
+void GLCM::printAggregated() const{
     printGLCMAggregatedElements(codifySummedPairs(), true);
     printGLCMAggregatedElements(codifySubtractedPairs(), false);
 }
 
 // Metodo statico ?
-void GLCM::printGLCMAggregatedElements(map<AggregatedGrayPair, int> input, bool areSummed) {
+void GLCM::printGLCMAggregatedElements(map<AggregatedGrayPair, int> input, bool areSummed) const{
     cout << endl;
     if(areSummed)
         cout << "* Summed grayPairsMap *" << endl;
@@ -165,5 +163,53 @@ void GLCM::printGLCMAggregatedElements(map<AggregatedGrayPair, int> input, bool 
     {
         mi->first.printPair();
         cout << "\tmult: " << mi->second << endl;
+    }
+}
+
+// compute marginal frequency f(x)=sum(GrayPair<x, qualunque>)
+map<int, int> GLCM::codifyXMarginalProbabilities() const{
+    map<int, int> xMarginalPairs;
+
+    typedef map<GrayPair, int>::const_iterator GrayPairsMapIterator;
+    for(GrayPairsMapIterator mi=grayPairsMap.begin(); mi!=grayPairsMap.end(); mi++)
+    {
+        int firstGrayPair = mi->first.getGrayLevelI();
+        xMarginalPairs[firstGrayPair] += mi->second;
+    }
+
+    printMarginalProbability(xMarginalPairs, 'x');
+
+    return xMarginalPairs;
+}
+
+// compute marginal frequency f(y)=sum(GrayPair<qualunque, y>)
+map<int, int> GLCM::codifyYMarginalProbabilities() const{
+    map<int, int> yMarginalPairs;
+    
+    typedef map<GrayPair, int>::const_iterator GrayPairsMapIterator;
+    for(GrayPairsMapIterator mi=grayPairsMap.begin(); mi!=grayPairsMap.end(); mi++)
+    {
+        int secondGrayPair= mi->first.getGrayLevelJ();
+        yMarginalPairs[secondGrayPair]+=mi->second;
+    }
+
+    printMarginalProbability(yMarginalPairs, 'y');
+
+    return yMarginalPairs;
+}
+
+void GLCM::printMarginalProbability(const map<int, int> marginalProb, const char symbol) {
+    if(symbol == 'x')
+            cout << endl << "* xMarginal Codifica" << endl;
+        else
+            cout << endl << "* yMarginal Codifica" << endl;
+
+    typedef map<int, int>::const_iterator MI;
+    for(MI mi=marginalProb.begin(); mi!=marginalProb.end(); mi++)
+    {
+        if(symbol == 'x')
+            cout << "("<< (mi->first)<<", X):\t" << mi->second << endl;
+        else
+            cout << "(X, "<< (mi->first ) <<"):\t" << mi->second << endl;
     }
 }

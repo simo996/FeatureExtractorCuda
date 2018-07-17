@@ -64,6 +64,13 @@ map<string, double> FeatureComputer::extractFeatures(const GLCM& glcm){
     features["DIFF ENTROPY"]= computeDifferenceEntropy(subtractedPairs, numberOfElements);
     features["DIFF VARIANCE"]= computeDifferenceVariance(subtractedPairs, numberOfElements);
 
+    map<int, int> xMarginalProbabilities = glcm.codifyXMarginalProbabilities();
+    map<int, int> yMarginalProbabilities = glcm.codifyYMarginalProbabilities();
+    double HX = computeHX(xMarginalProbabilities, glcm.getNumberOfPairs());
+    double HY = computeHY(yMarginalProbabilities, glcm.getNumberOfPairs());
+    features["IMOC"] = computeImoc(glcm, HX, HY, features["ENTROPY"], xMarginalProbabilities, yMarginalProbabilities);
+    
+
     return features;
 }
 
@@ -89,6 +96,9 @@ void FeatureComputer::printFeatures(map<std::string, double>& features){
 
     cout << "DIFF ENTROPY: \t" << features["DIFF ENTROPY"] << endl;
     cout << "DIFF VARIANCE: \t" << features["DIFF VARIANCE"] << endl;
+
+    cout << "INFORMATION MEASURE OF CORRELATION: \t" << features["IMOC"] << endl;
+
     cout << endl;
 
 }
@@ -110,8 +120,7 @@ void FeatureComputer::printGlcmAggregated(const GLCM& glcm){
     glcm.printAggregated();
 }
 
-double FeatureComputer::computeASM(const GLCM& metaGLCM)
-{
+double FeatureComputer::computeASM(const GLCM& metaGLCM) {
     double result = 0;
     double actualPairProbability;
 
@@ -127,8 +136,7 @@ double FeatureComputer::computeASM(const GLCM& metaGLCM)
     return result;
 }
 
-double FeatureComputer::computeAutocorrelation(const GLCM& metaGLCM)
-{
+double FeatureComputer::computeAutocorrelation(const GLCM& metaGLCM) {
     double result = 0;
     double actualPairProbability;
 
@@ -145,8 +153,7 @@ double FeatureComputer::computeAutocorrelation(const GLCM& metaGLCM)
 }
 
 
-double FeatureComputer::computeEntropy(const  GLCM& metaGLCM)
-{
+double FeatureComputer::computeEntropy(const  GLCM& metaGLCM) {
     double result = 0;
     double actualPairProbability;
 
@@ -162,8 +169,7 @@ double FeatureComputer::computeEntropy(const  GLCM& metaGLCM)
     return (-1 * result);
 }
 
-double FeatureComputer::computeMaximumProbability(const  GLCM& metaGLCM)
-{
+double FeatureComputer::computeMaximumProbability(const  GLCM& metaGLCM) {
     double maxProb;
     double actualPairProbability;
 
@@ -180,8 +186,7 @@ double FeatureComputer::computeMaximumProbability(const  GLCM& metaGLCM)
     return maxProb;
 }
 
-double FeatureComputer::computeHomogeneity(const  GLCM& metaGLCM)
-{
+double FeatureComputer::computeHomogeneity(const  GLCM& metaGLCM) {
     double result = 0;
     double actualPairProbability;
 
@@ -214,8 +219,7 @@ double FeatureComputer::computeContrast(const  GLCM& metaGLCM) {
     return result;
 }
 
-double FeatureComputer::computeDissimilarity(const  GLCM& metaGLCM)
-{
+double FeatureComputer::computeDissimilarity(const  GLCM& metaGLCM) {
     double result = 0;
     double actualPairProbability;
 
@@ -232,8 +236,7 @@ double FeatureComputer::computeDissimilarity(const  GLCM& metaGLCM)
     return result;
 }
 
-double FeatureComputer::computeInverceDifferentMoment(const  GLCM& metaGLCM)
-{
+double FeatureComputer::computeInverceDifferentMoment(const  GLCM& metaGLCM) {
     double result = 0;
     double actualPairProbability;
 
@@ -303,8 +306,7 @@ double FeatureComputer::computeClusterShade(const  GLCM& metaGLCM, const double 
     return result;
 }
 
-double FeatureComputer::computeSumOfSquares(const  GLCM& metaGLCM, const double mu)
-{
+double FeatureComputer::computeSumOfSquares(const  GLCM& metaGLCM, const double mu) {
     double result = 0;
     double actualPairProbability;
 
@@ -428,8 +430,7 @@ double FeatureComputer::computeMean(const  GLCM& metaGLCM)
 
 
 // Mean of (i,*)
-double FeatureComputer::computeMuX(const GLCM& metaGLCM)
-{
+double FeatureComputer::computeMuX(const GLCM& metaGLCM) {
     double muX = 0;
     double actualPairProbability;
 
@@ -445,8 +446,7 @@ double FeatureComputer::computeMuX(const GLCM& metaGLCM)
 }
 
 // Mean of (*,i)
-double FeatureComputer::computeMuY(const GLCM& metaGLCM)
-{
+double FeatureComputer::computeMuY(const GLCM& metaGLCM) {
     double muY = 0;
     double actualPairProbability;
 
@@ -462,8 +462,7 @@ double FeatureComputer::computeMuY(const GLCM& metaGLCM)
 }
 
 // Variance of (i,*)
-double FeatureComputer::computeSigmaX(const GLCM& metaGLCM, const double muX)
-{
+double FeatureComputer::computeSigmaX(const GLCM& metaGLCM, const double muX) {
     double sigmaX = 0;
     double actualPairProbability;
 
@@ -480,8 +479,7 @@ double FeatureComputer::computeSigmaX(const GLCM& metaGLCM, const double muX)
 }
 
 // Variance of (*,i)
-double FeatureComputer::computeSigmaY(const GLCM& metaGLCM, const double muY)
-{
+double FeatureComputer::computeSigmaY(const GLCM& metaGLCM, const double muY) {
     double sigmaY = 0;
     double actualPairProbability;
 
@@ -495,4 +493,60 @@ double FeatureComputer::computeSigmaY(const GLCM& metaGLCM, const double muY)
     }
 
     return sqrt(sigmaY);
+}
+
+double FeatureComputer::computeHX(const map<int, int>& xMarginalProbabilties, int numberOfPairs){
+    double HX = 0;
+
+    typedef map<int, int>::const_iterator MI;
+    for (MI actual = xMarginalProbabilties.begin(); actual != xMarginalProbabilties.end(); actual++)
+    {
+
+        double probability = ((double) (actual->second)/numberOfPairs);
+       
+        HX += probability * log(probability);
+    }
+
+    return (-1 * HX);
+}
+
+double FeatureComputer::computeHY(const map<int, int>& yMarginalProbabilties, int numberOfPairs){
+    double HY = 0;
+
+    typedef map<int, int>::const_iterator MI;
+    for (MI actual = yMarginalProbabilties.begin(); actual != yMarginalProbabilties.end(); actual++)
+    {
+        double probability = ((double) (actual->second)/numberOfPairs);
+       
+        HY += probability * log(probability);
+    }
+
+    return (-1 * HY);
+}
+
+// HXY = entropy
+double FeatureComputer::computeImoc(const GLCM& glcm,
+    const double HX, const double HY, const double HXY, 
+     const map<int, int>& xMarginalProbabilities, const map<int, int>& yMarginalProbabilities){
+
+    cout << "\n* DEBUG * \n";
+    double HXY1 = 0;
+
+    typedef map<GrayPair, int>::const_iterator MI;
+    for (MI actual = glcm.grayPairsMap.begin(); actual != glcm.grayPairsMap.end(); actual++)
+    {
+        GrayPair actualPair = actual->first;
+        int i = actualPair.getGrayLevelI();
+        int j = actualPair.getGrayLevelJ();
+        double actualPairProbability = ((double) actual->second) / glcm.getNumberOfPairs();
+        double xMarginalProbability = (double) xMarginalProbabilities.find(i)->second / glcm.getNumberOfPairs();
+        double yMarginalProbability = (double) yMarginalProbabilities.find(j)->second / glcm.getNumberOfPairs();
+
+        HXY1 += actualPairProbability * log(xMarginalProbability * yMarginalProbability);
+    }
+    HXY1 *= -1;
+
+    double imoc = (HXY - HXY1)/(max(HX, HY));
+
+    return imoc;
 }

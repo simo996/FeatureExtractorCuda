@@ -18,7 +18,6 @@ public:
     FeatureComputer(vector<int>& inputPixel, int distance, int shiftRows, int shiftColumns, int windowDimension, int maxGrayLevel, bool simmetric = false);
     map<std::string, double> computeFeatures();
 private:
-
     // Given Input
     vector<int> inputPixels;
     // Data to initialize given GLCM
@@ -52,11 +51,17 @@ private:
     double computeDifferenceEntropy(const map<AggregatedGrayPair, int>& aggregatedMetaGLCM, int numberOfPairs);
     double computeDifferenceVariance(const map<AggregatedGrayPair, int>& aggregatedMetaGLCM, int numberOfPairs);
 
+    double computeImoc(const GLCM& glcm, double HX, double HY, double HXY,
+                                        const map<int, int>& xMarginalProbabilties, const map<int, int>& yMarginalProbabilties);
+
+    // Intermediate functions
     double computeMean(const GLCM& glcm);
     double computeMuX(const GLCM& glcm);
     double computeMuY(const GLCM& glcm);
     double computeSigmaX(const GLCM& glcm, double muX);
     double computeSigmaY(const GLCM& glcm, double muY);
+    double computeHX(const map<int, int>& xMarginalProbabilties, int numberOfPairs);
+    double computeHY(const map<int, int>& yMarginalProbabilties, int numberOfPairs);
 
     // Support methods
     void printFeatures(map<std::string, double>& features);
