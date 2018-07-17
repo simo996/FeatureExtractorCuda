@@ -21,6 +21,7 @@ private:
     // Given Input
     vector<int> inputPixels;
     // Data to initialize given GLCM
+    // TODO think about encapsulating in a struct
     int maxGrayLevel;
     int distance; // modulo tra reference e neighbor
     int windowDimension;

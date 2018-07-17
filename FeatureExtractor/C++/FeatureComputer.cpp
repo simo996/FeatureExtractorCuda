@@ -69,13 +69,13 @@ map<string, double> FeatureComputer::extractFeatures(const GLCM& glcm){
     double HX = computeHX(xMarginalProbabilities, glcm.getNumberOfPairs());
     double HY = computeHY(yMarginalProbabilities, glcm.getNumberOfPairs());
     features["IMOC"] = computeImoc(glcm, HX, HY, features["ENTROPY"], xMarginalProbabilities, yMarginalProbabilities);
-    
 
     return features;
 }
 
 void FeatureComputer::printFeatures(map<std::string, double>& features){
     cout << endl;
+    // TODO think about moving from string to enum for accessing features
     cout << "ASM: \t" << features["ASM"] << endl;
     cout << "AUTOCORRELATION: \t" << features["AUTOCORRELATION"] << endl;
     cout << "ENTROPY: \t" << features["ENTROPY"] << endl;
@@ -87,7 +87,7 @@ void FeatureComputer::printFeatures(map<std::string, double>& features){
     cout << "CORRELATION: \t" << features["CORRELATION"] << endl;
     cout << "CLUSTER Prominence: \t" << features["CLUSTER PROMINENCE"] << endl;
     cout << "CLUSTER SHADE: \t" << features["CLUSTER SHADE"] << endl;
-    cout << "SUM OF SQUARES: \t" << features["SUM OF SQUARS"] << endl;
+    cout << "SUM OF SQUARES: \t" << features["SUM OF SQUARES"] << endl;
     cout << "IDM normalized: \t" << features["IDM"] << endl;
 
     cout << "SUM AVERAGE: \t" << features["SUM AVERAGE"] << endl;
@@ -529,7 +529,6 @@ double FeatureComputer::computeImoc(const GLCM& glcm,
     const double HX, const double HY, const double HXY, 
      const map<int, int>& xMarginalProbabilities, const map<int, int>& yMarginalProbabilities){
 
-    cout << "\n* DEBUG * \n";
     double HXY1 = 0;
 
     typedef map<GrayPair, int>::const_iterator MI;
