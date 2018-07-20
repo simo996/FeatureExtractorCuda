@@ -33,13 +33,7 @@ map<string, double> FeatureComputer::computeFeatures() {
 
 map<string, double> FeatureComputer::extractFeatures(const GLCM& glcm){
     map<string, double> features; 
-    features["ASM"]= computeASM(glcm);
-    features["AUTOCORRELATION"]= computeAutocorrelation(glcm);
-    features["ENTROPY"]= computeEntropy(glcm);
-    features["MAXPROB"]= computeMaximumProbability(glcm);
-    features["HOMOGENEITY"]= computeHomogeneity(glcm);
-    features["CONTRAST"]= computeContrast(glcm);
-    features["DISSIMILARITY"]= computeDissimilarity(glcm);
+    compute1BatchFeatures(glcm, features);
 
     double muX, muY, mu, sigmaX, sigmaY;
     mu = computeMean(glcm);
@@ -120,6 +114,11 @@ void FeatureComputer::printGlcmAggregated(const GLCM& glcm){
     glcm.printAggregated();
 }
 
+inline double computeAsmStep(const double actualPairProbability){
+    return pow((actualPairProbability),2);
+}
+
+
 double FeatureComputer::computeASM(const GLCM& metaGLCM) {
     double result = 0;
     double actualPairProbability;
@@ -134,6 +133,10 @@ double FeatureComputer::computeASM(const GLCM& metaGLCM) {
     }
 
     return result;
+}
+
+inline double computeAutocorrelationStep(const int i, const int j, const double actualPairProbability){
+    return (i * j * actualPairProbability);
 }
 
 double FeatureComputer::computeAutocorrelation(const GLCM& metaGLCM) {
@@ -152,6 +155,9 @@ double FeatureComputer::computeAutocorrelation(const GLCM& metaGLCM) {
     return result;
 }
 
+inline double computeEntropyStep(const double actualPairProbability){
+    return (actualPairProbability * log(actualPairProbability));
+}
 
 double FeatureComputer::computeEntropy(const  GLCM& metaGLCM) {
     double result = 0;
@@ -186,6 +192,10 @@ double FeatureComputer::computeMaximumProbability(const  GLCM& metaGLCM) {
     return maxProb;
 }
 
+inline double computeHomogeneityStep(const int i, const int j, const double actualPairProbability){
+    return (actualPairProbability / (1 + fabs(i - j)));
+}
+
 double FeatureComputer::computeHomogeneity(const  GLCM& metaGLCM) {
     double result = 0;
     double actualPairProbability;
@@ -196,10 +206,14 @@ double FeatureComputer::computeHomogeneity(const  GLCM& metaGLCM) {
         GrayPair actualPair = actual->first;
         actualPairProbability = ((double) actual->second)/metaGLCM.getNumberOfPairs();
 
-        result += actualPairProbability / (1 + fabs(actualPair.getGrayLevelI() - actualPair.getGrayLevelJ()));
+        result += 
     }
 
     return result;
+}
+
+inline double computeContrastStep(const int i, const int j, const double actualPairProbability){
+    return (actualPairProbability * (pow(fabs(i - j), 2)));
 }
 
 double FeatureComputer::computeContrast(const  GLCM& metaGLCM) {
@@ -217,6 +231,10 @@ double FeatureComputer::computeContrast(const  GLCM& metaGLCM) {
     }
 
     return result;
+}
+
+inline double computeDissimilarityStep(const int i, const int j, const double pairProbability){
+    return (pairProbability * (fabs(i - j)));
 }
 
 double FeatureComputer::computeDissimilarity(const  GLCM& metaGLCM) {
@@ -548,4 +566,53 @@ double FeatureComputer::computeImoc(const GLCM& glcm,
     double imoc = (HXY - HXY1)/(max(HX, HY));
 
     return imoc;
+}
+
+
+
+void compute1BatchFeatures(const GLCM& metaGLCM, map<string, double>& features){
+    double ASM = 0;
+    double AUTOCORRELATION = 0;
+    double ENTROPY = 0;
+    double MAXPROB = 0;
+    double HOMOGENEITY = 0;
+    double CONTRAST = 0;
+    double DISSIMILARITY = 0;
+
+    double actualPairProbability;
+    typedef map<GrayPair, int>::const_iterator MI;
+    for(MI actual=metaGLCM.grayPairsMap.begin() ; actual != metaGLCM.grayPairsMap.end(); actual++)
+    {
+        GrayPair actualPair = actual->first;
+        int i = actualPair.getGrayLevelI();
+        int j = actualPair.getGrayLevelJ();
+        actualPairProbability = ((double) actual->second)/metaGLCM.getNumberOfPairs();
+
+        ASM += computeAsmStep(actualPairProbability);
+        AUTOCORRELATION += computeAutocorrelationStep(i, j, actualPairProbability);
+        ENTROPY += computeEntropyStep(actualPairProbability);
+        if(MAXPROB < actualPairProbability)
+            MAXPROB = actualPairProbability;
+        HOMOGENEITY += computeHomogeneityStep(i, j, actualPairProbability);
+        CONTRAST += computeContrastStep(i, j, actualPairProbability);
+        DISSIMILARITY += computeDissimilarityStep(i, j, actualPairProbability);
+
+    }
+
+    features["ASM"]= ASM;
+    features["AUTOCORRELATION"]= AUTOCORRELATION;
+    features["ENTROPY"]= ENTROPY;
+    features["MAXPROB"]= MAXPROB;
+    features["HOMOGENEITY"]= HOMOGENEITY;
+    features["CONTRAST"]= CONTRAST;
+    features["DISSIMILARITY"]= DISSIMILARITY;
+
+    /*
+    double muX, muY, mu, sigmaX, sigmaY;
+    mu = computeMean(glcm);
+    muX = computeMuX(glcm);
+    muY = computeMuY(glcm);
+    sigmaX = computeSigmaX(glcm, muX);
+    sigmaY = computeSigmaY(glcm, muY);
+    */
 }

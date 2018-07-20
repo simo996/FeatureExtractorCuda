@@ -64,6 +64,9 @@ private:
     double computeHX(const map<int, int>& xMarginalProbabilties, int numberOfPairs);
     double computeHY(const map<int, int>& yMarginalProbabilties, int numberOfPairs);
 
+    // Stepping methods
+    void compute1BatchFeatures(const GLCM& metaGLCM, map<string, double>& features);
+
     // Support methods
     void printFeatures(map<std::string, double>& features);
     void printGLCM(const GLCM& glcm); // print following information
