@@ -23,7 +23,11 @@ GLCM::GLCM(int distance, int shiftRows, int shiftColumns, int windowDimension, i
 }
 
 int GLCM::getNumberOfPairs() const {
-  return numberOfPairs;
+    if(simmetric)
+        // Each element was counted twice
+        return (2 * numberOfPairs);
+    else
+        return numberOfPairs;
 }
 
 int GLCM::getMaxGrayLevel() const {
