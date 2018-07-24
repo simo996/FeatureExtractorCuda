@@ -273,6 +273,9 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, map<string, do
         sigmaY+= pow((j - muY), 2) * actualPairProbability;
     }
 
+    sigmaX = sqrt(sigmaX);
+    sigmaY = sqrt(sigmaY);
+
     features["CLUSTER PROMINENCE"]= CLUSTERPROM;
     features["CLUSTER SHADE"]= CLUSTERSHADE;
     features["SUM OF SQUARES"]= SUMOFSQUARES;
