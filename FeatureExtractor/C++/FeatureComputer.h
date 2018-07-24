@@ -16,7 +16,13 @@ class FeatureComputer {
 
 public:
     FeatureComputer(vector<int>& inputPixel, int distance, int shiftRows, int shiftColumns, int windowDimension, int maxGrayLevel, bool simmetric = false);
-    map<std::string, double> computeFeatures();
+    map<string, double> computeFeatures();
+    // Support methods
+    static void printFeatures(map<std::string, double>& features);
+    static void printGLCM(const GLCM& glcm); // print following information
+    static void printGlcmData(const GLCM& glcm);
+    static void printGlcmElements(const GLCM& glcm);
+    static void printGlcmAggregated(const GLCM& glcm);
 private:
     // Given Input
     vector<int> inputPixels;
@@ -39,7 +45,7 @@ private:
     double computeHomogeneity(const GLCM& glcm);
     double computeContrast(const GLCM& glcm);
     double computeDissimilarity(const  GLCM& metaGLCM);
-    double computeInverceDifferentMoment(const GLCM& glcm);
+    double computeInverceDifferenceMoment(const GLCM& glcm);
     double computeCorrelation(const GLCM& glcm, double muX, double muY, double sigmaX, double sigmaY);
 
     double computeClusterProminence(const GLCM& glcm, double muX, double muY);
@@ -49,11 +55,11 @@ private:
 
     double computeSumEntropy(const map<AggregatedGrayPair, int>& summedMetaGLCM, int numberOfPairs);
     double computeSumVariance(const map<AggregatedGrayPair, int>& summedMetaGLCM, double sumEntropy, int numberOfPairs);
-    double computeDifferenceEntropy(const map<AggregatedGrayPair, int>& aggregatedMetaGLCM, int numberOfPairs);
-    double computeDifferenceVariance(const map<AggregatedGrayPair, int>& aggregatedMetaGLCM, int numberOfPairs);
+    double computeDiffEntropy(const map<AggregatedGrayPair, int>& aggregatedMetaGLCM, int numberOfPairs);
+    double computeDiffVariance(const map<AggregatedGrayPair, int>& aggregatedMetaGLCM, int numberOfPairs);
 
     double computeImoc(const GLCM& glcm, double HX, double HY, double HXY,
-                                        const map<int, int>& xMarginalProbabilties, const map<int, int>& yMarginalProbabilties);
+                       const map<int, int>& xMarginalProbabilties, const map<int, int>& yMarginalProbabilties);
 
     // Intermediate functions
     double computeMean(const GLCM& glcm);
@@ -67,12 +73,7 @@ private:
     // Stepping methods
     void compute1BatchFeatures(const GLCM& metaGLCM, map<string, double>& features);
 
-    // Support methods
-    void printFeatures(map<std::string, double>& features);
-    void printGLCM(const GLCM& glcm); // print following information
-    void printGlcmData(const GLCM& glcm);
-    void printGlcmElements(const GLCM& glcm);
-    void printGlcmAggregated(const GLCM& glcm);
+
 };
 
 

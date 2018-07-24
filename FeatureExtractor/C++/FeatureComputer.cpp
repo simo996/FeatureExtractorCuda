@@ -20,43 +20,47 @@ FeatureComputer::FeatureComputer(vector<int>& inputPixel, int distance, int shif
     this->inputPixels = inputPixel;
 }
 
-
 map<string, double> FeatureComputer::computeFeatures() {
     GLCM glcm(distance, shiftRows, shiftColumns, windowDimension, maxGrayLevel, simmetric);
     glcm.initializeElements(inputPixels);
-    printGLCM(glcm);
+    printGLCM(glcm); // Print data and elements for debugging
     map<string, double> features = extractFeatures(glcm);
-    printFeatures(features);
+    //printFeatures(features);
     return features;
 }
 
-
 map<string, double> FeatureComputer::extractFeatures(const GLCM& glcm){
-    map<string, double> features; 
-    compute1BatchFeatures(glcm, features);
+    map<string, double> features;
+    features["ASM"]= computeASM(glcm);
+    features["AUTOCORRELATION"]= computeAutocorrelation(glcm);
+    features["ENTROPY"]= computeEntropy(glcm);
+    features["MAXPROB"]= computeMaximumProbability(glcm);
+    features["HOMOGENEITY"]= computeHomogeneity(glcm);
+    features["CONTRAST"]= computeContrast(glcm);
+    features["DISSIMILARITY"]= computeDissimilarity(glcm);
+    features["IDM"]= computeInverceDifferenceMoment(glcm);
 
-    double muX, muY, mu, sigmaX, sigmaY;
-    mu = computeMean(glcm);
+    double muX, muY, mean, sigmaX, sigmaY;
+    mean = computeMean(glcm);
     muX = computeMuX(glcm);
     muY = computeMuY(glcm);
     sigmaX = computeSigmaX(glcm, muX);
     sigmaY = computeSigmaY(glcm, muY);
 
-    features["CORRELATION"]= computeCorrelation(glcm, muX, muY, sigmaX, sigmaY);
     features["CLUSTER PROMINENCE"]= computeClusterProminence(glcm, muX, muY);
     features["CLUSTER SHADE"]= computeClusterShade(glcm, muX, muY);
-    features["SUM OF SQUARES"]= computeSumOfSquares(glcm, mu);
-    features["IDM"]= computeInverceDifferentMoment(glcm);
+    features["SUM OF SQUARES"]= computeSumOfSquares(glcm, mean);
+    features["CORRELATION"]= computeCorrelation(glcm, muX, muY, sigmaX, sigmaY);
 
-    map<AggregatedGrayPair, int> summedPairs = glcm.codifySummedPairs(); 
+    map<AggregatedGrayPair, int> summedPairs = glcm.codifySummedPairs();
     int numberOfElements= glcm.getNumberOfPairs();
     features["SUM AVERAGE"]= computeSumAverage(summedPairs,  numberOfElements); // giusto ?
     features["SUM ENTROPY"]= computeSumEntropy(summedPairs,  numberOfElements); // OK
     features["SUM VARIANCE"]= computeSumVariance(summedPairs, features["SUM AVERAGE"], numberOfElements); // giusto ?
 
     map<AggregatedGrayPair, int> subtractedPairs = glcm.codifySubtractedPairs(); 
-    features["DIFF ENTROPY"]= computeDifferenceEntropy(subtractedPairs, numberOfElements);
-    features["DIFF VARIANCE"]= computeDifferenceVariance(subtractedPairs, numberOfElements);
+    features["DIFF ENTROPY"]= computeDiffEntropy(subtractedPairs, numberOfElements);
+    features["DIFF VARIANCE"]= computeDiffVariance(subtractedPairs, numberOfElements);
 
     map<int, int> xMarginalProbabilities = glcm.codifyXMarginalProbabilities();
     map<int, int> yMarginalProbabilities = glcm.codifyYMarginalProbabilities();
@@ -101,7 +105,7 @@ void FeatureComputer::printFeatures(map<std::string, double>& features){
 void FeatureComputer::printGLCM(const GLCM& glcm){
     printGlcmData(glcm);
     printGlcmElements(glcm);
-    printGlcmAggregated(glcm);
+    //printGlcmAggregated(glcm);
 }
 
 void FeatureComputer::printGlcmData(const GLCM& glcm){
@@ -114,10 +118,10 @@ void FeatureComputer::printGlcmAggregated(const GLCM& glcm){
     glcm.printAggregated();
 }
 
+// ASM
 inline double computeAsmStep(const double actualPairProbability){
     return pow((actualPairProbability),2);
 }
-
 
 double FeatureComputer::computeASM(const GLCM& metaGLCM) {
     double result = 0;
@@ -135,6 +139,7 @@ double FeatureComputer::computeASM(const GLCM& metaGLCM) {
     return result;
 }
 
+// AUTOCORRELATION
 inline double computeAutocorrelationStep(const int i, const int j, const double actualPairProbability){
     return (i * j * actualPairProbability);
 }
@@ -155,6 +160,7 @@ double FeatureComputer::computeAutocorrelation(const GLCM& metaGLCM) {
     return result;
 }
 
+// ENTROPY
 inline double computeEntropyStep(const double actualPairProbability){
     return (actualPairProbability * log(actualPairProbability));
 }
@@ -175,6 +181,7 @@ double FeatureComputer::computeEntropy(const  GLCM& metaGLCM) {
     return (-1 * result);
 }
 
+// MAXPROB
 double FeatureComputer::computeMaximumProbability(const  GLCM& metaGLCM) {
     double maxProb;
     double actualPairProbability;
@@ -192,6 +199,7 @@ double FeatureComputer::computeMaximumProbability(const  GLCM& metaGLCM) {
     return maxProb;
 }
 
+// HOMOGENEITY
 inline double computeHomogeneityStep(const int i, const int j, const double actualPairProbability){
     return (actualPairProbability / (1 + fabs(i - j)));
 }
@@ -206,12 +214,14 @@ double FeatureComputer::computeHomogeneity(const  GLCM& metaGLCM) {
         GrayPair actualPair = actual->first;
         actualPairProbability = ((double) actual->second)/metaGLCM.getNumberOfPairs();
 
-        result += 
+        result += (actualPairProbability / (1 + fabs(actualPair.getGrayLevelI() - actualPair.getGrayLevelJ())));
+
     }
 
     return result;
 }
 
+// CONTRAST
 inline double computeContrastStep(const int i, const int j, const double actualPairProbability){
     return (actualPairProbability * (pow(fabs(i - j), 2)));
 }
@@ -233,6 +243,7 @@ double FeatureComputer::computeContrast(const  GLCM& metaGLCM) {
     return result;
 }
 
+// DISSIMILARITY
 inline double computeDissimilarityStep(const int i, const int j, const double pairProbability){
     return (pairProbability * (fabs(i - j)));
 }
@@ -254,7 +265,14 @@ double FeatureComputer::computeDissimilarity(const  GLCM& metaGLCM) {
     return result;
 }
 
-double FeatureComputer::computeInverceDifferentMoment(const  GLCM& metaGLCM) {
+// IDM
+inline double computeInverceDifferenceMomentStep(const int i, const int j, 
+    const double pairProbability, const int maxGrayLevel)
+{
+    return (pairProbability / (1 + fabs(i - j) / maxGrayLevel));
+}
+
+double FeatureComputer::computeInverceDifferenceMoment(const GLCM& metaGLCM) {
     double result = 0;
     double actualPairProbability;
 
@@ -272,6 +290,14 @@ double FeatureComputer::computeInverceDifferentMoment(const  GLCM& metaGLCM) {
 }
 
 /* FEATURES WITH MEANS */
+// CORRELATION
+inline double computeCorrelationStep(const int i, const int j, 
+    const double pairProbability, const double muX, const double muY, 
+    const double sigmaX, const double sigmaY)
+{
+    return ((i - muX) * (j - muY) * pairProbability ) /(sigmaX * sigmaY);
+}
+
 double FeatureComputer::computeCorrelation(const  GLCM& metaGLCM, const double muX, const double muY, const double sigmaX, const double sigmaY)
 {
     double result = 0;
@@ -288,6 +314,12 @@ double FeatureComputer::computeCorrelation(const  GLCM& metaGLCM, const double m
     }
 
     return result;
+}
+
+// CLUSTER PROMINENCE
+inline double computeClusterProminenceStep(const int i, const int j, 
+    const double pairProbability, const double muX, const double muY){
+    return (pow((i + j - muX - muY), 4) * pairProbability);
 }
 
 double FeatureComputer::computeClusterProminence(const  GLCM& metaGLCM, const double muX, const double muY)
@@ -307,6 +339,12 @@ double FeatureComputer::computeClusterProminence(const  GLCM& metaGLCM, const do
     return result;
 }
 
+// CLUSTER SHADE
+inline double computeClusterShadeStep(const int i, const int j,
+    const double pairProbability, const double muX, const double muY){
+    return (pow((i + j - muX - muY), 3) * pairProbability);
+}
+
 double FeatureComputer::computeClusterShade(const  GLCM& metaGLCM, const double muX, const double muY)
 {
     double result = 0;
@@ -322,6 +360,12 @@ double FeatureComputer::computeClusterShade(const  GLCM& metaGLCM, const double 
     }
 
     return result;
+}
+
+// SUM OF SQUARES
+inline double computeSumOfSquaresStep(const int i,
+                                      const double pairProbability, const double mean){
+    return (pow((i - mean), 2) * pairProbability);
 }
 
 double FeatureComputer::computeSumOfSquares(const  GLCM& metaGLCM, const double mu) {
@@ -341,6 +385,7 @@ double FeatureComputer::computeSumOfSquares(const  GLCM& metaGLCM, const double 
 }
 
 // SUM Aggregated features
+
 double FeatureComputer::computeSumAverage(const map<AggregatedGrayPair, int>& summedMetaGLCM, const int numberOfPairs)
 {
     double result = 0;
@@ -359,6 +404,10 @@ double FeatureComputer::computeSumAverage(const map<AggregatedGrayPair, int>& su
 }
 
 
+inline double computeSumEntropyStep(const double pairProbability){
+    return (log(pairProbability) * pairProbability);
+}
+
 double FeatureComputer::computeSumEntropy(const map<AggregatedGrayPair, int>& summedMetaGLCM, const int numberOfPairs)
 {
     double result = 0;
@@ -373,6 +422,11 @@ double FeatureComputer::computeSumEntropy(const map<AggregatedGrayPair, int>& su
     }
 
     return -1 * result;
+}
+
+inline double computeSumVarianceStep(const int aggregatedGrayLevel, 
+    const double pairProbability, const double sumEntropy){
+    return (pow((aggregatedGrayLevel - sumEntropy),2) * pairProbability);
 }
 
 double FeatureComputer::computeSumVariance(const map<AggregatedGrayPair, int>& summedMetaGLCM, const double sumEntropy, const int numberOfPairs)
@@ -394,7 +448,11 @@ double FeatureComputer::computeSumVariance(const map<AggregatedGrayPair, int>& s
 }
 
 // DIFFERENCE
-double FeatureComputer::computeDifferenceEntropy(const map<AggregatedGrayPair, int>& subtractedMetaGLCM, const int numberOfPairs)
+inline double computeDifferenceVarianceStep(const double pairProbability){
+    return (log(pairProbability) * pairProbability);
+}
+
+double FeatureComputer::computeDiffEntropy(const map<AggregatedGrayPair, int>& subtractedMetaGLCM, const int numberOfPairs)
 {
     double result = 0;
     double actualPairProbability;
@@ -409,7 +467,12 @@ double FeatureComputer::computeDifferenceEntropy(const map<AggregatedGrayPair, i
     return -1*result;
 }
 
-double FeatureComputer::computeDifferenceVariance(const map<AggregatedGrayPair, int>& subtractedMetaGLCM, const int numberOfPairs)
+inline double computeDiffVarianceStep(const int aggregatedGrayLevel, 
+    const double pairProbability){
+    return (pow(aggregatedGrayLevel, 2) * pairProbability);
+}
+
+double FeatureComputer::computeDiffVariance(const map<AggregatedGrayPair, int>& subtractedMetaGLCM, const int numberOfPairs)
 {
     double result = 0;
     double actualPairProbability;
@@ -429,8 +492,7 @@ double FeatureComputer::computeDifferenceVariance(const map<AggregatedGrayPair, 
 
 // Mean of all probabilities
 // Same implementation of Autocorrelation
-double FeatureComputer::computeMean(const  GLCM& metaGLCM)
-{
+double FeatureComputer::computeMean(const  GLCM& metaGLCM){
     double mu = 0;
     double actualPairProbability;
 
@@ -513,6 +575,11 @@ double FeatureComputer::computeSigmaY(const GLCM& metaGLCM, const double muY) {
     return sqrt(sigmaY);
 }
 
+// Marginal Features
+inline double computeHxStep(const double grayLevelProbability){
+    return (grayLevelProbability * log(grayLevelProbability));
+}
+
 double FeatureComputer::computeHX(const map<int, int>& xMarginalProbabilties, int numberOfPairs){
     double HX = 0;
 
@@ -526,6 +593,10 @@ double FeatureComputer::computeHX(const map<int, int>& xMarginalProbabilties, in
     }
 
     return (-1 * HX);
+}
+
+inline double computeHyStep(const double grayLevelProbability){
+    return (grayLevelProbability * log(grayLevelProbability));
 }
 
 double FeatureComputer::computeHY(const map<int, int>& yMarginalProbabilties, int numberOfPairs){
@@ -568,9 +639,13 @@ double FeatureComputer::computeImoc(const GLCM& glcm,
     return imoc;
 }
 
+void FeatureComputer::compute1BatchFeatures(const GLCM& metaGLCM, map<string, double>& features){
+    double mean;
+    double muX;
+    double muY;
+    double sigmaX;
+    double sigmaY;
 
-
-void compute1BatchFeatures(const GLCM& metaGLCM, map<string, double>& features){
     double ASM = 0;
     double AUTOCORRELATION = 0;
     double ENTROPY = 0;
@@ -578,15 +653,17 @@ void compute1BatchFeatures(const GLCM& metaGLCM, map<string, double>& features){
     double HOMOGENEITY = 0;
     double CONTRAST = 0;
     double DISSIMILARITY = 0;
+    double IDM = 0;
 
-    double actualPairProbability;
+    // First batch of computable features
     typedef map<GrayPair, int>::const_iterator MI;
+
     for(MI actual=metaGLCM.grayPairsMap.begin() ; actual != metaGLCM.grayPairsMap.end(); actual++)
     {
         GrayPair actualPair = actual->first;
         int i = actualPair.getGrayLevelI();
         int j = actualPair.getGrayLevelJ();
-        actualPairProbability = ((double) actual->second)/metaGLCM.getNumberOfPairs();
+        double actualPairProbability = ((double) actual->second)/metaGLCM.getNumberOfPairs();
 
         ASM += computeAsmStep(actualPairProbability);
         AUTOCORRELATION += computeAutocorrelationStep(i, j, actualPairProbability);
@@ -596,23 +673,59 @@ void compute1BatchFeatures(const GLCM& metaGLCM, map<string, double>& features){
         HOMOGENEITY += computeHomogeneityStep(i, j, actualPairProbability);
         CONTRAST += computeContrastStep(i, j, actualPairProbability);
         DISSIMILARITY += computeDissimilarityStep(i, j, actualPairProbability);
-
+        IDM += computeInverceDifferenceMomentStep(i, j, actualPairProbability, metaGLCM.getMaxGrayLevel());
+    
+        // intemediate values
+        mean += (i * j * actualPairProbability);
+        muX += (i * actualPairProbability);
+        muY += (j * actualPairProbability);
     }
 
     features["ASM"]= ASM;
     features["AUTOCORRELATION"]= AUTOCORRELATION;
-    features["ENTROPY"]= ENTROPY;
+    features["ENTROPY"]= (-1 * ENTROPY);
     features["MAXPROB"]= MAXPROB;
     features["HOMOGENEITY"]= HOMOGENEITY;
     features["CONTRAST"]= CONTRAST;
     features["DISSIMILARITY"]= DISSIMILARITY;
+    features["IDM"]= IDM;
 
-    /*
-    double muX, muY, mu, sigmaX, sigmaY;
-    mu = computeMean(glcm);
-    muX = computeMuX(glcm);
-    muY = computeMuY(glcm);
-    sigmaX = computeSigmaX(glcm, muX);
-    sigmaY = computeSigmaY(glcm, muY);
-    */
+    // Second batch of computable features
+    double CLUSTERPROM = 0;
+    double CLUSTERSHADE = 0;
+    double SUMOFSQUARES = 0;
+
+    for(MI actual=metaGLCM.grayPairsMap.begin() ; actual != metaGLCM.grayPairsMap.end(); actual++)
+    {
+        GrayPair actualPair = actual->first;
+        int i = actualPair.getGrayLevelI();
+        int j = actualPair.getGrayLevelJ();
+        double actualPairProbability = ((double) actual->second)/metaGLCM.getNumberOfPairs();
+
+        CLUSTERPROM += computeClusterProminenceStep(i, j, actualPairProbability, muX, muY);
+        CLUSTERSHADE += computeClusterShadeStep(i, j, actualPairProbability, muX, muY);
+        SUMOFSQUARES += computeSumOfSquaresStep(i, actualPairProbability, mean);
+        sigmaX += pow((i - muX), 2) * actualPairProbability;
+        sigmaY+= pow((j - muY), 2) * actualPairProbability;
+    }
+
+    features["CLUSTER PROMINENCE"]= CLUSTERPROM;
+    features["CLUSTER SHADE"]= CLUSTERSHADE;
+    features["SUM OF SQUARES"]= SUMOFSQUARES;
+
+    // Only feature that needs the third scan of the glcm
+    double CORRELATION = 0;
+
+    for(MI actual=metaGLCM.grayPairsMap.begin() ; actual != metaGLCM.grayPairsMap.end(); actual++)
+    {
+        GrayPair actualPair = actual->first;
+        int i = actualPair.getGrayLevelI();
+        int j = actualPair.getGrayLevelJ();
+        double actualPairProbability = ((double) actual->second)/metaGLCM.getNumberOfPairs();
+
+        CORRELATION = computeCorrelationStep(i, j, actualPairProbability, muX, muY, sigmaX, sigmaY);
+    }
+    features["CORRELATION"]= CORRELATION;
+
 }
+
