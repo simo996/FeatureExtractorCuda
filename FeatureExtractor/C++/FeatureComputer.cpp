@@ -122,7 +122,8 @@ inline double computeCorrelationStep(const int i, const int j,
     const double pairProbability, const double muX, const double muY, 
     const double sigmaX, const double sigmaY)
 {
-    return ((i - muX) * (j - muY) * pairProbability ) /(sigmaX * sigmaY);
+    //cout << "\ni: " << i << "\tj: " << j << "\t pariprob: " << pairProbability << "\t(i-muX): " << (i -muX) << "\t(j-muY): " << (j - muY) << "\tcontributo: " << (((i - muX) * (j - muY) * pairProbability ) / (sigmaX * sigmaY));
+    return (((i - muX) * (j - muY) * pairProbability ) / (sigmaX * sigmaY));
 }
 
 // CLUSTER PROMINENCE
@@ -140,6 +141,7 @@ inline double computeClusterShadeStep(const int i, const int j,
 // SUM OF SQUARES
 inline double computeSumOfSquaresStep(const int i,
                                       const double pairProbability, const double mean){
+    //cout << (pow((i - mean), 2) * pairProbability);
     return (pow((i - mean), 2) * pairProbability);
 }
 
@@ -167,8 +169,7 @@ inline double computeDiffEntropyStep(const double pairProbability){
 }
 
 // DIFF
-inline double computeDiffVarianceStep(const int aggregatedGrayLevel, 
-    const double pairProbability){
+inline double computeDiffVarianceStep(const int aggregatedGrayLevel, const double pairProbability){
     return (pow(aggregatedGrayLevel, 2) * pairProbability);
 }
 
@@ -286,9 +287,12 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, map<string, do
         int j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actual->second)/glcm.getNumberOfPairs();
 
-        CORRELATION = computeCorrelationStep(i, j, actualPairProbability, muX, muY, sigmaX, sigmaY);
+        CORRELATION += computeCorrelationStep(i, j, actualPairProbability, 
+            muX, muY, sigmaX, sigmaY);
     }
     features["CORRELATION"]= CORRELATION;
+   
+
 
 }
 
@@ -309,6 +313,7 @@ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, map<string,
         SUMAVG += computeSumAverageStep(k, actualPairProbability);
         SUMENTROPY += computeSumEntropyStep(actualPairProbability);
     }
+    SUMENTROPY *= -1;
     features["SUM AVERAGE"] = SUMAVG;
     features["SUM ENTROPY"] = SUMENTROPY;
 
@@ -343,7 +348,7 @@ void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, map<string
         DIFFENTROPY += computeDiffEntropyStep(actualPairProbability);
         DIFFVARIANCE += computeDiffVarianceStep(k, actualPairProbability);
     }
-
+    DIFFENTROPY *= -1;
     features["DIFF ENTROPY"] = DIFFENTROPY;
     features["DIFF VARIANCE"] = DIFFVARIANCE;
 
