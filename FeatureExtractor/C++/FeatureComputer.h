@@ -35,44 +35,11 @@ private:
     int shiftColumns;
     bool simmetric;
     // Actual computation of all 18 features
-    map<string, double> extractFeatures(const GLCM& glcm);
-
-    // Single feature extraction
-    double computeASM(const GLCM& glcm);
-    double computeAutocorrelation(const GLCM& glcm);
-    double computeEntropy(const GLCM& glcm);
-    double computeMaximumProbability(const GLCM& glcm);
-    double computeHomogeneity(const GLCM& glcm);
-    double computeContrast(const GLCM& glcm);
-    double computeDissimilarity(const  GLCM& metaGLCM);
-    double computeInverceDifferenceMoment(const GLCM& glcm);
-    double computeCorrelation(const GLCM& glcm, double muX, double muY, double sigmaX, double sigmaY);
-
-    double computeClusterProminence(const GLCM& glcm, double muX, double muY);
-    double computeClusterShade(const GLCM& glcm, double muX, double muY);
-    double computeSumOfSquares(const GLCM& glcm, double mu);
-    double computeSumAverage(const map<AggregatedGrayPair, int>& summedMetaGLCM, int numberOfPairs);
-
-    double computeSumEntropy(const map<AggregatedGrayPair, int>& summedMetaGLCM, int numberOfPairs);
-    double computeSumVariance(const map<AggregatedGrayPair, int>& summedMetaGLCM, double sumEntropy, int numberOfPairs);
-    double computeDiffEntropy(const map<AggregatedGrayPair, int>& aggregatedMetaGLCM, int numberOfPairs);
-    double computeDiffVariance(const map<AggregatedGrayPair, int>& aggregatedMetaGLCM, int numberOfPairs);
-
-    double computeImoc(const GLCM& glcm, double HX, double HY, double HXY,
-                       const map<int, int>& xMarginalProbabilties, const map<int, int>& yMarginalProbabilties);
-
-    // Intermediate functions
-    double computeMean(const GLCM& glcm);
-    double computeMuX(const GLCM& glcm);
-    double computeMuY(const GLCM& glcm);
-    double computeSigmaX(const GLCM& glcm, double muX);
-    double computeSigmaY(const GLCM& glcm, double muY);
-    double computeHX(const map<int, int>& xMarginalProbabilties, int numberOfPairs);
-    double computeHY(const map<int, int>& yMarginalProbabilties, int numberOfPairs);
-
-    // Stepping methods
-    void compute1BatchFeatures(const GLCM& metaGLCM, map<string, double>& features);
-
+    map<string, double> computeBatchFeatures(const GLCM& metaGLCM);
+    void extractAutonomousFeatures(const GLCM& metaGLCM, map<string, double>& features);
+    void extractSumAggregatedFeatures(const GLCM& metaGLCM, map<string, double>& features);
+    void extractDiffAggregatedFeatures(const GLCM& metaGLCM, map<string, double>& features);
+    void extractMarginalFeatures(const GLCM& metaGLCM, map<string, double>& features);
 
 };
 
