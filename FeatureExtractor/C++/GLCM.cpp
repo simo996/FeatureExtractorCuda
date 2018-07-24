@@ -121,7 +121,7 @@ void GLCM::initializeElements(const vector<int>& inputPixels) {
     // Define subBorders offset depending on orientation
     int initialColumnOffset = computeColumnOffset();
     int initialRowOffset = computeRowOffset();
-                
+
     int referenceGrayLevel;
     int neighborGrayLevel;
     for (int i = 0; i < getBorderRows() ; i++)
@@ -222,8 +222,6 @@ map<int, int> GLCM::codifyXMarginalProbabilities() const{
         xMarginalPairs[firstGrayPair] += mi->second;
     }
 
-    printMarginalProbability(xMarginalPairs, 'x');
-
     return xMarginalPairs;
 }
 
@@ -243,8 +241,6 @@ map<int, int> GLCM::codifyYMarginalProbabilities() const{
         int secondGrayPair= mi->first.getGrayLevelJ();
         yMarginalPairs[secondGrayPair]+=mi->second;
     }
-
-    printMarginalProbability(yMarginalPairs, 'y');
 
     return yMarginalPairs;
 }
