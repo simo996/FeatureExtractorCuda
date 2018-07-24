@@ -15,10 +15,14 @@ class WindowFeatureComputer {
      * RESPONSABILITA CLASSE: Computare le feature per la finestra nelle 4 direzioni
      */
     public:
-        WindowFeatureComputer(vector<int>& inputPixels);
+        WindowFeatureComputer(const vector<int>& inputPixels, int maxGrayLevel, int distance,
+                              int windowDimension, bool symmetric = false);
         vector<map<string, double>> computeFeatures(); // 1 of each of the 4 dimensions
-        void printFeaturesList(vector<map<string, double>>& featureList);
+        void printSeparatedFeatures(vector<map<string, double>> featureList) const;
     private:
+        vector<int> inputPixels;
+        int maxGrayLevel;
+        bool simmetric;
         int distance;
         int windowDimension;
 };
