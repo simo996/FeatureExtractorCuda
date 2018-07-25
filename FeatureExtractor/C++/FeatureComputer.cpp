@@ -10,18 +10,18 @@
 using namespace std;
 
 FeatureComputer::FeatureComputer(vector<int>& inputPixel, int distance, int shiftRows, int shiftColumns, int windowDimension, int maxGrayLevel,
-                                 bool simmetric) {
+                                 bool symmetric) {
     this->distance = distance;
     this->shiftRows = shiftRows;
     this->shiftColumns = shiftColumns;
     this->windowDimension = windowDimension;
     this->maxGrayLevel = maxGrayLevel;
-    this->simmetric = simmetric;
+    this->symmetric = symmetric;
     this->inputPixels = inputPixel;
 }
 
 map<string, double> FeatureComputer::computeFeatures() {
-    GLCM glcm(distance, shiftRows, shiftColumns, windowDimension, maxGrayLevel, simmetric);
+    GLCM glcm(distance, shiftRows, shiftColumns, windowDimension, maxGrayLevel, symmetric);
     glcm.initializeElements(inputPixels);
     printGLCM(glcm); // Print data and elements for debugging
     map<string, double> features = computeBatchFeatures(glcm);
@@ -173,7 +173,6 @@ inline double computeDiffVarianceStep(const int aggregatedGrayLevel, const doubl
     return (pow(aggregatedGrayLevel, 2) * pairProbability);
 }
 
-
 // Marginal Features
 inline double computeHxStep(const double grayLevelProbability){
     return (grayLevelProbability * log(grayLevelProbability));
@@ -182,7 +181,6 @@ inline double computeHxStep(const double grayLevelProbability){
 inline double computeHyStep(const double grayLevelProbability){
     return (grayLevelProbability * log(grayLevelProbability));
 }
-
 
 
 map<string, double> FeatureComputer::computeBatchFeatures(const GLCM& glcm) {
@@ -294,8 +292,6 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, map<string, do
             muX, muY, sigmaX, sigmaY);
     }
     features["CORRELATION"]= CORRELATION;
-   
-
 
 }
 

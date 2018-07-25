@@ -33,7 +33,7 @@ private:
     int windowDimension;
     int shiftRows;
     int shiftColumns;
-    bool simmetric;
+    bool symmetric;
     // Actual computation of all 18 features
     map<string, double> computeBatchFeatures(const GLCM& metaGLCM);
     void extractAutonomousFeatures(const GLCM& metaGLCM, map<string, double>& features);
