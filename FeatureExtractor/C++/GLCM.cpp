@@ -136,7 +136,7 @@ void GLCM::initializeElements(const vector<int>& inputPixels) {
 
             GrayPair actualPair(referenceGrayLevel, neighborGrayLevel);
             grayPairsMap[actualPair] += 1;
-            if(simmetric) // Create the simmetric counterpart
+            if(simmetric) // Create the symmetric counterpart
             {
                 GrayPair simmetricPair(neighborGrayLevel, referenceGrayLevel);
                 grayPairsMap[simmetricPair]+=1;
