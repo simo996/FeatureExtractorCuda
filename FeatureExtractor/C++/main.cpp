@@ -1,13 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include "GrayPair.h"
-#include "GLCM.h"
 #include "WindowFeatureComputer.h"
-#include "FeatureComputer.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << "Feature Extractor" << std::endl;
 
     // Mockup Matrix
     int testData[4][4] = {{0,0,1,1},{1,0,1,1},{0,2,2,2},{2,2,3,3}};
@@ -38,13 +35,11 @@ int main() {
     cout << endl ;
 
     int distance = 1;
-    // Start Creating the first GLCM
-    // 4x4 0° 1 pixel distanza
-    int shiftRows = 0;
-    int shiftColumns = 1;
+    // Start Creating the GLCMs
 
-    FeatureComputer fc0(inputPixels, distance, shiftRows, shiftColumns, windowDimension, maxGrayLevel);
-    fc0.computeFeatures();
+    WindowFeatureComputer fcw(inputPixels, distance, windowDimension, maxGrayLevel);
+    WindowFeatures fs= fcw.computeBundledFeatures();
+    fcw.printBundledFeatures(fs);
 
     return 0;
 }

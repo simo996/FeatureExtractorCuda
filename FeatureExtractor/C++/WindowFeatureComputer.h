@@ -11,16 +11,28 @@
 
 using namespace std;
 
+struct FeatureBundle{
+  string directionLabel;
+  map<FeatureNames, double> features;
+};
+
+typedef vector<FeatureBundle> WindowFeatures;
+
 class WindowFeatureComputer {
   /*
      * RESPONSABILITA CLASSE: Computare le feature per la finestra nelle 4 direzioni
      */
-    public:
+public:
         WindowFeatureComputer(const vector<int>& inputPixels, int distance,
                               int windowDimension, int maxGrayLevel, bool symmetric = false);
-        vector<map<FeatureNames, double>> computeFeatures(); // 1 of each of the 4 dimensions
+        WindowFeatures computeBundledFeatures(); // 1 of each of the 4 dimensions
+        void printBundledFeatures(WindowFeatures featureList) const;
+
+        // TODO think about wich of the alternative suits better the ImageFeatureComputer
         void printSeparatedFeatures(vector<map<FeatureNames, double>> featureList) const;
-    private:
+        vector<map<FeatureNames, double>> computeFeatures(); // 1 of each of the 4 dimensions
+
+private:
         vector<int> inputPixels;
         int maxGrayLevel;
         bool symmetric;
