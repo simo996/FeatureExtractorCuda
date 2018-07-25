@@ -21,8 +21,6 @@ typedef struct Direction{
 	string label;
 	int shiftRows;
 	int shiftColumns;
-
-
 } Direction;
 
 vector<Direction> getAllDirections(){
@@ -36,6 +34,9 @@ vector<Direction> getAllDirections(){
 }
 
 // TODO think about keeping this function or using the bundled version
+/*
+	This method will compute the features for all 4 supported directions
+*/
 vector<map<FeatureNames, double>> WindowFeatureComputer::computeFeatures(){
     vector<map<FeatureNames, double>> featureList(4);
 
@@ -53,6 +54,9 @@ vector<map<FeatureNames, double>> WindowFeatureComputer::computeFeatures(){
     return featureList;
 }
 
+/*
+	This method will compute the features for all 4 supported directions
+*/
 vector<FeatureBundle> WindowFeatureComputer::computeBundledFeatures(){
 	vector<FeatureBundle> featureList(4);
 
@@ -70,6 +74,10 @@ vector<FeatureBundle> WindowFeatureComputer::computeBundledFeatures(){
 }
 
 // TODO think about keeping this function or using the bundled version
+/*
+	This method will print the features for all 4 supported directions with
+	an explanatory label
+*/
 void WindowFeatureComputer::printSeparatedFeatures(vector<map<FeatureNames, double>> featureList) const{
 	vector<Direction> allDirections = getAllDirections();
 
@@ -81,6 +89,10 @@ void WindowFeatureComputer::printSeparatedFeatures(vector<map<FeatureNames, doub
 	}
 }
 
+/*
+	This method will print the features for all 4 supported directions with
+	an explanatory label
+*/
 void WindowFeatureComputer::printBundledFeatures(vector<FeatureBundle> featureList) const{
 	for(int i = 0; i < featureList.size(); i++) {
 		cout << "\n\t** " << featureList.at(i).directionLabel << " **" <<endl;

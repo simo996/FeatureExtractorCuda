@@ -33,6 +33,7 @@ public:
         vector<map<FeatureNames, double>> computeFeatures(); // 1 of each of the 4 dimensions
 
 private:
+        // Initialization data to pass to each FeatureComputer
         vector<int> inputPixels;
         int maxGrayLevel;
         bool symmetric;
