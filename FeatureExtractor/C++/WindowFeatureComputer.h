@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <map>
+#include "FeatureComputer.h"
 
 using namespace std;
 
@@ -17,8 +18,8 @@ class WindowFeatureComputer {
     public:
         WindowFeatureComputer(const vector<int>& inputPixels, int distance,
                               int windowDimension, int maxGrayLevel, bool symmetric = false);
-        vector<map<string, double>> computeFeatures(); // 1 of each of the 4 dimensions
-        void printSeparatedFeatures(vector<map<string, double>> featureList) const;
+        vector<map<FeatureNames, double>> computeFeatures(); // 1 of each of the 4 dimensions
+        void printSeparatedFeatures(vector<map<FeatureNames, double>> featureList) const;
     private:
         vector<int> inputPixels;
         int maxGrayLevel;

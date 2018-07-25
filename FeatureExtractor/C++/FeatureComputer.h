@@ -8,6 +8,10 @@
 #include <vector>
 #include "GLCM.h"
 
+enum FeatureNames { ASM, AUTOCORRELATION, ENTROPY, MAXPROB, HOMOGENEITY, CONTRAST,
+    CORRELATION, CLUSTERPROMINENCE, CLUSTERSHADE, SUMOFSQUARES, DISSIMILARITY, IDM,
+    SUMAVERAGE, SUMENTROPY, SUMVARIANCE, DIFFENTROPY, DIFFVARIANCE, IMOC
+};
 
 class FeatureComputer {
     /*
@@ -16,9 +20,9 @@ class FeatureComputer {
 
 public:
     FeatureComputer(vector<int>& inputPixel, int distance, int shiftRows, int shiftColumns, int windowDimension, int maxGrayLevel, bool simmetric = false);
-    map<string, double> computeFeatures();
+    map<FeatureNames, double> computeFeatures();
     // Support methods
-    static void printFeatures(map<std::string, double>& features);
+    static void printFeatures(map<FeatureNames, double>& features);
     static void printGLCM(const GLCM& glcm); // print following information
     static void printGlcmData(const GLCM& glcm);
     static void printGlcmElements(const GLCM& glcm);
@@ -35,11 +39,11 @@ private:
     int shiftColumns;
     bool symmetric;
     // Actual computation of all 18 features
-    map<string, double> computeBatchFeatures(const GLCM& metaGLCM);
-    void extractAutonomousFeatures(const GLCM& metaGLCM, map<string, double>& features);
-    void extractSumAggregatedFeatures(const GLCM& metaGLCM, map<string, double>& features);
-    void extractDiffAggregatedFeatures(const GLCM& metaGLCM, map<string, double>& features);
-    void extractMarginalFeatures(const GLCM& metaGLCM, map<string, double>& features);
+    map<FeatureNames, double> computeBatchFeatures(const GLCM& metaGLCM);
+    void extractAutonomousFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
+    void extractSumAggregatedFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
+    void extractDiffAggregatedFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
+    void extractMarginalFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
 
 };
 

@@ -24,8 +24,8 @@ typedef struct Direction{
 } Direction;
 
 
-vector<map<string, double>> WindowFeatureComputer::computeFeatures(){
-    vector<map<string, double>> featureList(4);
+vector<map<FeatureNames, double>> WindowFeatureComputer::computeFeatures(){
+    vector<map<FeatureNames, double>> featureList(4);
 
     Direction d0{"Direction 0°", 0, 1};
 	Direction d45{"Direction 45°", -1, 1};
@@ -39,7 +39,7 @@ vector<map<string, double>> WindowFeatureComputer::computeFeatures(){
     	Direction actualDir = allDirections[i];
   		FeatureComputer fc(inputPixels, distance, actualDir.shiftRows,
   			actualDir.shiftColumns, windowDimension, maxGrayLevel, symmetric);
-  		map<string, double> computedFeatures = fc.computeFeatures();
+  		map<FeatureNames, double> computedFeatures = fc.computeFeatures();
   		featureList.at(i) = computedFeatures;
     }
 	
@@ -47,7 +47,7 @@ vector<map<string, double>> WindowFeatureComputer::computeFeatures(){
 }
 
 
-void WindowFeatureComputer::printSeparatedFeatures(vector<map<string, double>> featureList) const{
+void WindowFeatureComputer::printSeparatedFeatures(vector<map<FeatureNames, double>> featureList) const{
     Direction d0{"Direction 0°", 0, 1};
     Direction d45{"Direction 45°", -1, 1};
     Direction d90{"Direction 90°", -1, 0};
