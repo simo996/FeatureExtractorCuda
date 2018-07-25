@@ -6,14 +6,14 @@
 #include "WindowFeatureComputer.h"
 #include "FeatureComputer.h"
 
-WindowFeatureComputer::WindowFeatureComputer(const vector<int>& inputPixels, const int maxGrayLevel, const int distance,
-          const int windowDimension, const bool simmetric)
+WindowFeatureComputer::WindowFeatureComputer(const vector<int>& inputPixels, const int distance,
+          const int windowDimension, const int maxGrayLevel, const bool simmetric)
 {
 
 	this->maxGrayLevel = maxGrayLevel;
 	this->distance = distance;
 	this->windowDimension = windowDimension;
-	this->simmetric = simmetric;
+	this->symmetric = simmetric;
 	this->inputPixels = inputPixels;
 }
 
@@ -38,7 +38,7 @@ vector<map<string, double>> WindowFeatureComputer::computeFeatures(){
     {
     	Direction actualDir = allDirections[i];
   		FeatureComputer fc(inputPixels, distance, actualDir.shiftRows,
-  			actualDir.shiftColumns, windowDimension, maxGrayLevel, simmetric);
+  			actualDir.shiftColumns, windowDimension, maxGrayLevel, symmetric);
   		map<string, double> computedFeatures = fc.computeFeatures();
   		featureList.at(i) = computedFeatures;
     }
@@ -48,10 +48,10 @@ vector<map<string, double>> WindowFeatureComputer::computeFeatures(){
 
 
 void WindowFeatureComputer::printSeparatedFeatures(vector<map<string, double>> featureList) const{
-	Direction d0{"Direction 0°", 0, 1};
-	Direction d45{"Direction 45°", 1, 1};
-	Direction d90{"Direction 90°", 1, 0};
-	Direction d135{"Direction 135°", 1, -1};
+    Direction d0{"Direction 0°", 0, 1};
+    Direction d45{"Direction 45°", -1, 1};
+    Direction d90{"Direction 90°", -1, 0};
+    Direction d135{"Direction 135°", -1, -1};
 
 	Direction allDirections[4] = {d0, d45, d90, d135};
 	for(int i = 0; i < 4; i++) {
