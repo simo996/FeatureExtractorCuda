@@ -9,20 +9,15 @@
 using namespace std;
 
 
-FeatureComputer::FeatureComputer(vector<int>& inputPixel, int distance,
-    int shiftRows, int shiftColumns, int windowDimension, int maxGrayLevel,
-                                 bool symmetric) {
+FeatureComputer::FeatureComputer(const vector<int>& inputPixel, const int maxGrayLevel, const int shiftRows,
+                                 const int shiftColumns, const Window wd): windowData(wd) {
     this->inputPixels = inputPixel;
-    this->distance = distance;
-    this->shiftRows = shiftRows;
-    this->shiftColumns = shiftColumns;
-    this->windowDimension = windowDimension;
     this->maxGrayLevel = maxGrayLevel;
-    this->symmetric = symmetric;
+    windowData.setDirectionOffsets(shiftRows, shiftColumns);
 }
 
 map<FeatureNames, double> FeatureComputer::computeFeatures() {
-    GLCM glcm(distance, shiftRows, shiftColumns, windowDimension, maxGrayLevel, symmetric);
+    GLCM glcm(maxGrayLevel, windowData);
     glcm.initializeElements(inputPixels);
     printGLCM(glcm); // Print data and elements for debugging
     map<FeatureNames, double> features = computeBatchFeatures(glcm);

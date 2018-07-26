@@ -5,4 +5,10 @@ set(CMAKE_CXX_STANDARD 11)
 
 find_package( OpenCV REQUIRED )
 
-add_executable(FeatureExtractor main.cpp GrayPair.cpp GrayPair.h AggregatedGrayPair.cpp AggregatedGrayPair.h GLCM.cpp GLCM.h FeatureComputer.cpp FeatureComputer.h WindowFeatureComputer.cpp WindowFeatureComputer.h)
+add_executable(FeatureExtractor main.cpp
+        Window.h Window.cpp
+        GrayPair.cpp GrayPair.h
+        AggregatedGrayPair.cpp AggregatedGrayPair.h
+        GLCM.cpp GLCM.h
+        FeatureComputer.cpp FeatureComputer.h
+        WindowFeatureComputer.cpp WindowFeatureComputer.h)

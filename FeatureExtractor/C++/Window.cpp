@@ -4,7 +4,7 @@
 
 #include "Window.h"
 
-Window::Window(int dimension, int distance, bool symmetric = false){
+Window::Window(int dimension, int distance, bool symmetric){
 	this->dimension = dimension;
 	this->distance = distance;
 	this->symmetric = symmetric;

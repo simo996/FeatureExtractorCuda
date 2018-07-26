@@ -6,14 +6,9 @@
 #include "WindowFeatureComputer.h"
 #include "FeatureComputer.h"
 
-WindowFeatureComputer::WindowFeatureComputer(const vector<int>& inputPixels, const int distance,
-          const int windowDimension, const int maxGrayLevel, const bool symmetric)
-{
-
+WindowFeatureComputer::WindowFeatureComputer(const vector<int>& inputPixels, const int maxGrayLevel, const Window wd)
+		:windowData(wd){
 	this->maxGrayLevel = maxGrayLevel;
-	this->distance = distance;
-	this->windowDimension = windowDimension;
-	this->symmetric = symmetric;
 	this->inputPixels = inputPixels;
 }
 
@@ -45,8 +40,8 @@ vector<map<FeatureNames, double>> WindowFeatureComputer::computeFeatures(){
     for(int i = 0; i < 4; i++)
     {
     	Direction actualDir = allDirections[i];
-  		FeatureComputer fc(inputPixels, distance, actualDir.shiftRows,
-  			actualDir.shiftColumns, windowDimension, maxGrayLevel, symmetric);
+  		FeatureComputer fc(inputPixels, maxGrayLevel, actualDir.shiftRows,
+  			actualDir.shiftColumns, windowData);
   		map<FeatureNames, double> computedFeatures = fc.computeFeatures();
   		featureList.at(i) = computedFeatures;
     }
@@ -64,8 +59,8 @@ vector<FeatureBundle> WindowFeatureComputer::computeBundledFeatures(){
 	for(int i = 0; i < 4; i++)
 	{
 		Direction actualDir = allDirections[i];
-		FeatureComputer fc(inputPixels, distance, actualDir.shiftRows,
-						   actualDir.shiftColumns, windowDimension, maxGrayLevel, symmetric);
+		FeatureComputer fc(inputPixels, maxGrayLevel, actualDir.shiftRows,
+						   actualDir.shiftColumns, windowData);
 		map<FeatureNames, double> computedFeatures = fc.computeFeatures();
 		featureList.at(i) = { actualDir.label, computedFeatures};
 	}

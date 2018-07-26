@@ -12,18 +12,14 @@
 using namespace std;
 
 // Constructors
-GLCM::GLCM(int distance, int shiftRows, int shiftColumns, int windowDimension, int maxGrayLevel, bool simmetric){
-    this->distance = distance;
-    this->shiftRows = shiftRows;
-    this->shiftColumns = shiftColumns;
-    this->windowDimension = windowDimension;
-    this->simmetric = simmetric;
+GLCM::GLCM(int maxGrayLevel, Window wd)
+        : windowData(wd){
     this->maxGrayLevel = maxGrayLevel;
     this->numberOfPairs = getBorderRows() * getBorderColumns();
 }
 
 int GLCM::getNumberOfPairs() const {
-    if(simmetric)
+    if(windowData.symmetric)
         // Each element was counted twice
         return (2 * numberOfPairs);
     else
@@ -35,23 +31,23 @@ int GLCM::getMaxGrayLevel() const {
 }
 
 int GLCM::getBorderRows() const{
-   return (windowDimension - (distance * abs(shiftRows)));
+   return (windowData.dimension - (windowData.distance * abs(windowData.shiftRows)));
 }
 
 int GLCM::getBorderColumns() const{
-    return (windowDimension - (distance * abs(shiftColumns)));
+    return (windowData.dimension - (windowData.distance * abs(windowData.shiftColumns)));
 }
 
 void GLCM::printGLCMData() const{
     cout << endl;
     cout << "***\tGLCM Data\t***" << endl;
-    cout << "Shift rows : " << shiftRows << endl;
-    cout << "Shift columns: " << shiftColumns  << endl;
-    cout << "Father Window dimension: "<< windowDimension  << endl;
+    cout << "Shift rows : " << windowData.shiftRows << endl;
+    cout << "Shift columns: " << windowData.shiftColumns  << endl;
+    cout << "Father Window dimension: "<< windowData.dimension  << endl;
     cout << "Border Rows: "<< getBorderRows()  << endl;
     cout << "Border Columns: " << getBorderColumns()  << endl;
     cout << "Simmetric: ";
-    if(simmetric){
+    if(windowData.symmetric){
         cout << "Yes" << endl;
     }
     else{
@@ -80,7 +76,7 @@ void GLCM::printGLCMElements() const{
 inline int GLCM::computeColumnOffset()
 {
     int initialColumnOffset = 0; // for 0°,45°,90°
-    if((shiftRows * shiftColumns) > 0) // 135°
+    if((windowData.shiftRows * windowData.shiftColumns) > 0) // 135°
         initialColumnOffset = 1;
     return initialColumnOffset;
 }
@@ -93,7 +89,7 @@ inline int GLCM::computeColumnOffset()
 inline int GLCM::computeRowOffset()
 {
     int initialRowOffset = 1; // for 45°,90°,135°
-    if((shiftRows == 0) && (shiftColumns > 0))
+    if((windowData.shiftRows == 0) && (windowData.shiftColumns > 0))
         initialRowOffset = 0; // for 0°
     return initialRowOffset;
 }
@@ -129,14 +125,16 @@ void GLCM::initializeElements(const vector<int>& inputPixels) {
         for (int j = 0; j < getBorderColumns(); j++)
         {
             // Extract the two pixels in the pair
-            int referenceIndex = getReferenceIndex(i, j, windowDimension, initialRowOffset, initialColumnOffset);
+            int referenceIndex = getReferenceIndex(i, j, windowData.dimension, 
+                initialRowOffset, initialColumnOffset);
             referenceGrayLevel = inputPixels[referenceIndex];
-            int neighborIndex = getNeighborIndex(i, j, windowDimension, initialColumnOffset, shiftColumns);
+            int neighborIndex = getNeighborIndex(i, j, windowData.dimension, 
+                initialColumnOffset, windowData.shiftColumns);
             neighborGrayLevel = inputPixels[neighborIndex];
 
             GrayPair actualPair(referenceGrayLevel, neighborGrayLevel);
             grayPairsMap[actualPair] += 1;
-            if(simmetric) // Create the symmetric counterpart
+            if(windowData.symmetric) // Create the symmetric counterpart
             {
                 GrayPair simmetricPair(neighborGrayLevel, referenceGrayLevel);
                 grayPairsMap[simmetricPair]+=1;
