@@ -36,8 +36,8 @@ int main() {
 
     int distance = 1;
     // Start Creating the GLCMs
-
-    WindowFeatureComputer fcw(inputPixels, distance, windowDimension, maxGrayLevel);
+    Window wData(windowDimension, distance);
+    WindowFeatureComputer fcw(inputPixels, maxGrayLevel, wData);
     WindowFeatures fs= fcw.computeBundledFeatures();
     fcw.printBundledFeatures(fs);
 

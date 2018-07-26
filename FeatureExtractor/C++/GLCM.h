@@ -8,6 +8,8 @@
 #include <map>
 #include "GrayPair.h"
 #include "AggregatedGrayPair.h"
+#include "Window.h"
+
 
 using namespace std;
 
@@ -16,7 +18,7 @@ public:
     // Internal State
     map<GrayPair, int> grayPairsMap;
     // Standard initializer constructor
-    GLCM(int distance, int shiftRows, int shiftColumns, int windowDimension, int maxGrayLevel, bool simmetric = false);
+    GLCM(int maxGrayLevel, Window windowData);
     // TODO call from constructor ? Generate elements given the input
     void initializeElements(const vector<int>& inputPixels);
     // Utilities
@@ -41,11 +43,7 @@ public:
     // TODO think about encapsulating in a struct initialization data
     int maxGrayLevel;
     int numberOfPairs;
-    int distance; // modulo tra reference e neighbor
-    int windowDimension;
-    int shiftRows;
-    int shiftColumns;
-    bool simmetric;
+    Window windowData;
 
     // Addressing methods to get to neighbor pixel
     int computeColumnOffset();
