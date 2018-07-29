@@ -323,7 +323,7 @@ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, map<Feature
         int k = actualPair.getAggregatedGrayLevel();
         double actualPairProbability = ((double) actual->second) / numberOfPairs;
 
-        sumvariance += computeSumVarianceStep(k, actualPairProbability, SUMENTROPY);
+        sumvariance += computeSumVarianceStep(k, actualPairProbability, sumentropy);
     }
 
     features[SUMVARIANCE] = sumvariance;
