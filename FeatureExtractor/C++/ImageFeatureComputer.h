@@ -9,24 +9,16 @@
 #include "WindowFeatureComputer.h"
 #include "Window.h"
 
-struct ImageData{
-	int rows;
-	int columns;
-	int maxGrayLevel;
-};
 
 class ImageFeatureComputer {
 public:
-	ImageFeatureComputer(const vector<int>& imagePixels, const ImageData, const Window);
+	ImageFeatureComputer(const Image& img, const Window& window);
 	vector<WindowFeatures> computeAllFeatures();
 private:
-	vector<int> imagePixels;
-	ImageData imgData;
+	Image image;
 	// Information to pass to WindowFeatureComputer = to all generated windows
 	// dimension, distance, symmetric while
 	Window windowData;
-
-	vector<int>& locateWindowPixels(int i, int j, int windowDimension);
 
 };
 

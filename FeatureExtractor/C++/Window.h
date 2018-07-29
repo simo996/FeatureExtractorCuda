@@ -15,14 +15,15 @@ public:
     int distance;
     bool symmetric;
     Window(int dimension, int distance, bool symmetric = false);
-    // Directions offset to locate the pixel pair <reference,neighbor>
+    // Directions shifts to locate the pixel pair <reference,neighbor>
     // The 4 possible combinations are imposed after the creation of the window
     int shiftRows; 
     int shiftColumns;
-    void setDirectionOffsets(int shiftRows, int shiftColumns);
-     // Shift to locate the window inside the entire image
+    void setDirectionShifts(int shiftRows, int shiftColumns);
+     // Offset to locate the starting point of the window inside the entire image
     int imageRowsOffset;
     int imageColumnsOffset;
+    void setSpacialOffsets(int rowOffset, int columnOffset);
 };
 
 

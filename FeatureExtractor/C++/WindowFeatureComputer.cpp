@@ -6,10 +6,8 @@
 #include "WindowFeatureComputer.h"
 #include "FeatureComputer.h"
 
-WindowFeatureComputer::WindowFeatureComputer(const vector<int>& inputPixels, const int maxGrayLevel, const Window wd)
-		:windowData(wd){
-	this->maxGrayLevel = maxGrayLevel;
-	this->inputPixels = inputPixels;
+WindowFeatureComputer::WindowFeatureComputer(const Image& img, const Window& wd)
+		: image(img), windowData(wd){
 }
 
 typedef struct Direction{
@@ -40,8 +38,8 @@ vector<map<FeatureNames, double>> WindowFeatureComputer::computeFeatures(){
     for(int i = 0; i < 4; i++)
     {
     	Direction actualDir = allDirections[i];
-  		FeatureComputer fc(inputPixels, maxGrayLevel, actualDir.shiftRows,
-  			actualDir.shiftColumns, windowData);
+  		FeatureComputer fc(image, actualDir.shiftRows, actualDir.shiftColumns,
+						   windowData);
   		map<FeatureNames, double> computedFeatures = fc.computeFeatures();
   		featureList.at(i) = computedFeatures;
     }
@@ -59,8 +57,8 @@ vector<FeatureBundle> WindowFeatureComputer::computeBundledFeatures(){
 	for(int i = 0; i < 4; i++)
 	{
 		Direction actualDir = allDirections[i];
-		FeatureComputer fc(inputPixels, maxGrayLevel, actualDir.shiftRows,
-						   actualDir.shiftColumns, windowData);
+		FeatureComputer fc(image, actualDir.shiftRows, actualDir.shiftColumns,
+						   windowData);
 		map<FeatureNames, double> computedFeatures = fc.computeFeatures();
 		featureList.at(i) = { actualDir.label, computedFeatures};
 	}

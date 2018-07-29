@@ -19,7 +19,7 @@ class FeatureComputer {
      */
 
 public:
-    FeatureComputer(const vector<int>& inputPixel, int maxGrayLevel, int shiftRows, int shiftColumns, Window windowData);
+    FeatureComputer(const Image& img, int shiftRows, int shiftColumns, const Window& windowData);
     map<FeatureNames, double> computeFeatures();
     // Support methods
     static void printFeatures(map<FeatureNames, double>& features);
@@ -29,8 +29,7 @@ public:
     static void printGlcmAggregated(const GLCM& glcm);
 private:
     // given data to initialize GLCM
-    vector<int> inputPixels;
-    int maxGrayLevel;
+    Image image;
     Window windowData;
 
     // Actual computation of all 18 features

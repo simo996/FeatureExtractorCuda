@@ -7,37 +7,24 @@ int main() {
     std::cout << "Feature Extractor" << std::endl;
 
     // Mockup Matrix
-    int testData[4][4] = {{0,0,1,1},{1,0,1,1},{0,2,2,2},{2,2,3,3}};
+    int testData[] = {0,0,1,1,1,0,1,1,0,2,2,2,2,2,3,3};
+    // Load Image object
+    int *image = testData;
     int rows = 4;
     int columns = 4;
     int maxGrayLevel = 4;
-    int windowDimension = 4;
-
-    vector<int> inputPixels(pow(windowDimension,2));
-    cout << "Img = " << endl;
-    for (int i = 0; i < rows; i++)
-    {
-        for (int j = 0; j < columns; j++)
-        {
-            cout << testData[i][j] << " " ;
-            inputPixels[i * (windowDimension) + j] = testData[i][j];
-        }
-        cout << endl;
-    }
-
-    cout << endl << "Linearized Input matrix:" << endl;
-
-    typedef vector<int>::const_iterator VI;
-    for(VI element=inputPixels.begin(); element != inputPixels.end(); element++)
-    {
-        cout << *element << " " ;
-    }
-    cout << endl ;
-
+    Image img(image, rows, columns, maxGrayLevel);
+    img.printElements();
+    // Load uniform window information (extracted from parameters
     int distance = 1;
-    // Start Creating the GLCMs
+    int windowDimension = 4;
     Window wData(windowDimension, distance);
-    WindowFeatureComputer fcw(inputPixels, maxGrayLevel, wData);
+
+    // DEBUG manually create the window
+    wData.setSpacialOffsets(0,0);
+
+    // Start Creating the GLCMs
+    WindowFeatureComputer fcw(img, wData);
     WindowFeatures fs= fcw.computeBundledFeatures();
     fcw.printBundledFeatures(fs);
 

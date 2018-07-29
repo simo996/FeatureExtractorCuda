@@ -4,28 +4,27 @@
 
 #include "ImageFeatureComputer.h"
 
-ImageFeatureComputer::ImageFeatureComputer(const vector<int>& imagePixels, 
-	const ImageData imgd, const WindowData wd){
-    this->imagePixels = imagePixels;
-    this->imgData = imgd;
+ImageFeatureComputer::ImageFeatureComputer(const Image& img, const Window& wd)
+        : image(img), windowData(wd){
     this->windowData = wd;
 }
 
 vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(){
-	vector<WindowFeatures> imageFeatures;
+	vector<WindowFeatures> featuresList;
 
-	for(int i = 0; (i + windowData.dimension) < imgData.rows; i++){
-		for(int j = 0; (j + windowData.dimension) < imgData.rows ; j++){
+	for(int i = 0; (i + windowData.dimension) < image.getRows(); i++){
+		for(int j = 0; (j + windowData.dimension) < image.getColumns() ; j++){
     		// Create local window information
-    		WindowData actualWindow {windowData.dimension, windowData.distance,
-    			windowData.symmetric, i, j};
+    		Window actualWindow {windowData.dimension, windowData.distance,
+    			windowData.symmetric};
+    		actualWindow.setSpacialOffsets(i,j);
     		// Launch the computation of features on the window
-    		WindowFeatureComputer wfc(windowPixel, windowData.dimension, actualWindow);
+    		WindowFeatureComputer wfc(image, actualWindow);
     		WindowFeatures wfs = wfc.computeBundledFeatures();
     		// save results
-    		imageFeatures.push_back(wfs);
+    		featuresList.push_back(wfs);
 		}
 	}
 
-	return imageFeatures;
+	return featuresList;
 }
