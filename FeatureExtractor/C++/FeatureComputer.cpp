@@ -9,16 +9,13 @@
 using namespace std;
 
 
-FeatureComputer::FeatureComputer(const vector<int>& inputPixel, const int maxGrayLevel, const int shiftRows,
-                                 const int shiftColumns, const Window wd): windowData(wd) {
-    this->inputPixels = inputPixel;
-    this->maxGrayLevel = maxGrayLevel;
-    windowData.setDirectionOffsets(shiftRows, shiftColumns);
+FeatureComputer::FeatureComputer(const Image& img, const int shiftRows,
+                                 const int shiftColumns, const Window& wd): image(img), windowData(wd) {
+    windowData.setDirectionShifts(shiftRows, shiftColumns);
 }
 
 map<FeatureNames, double> FeatureComputer::computeFeatures() {
-    GLCM glcm(maxGrayLevel, windowData);
-    glcm.initializeElements(inputPixels);
+    GLCM glcm(image, windowData);
     printGLCM(glcm); // Print data and elements for debugging
     map<FeatureNames, double> features = computeBatchFeatures(glcm);
     //printFeatures(features);
@@ -114,7 +111,6 @@ inline double computeCorrelationStep(const int i, const int j,
     const double pairProbability, const double muX, const double muY, 
     const double sigmaX, const double sigmaY)
 {
-    //cout << "\ni: " << i << "\tj: " << j << "\t pariprob: " << pairProbability << "\t(i-muX): " << (i -muX) << "\t(j-muY): " << (j - muY) << "\tcontributo: " << (((i - muX) * (j - muY) * pairProbability ) / (sigmaX * sigmaY));
     return (((i - muX) * (j - muY) * pairProbability ) / (sigmaX * sigmaY));
 }
 

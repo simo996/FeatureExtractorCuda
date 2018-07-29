@@ -12,4 +12,5 @@ add_executable(FeatureExtractor main.cpp
         AggregatedGrayPair.cpp AggregatedGrayPair.h
         GLCM.cpp GLCM.h
         FeatureComputer.cpp FeatureComputer.h
-        WindowFeatureComputer.cpp WindowFeatureComputer.h)
+        WindowFeatureComputer.cpp WindowFeatureComputer.h
+        ImageFeatureComputer.cpp ImageFeatureComputer.h Image.cpp Image.h)
