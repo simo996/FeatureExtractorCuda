@@ -95,19 +95,19 @@ inline int GLCM::computeWindowRowOffset()
 }
 
 // addressing method for reference pixel; see documentation
-inline int GLCM::getReferenceIndex(const int windowStartOffset, const int i, const int j,
+inline int GLCM::getReferenceIndex(const int i, const int j,
                                    const int initialWindowRowOffset, const int initialWindowColumnOffset){
-    int index = (((i + windowStartOffset) + (initialWindowRowOffset * windowData.distance)) * img.getRows())
-            + ((j + windowStartOffset) + (initialWindowColumnOffset * windowData.distance));
+    int index = (((i + windowData.imageRowsOffset) + (initialWindowRowOffset * windowData.distance)) * img.getRows())
+            + ((j + windowData.imageColumnsOffset) + (initialWindowColumnOffset * windowData.distance));
     assert(index >= 0);
     return index;
 }
 
 // addressing method for neighbor pixel; see documentation
-inline int GLCM::getNeighborIndex(const int windowStartOffset, const int i, const int j,
+inline int GLCM::getNeighborIndex(const int i, const int j,
                                   const int initialWindowColumnOffset){
-    int index = ((i + windowStartOffset) * img.getColumns()) +
-            ((j + windowStartOffset) + (initialWindowColumnOffset * windowData.distance) + (windowData.shiftColumns * windowData.distance));
+    int index = ((i + windowData.imageRowsOffset) * img.getColumns()) +
+            ((j + windowData.imageColumnsOffset) + (initialWindowColumnOffset * windowData.distance) + (windowData.shiftColumns * windowData.distance));
     assert(index >= 0);
     return index;
 }
@@ -121,7 +121,6 @@ void GLCM::initializeGlcmElements() {
     int initialWindowColumnOffset = computeWindowColumnOffset();
     int initialWindowRowOffset = computeWindowRowOffset();
     // Offset to locate the starting point of the window inside the sliding image
-    int windowStartOffset = (img.getRows() * windowData.imageRowsOffset) + windowData.imageColumnsOffset;
 
     int referenceGrayLevel;
     int neighborGrayLevel;
@@ -130,10 +129,10 @@ void GLCM::initializeGlcmElements() {
         for (int j = 0; j < getBorderColumns(); j++)
         {
             // Extract the two pixels in the pair
-            int referenceIndex = getReferenceIndex(windowStartOffset, i, j,
+            int referenceIndex = getReferenceIndex(i, j,
                     initialWindowRowOffset, initialWindowColumnOffset);
             referenceGrayLevel = img.getPixels()[referenceIndex];
-            int neighborIndex = getNeighborIndex(windowStartOffset, i, j,
+            int neighborIndex = getNeighborIndex(i, j,
                     initialWindowColumnOffset);
             neighborGrayLevel = img.getPixels()[neighborIndex];
 

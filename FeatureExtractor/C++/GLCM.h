@@ -52,8 +52,8 @@ public:
     int getBorderColumns() const;
     // Methods to build the glcm from input pixel and directional data
     void initializeGlcmElements();
-    int getReferenceIndex(int windowStartOffset, int i, int j, int initialRowOffset, int initialColumnOffset);
-    int getNeighborIndex(int windowStartOffset, int i, int j, int initialColumnOffset);
+    int getReferenceIndex(int i, int j, int initialRowOffset, int initialColumnOffset);
+    int getNeighborIndex(int i, int j, int initialColumnOffset);
 
 };
 
