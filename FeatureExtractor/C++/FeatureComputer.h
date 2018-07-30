@@ -20,9 +20,11 @@ class FeatureComputer {
 
 public:
     FeatureComputer(const Image& img, int shiftRows, int shiftColumns, const Window& windowData);
-    map<FeatureNames, double> computeFeatures();
+    map<FeatureNames, double> computeDirectionalFeatures();
     // Support methods
-    static void printFeatures(map<FeatureNames, double>& features);
+    static void printAllFeatures(const map<FeatureNames, double>& features);
+    static void printFeature(const map<FeatureNames, double>& features, 
+        FeatureNames featureName);
     static void printGLCM(const GLCM& glcm); // print following information
     static void printGlcmData(const GLCM& glcm);
     static void printGlcmElements(const GLCM& glcm);

@@ -14,7 +14,7 @@ FeatureComputer::FeatureComputer(const Image& img, const int shiftRows,
     windowData.setDirectionShifts(shiftRows, shiftColumns);
 }
 
-map<FeatureNames, double> FeatureComputer::computeFeatures() {
+map<FeatureNames, double> FeatureComputer::computeDirectionalFeatures() {
     GLCM glcm(image, windowData);
     printGLCM(glcm); // Print data and elements for debugging
     map<FeatureNames, double> features = computeBatchFeatures(glcm);
@@ -22,33 +22,104 @@ map<FeatureNames, double> FeatureComputer::computeFeatures() {
     return features;
 }
 
-void FeatureComputer::printFeatures(map<FeatureNames, double>& features){
+/*
+    This method will print to screen just the entire list of features provided
+*/
+void FeatureComputer::printAllFeatures(const map<FeatureNames, double>& features){
     cout << endl;
-    cout << "ASM: \t" << features[ASM] << endl;
-    cout << "AUTOCORRELATION: \t" << features[AUTOCORRELATION] << endl;
-    cout << "ENTROPY: \t" << features[ENTROPY] << endl;
-    cout << "MAXIMUM PROBABILITY: \t" << features[MAXPROB] << endl;
-    cout << "HOMOGENEITY: \t" << features[HOMOGENEITY] << endl;
-    cout << "CONTRAST: \t" << features[CONTRAST] << endl;
-    cout << "DISSIMILARITY: \t" << features[DISSIMILARITY] << endl;
+    cout << "ASM: \t" << features.at(ASM) << endl;
+    cout << "AUTOCORRELATION: \t" << features.at(AUTOCORRELATION) << endl;
+    cout << "ENTROPY: \t" << features.at(ENTROPY) << endl;
+    cout << "MAXIMUM PROBABILITY: \t" << features.at(MAXPROB) << endl;
+    cout << "HOMOGENEITY: \t" << features.at(HOMOGENEITY) << endl;
+    cout << "CONTRAST: \t" << features.at(CONTRAST) << endl;
+    cout << "DISSIMILARITY: \t" << features.at(DISSIMILARITY) << endl;
 
-    cout << "CORRELATION: \t" << features[CORRELATION] << endl;
-    cout << "CLUSTER Prominence: \t" << features[CLUSTERPROMINENCE] << endl;
-    cout << "CLUSTER SHADE: \t" << features[CLUSTERSHADE] << endl;
-    cout << "SUM OF SQUARES: \t" << features[SUMOFSQUARES] << endl;
-    cout << "IDM normalized: \t" << features[IDM] << endl;
+    cout << "CORRELATION: \t" << features.at(CORRELATION) << endl;
+    cout << "CLUSTER Prominence: \t" << features.at(CLUSTERPROMINENCE) << endl;
+    cout << "CLUSTER SHADE: \t" << features.at(CLUSTERSHADE) << endl;
+    cout << "SUM OF SQUARES: \t" << features.at(SUMOFSQUARES) << endl;
+    cout << "IDM normalized: \t" << features.at(IDM) << endl;
 
-    cout << "SUM AVERAGE: \t" << features[SUMAVERAGE] << endl;
-    cout << "SUM ENTROPY: \t" << features[SUMENTROPY] << endl;
-    cout << "SUM VARIANCE: \t" << features[SUMVARIANCE] << endl;
+    cout << "SUM AVERAGE: \t" << features.at(SUMAVERAGE) << endl;
+    cout << "SUM ENTROPY: \t" << features.at(SUMENTROPY) << endl;
+    cout << "SUM VARIANCE: \t" << features.at(SUMVARIANCE) << endl;
 
-    cout << "DIFF ENTROPY: \t" << features[DIFFENTROPY] << endl;
-    cout << "DIFF VARIANCE: \t" << features[DIFFVARIANCE] << endl;
+    cout << "DIFF ENTROPY: \t" << features.at(DIFFENTROPY) << endl;
+    cout << "DIFF VARIANCE: \t" << features.at(DIFFVARIANCE) << endl;
 
-    cout << "INFORMATION MEASURE OF CORRELATION: \t" << features[IMOC] << endl;
+    cout << "INFORMATION MEASURE OF CORRELATION: \t" << features.at(IMOC) << endl;
 
     cout << endl;
 
+}
+
+/* 
+    // TODO Ugly as sin, think about refactoring
+    This method will print to screen just the selected feature from the 
+    full list provided
+*/
+void FeatureComputer::printFeature(const map<FeatureNames, double>& features,
+        FeatureNames featureName){
+    switch(featureName){
+        case (ASM):
+            cout << "ASM: \t" << features.at(ASM) << endl;
+            break;
+        case (AUTOCORRELATION):
+            cout << "AUTOCORRELATION: \t" << features.at(AUTOCORRELATION) << endl;
+            break;
+        case (ENTROPY):
+            cout << "ENTROPY: \t" << features.at(ENTROPY) << endl;
+            break;
+        case (MAXPROB):
+            cout << "MAXIMUM PROBABILITY: \t" << features.at(MAXPROB) << endl;
+            break;
+        case (HOMOGENEITY):
+            cout << "HOMOGENEITY: \t" << features.at(HOMOGENEITY) << endl;
+            break;
+        case (CONTRAST):
+            cout << "CONTRAST: \t" << features.at(CONTRAST) << endl;
+            break;
+        case (DISSIMILARITY):
+            cout << "DISSIMILARITY: \t" << features.at(DISSIMILARITY) << endl;
+            break;
+        case (CORRELATION):
+            cout << "CORRELATION: \t" << features.at(CORRELATION) << endl;
+            break;
+        case (CLUSTERPROMINENCE):
+            cout << "CLUSTER Prominence: \t" << features.at(CLUSTERPROMINENCE) << endl;
+            break;
+        case (CLUSTERSHADE):
+            cout << "CLUSTER SHADE: \t" << features.at(CLUSTERSHADE) << endl;
+            break;
+        case (SUMOFSQUARES):
+            cout << "SUM OF SQUARES: \t" << features.at(SUMOFSQUARES) << endl;
+            break;
+        case (SUMAVERAGE):
+            cout << "SUM AVERAGE: \t" << features.at(SUMAVERAGE) << endl;
+            break;
+        case (IDM):
+            cout << "IDM normalized: \t" << features.at(IDM) << endl;
+            break;
+        case (SUMENTROPY):
+            cout << "SUM ENTROPY: \t" << features.at(SUMENTROPY) << endl;
+            break;
+        case (SUMVARIANCE):
+            cout << "SUM VARIANCE: \t" << features.at(SUMVARIANCE) << endl;
+            break;
+        case (DIFFENTROPY):
+            cout << "DIFF ENTROPY: \t" << features.at(DIFFENTROPY) << endl;
+            break;
+        case (DIFFVARIANCE):
+            cout << "DIFF VARIANCE: \t" << features.at(DIFFVARIANCE) << endl;
+            break;
+        case (IMOC):
+            cout << "DIFF ENTROPY: \t" << features.at(IMOC) << endl;
+            break;
+        default:
+            fputs("Fatal Error! Unrecognized direction", stderr);
+            exit(-1);
+    }
 }
 
 /* TODO remove METHODS FOR DEBUG */
