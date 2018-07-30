@@ -97,8 +97,8 @@ inline int GLCM::computeWindowRowOffset()
 // addressing method for reference pixel; see documentation
 inline int GLCM::getReferenceIndex(const int windowStartOffset, const int i, const int j,
                                    const int initialWindowRowOffset, const int initialWindowColumnOffset){
-    int index = (((i + windowStartOffset) + initialWindowRowOffset) * img.getRows())
-            + ((j + windowStartOffset) + initialWindowColumnOffset);
+    int index = (((i + windowStartOffset) + (initialWindowRowOffset * windowData.distance)) * img.getRows())
+            + ((j + windowStartOffset) + (initialWindowColumnOffset * windowData.distance));
     assert(index >= 0);
     return index;
 }
@@ -107,7 +107,7 @@ inline int GLCM::getReferenceIndex(const int windowStartOffset, const int i, con
 inline int GLCM::getNeighborIndex(const int windowStartOffset, const int i, const int j,
                                   const int initialWindowColumnOffset){
     int index = ((i + windowStartOffset) * img.getColumns()) +
-            ((j + windowStartOffset) + initialWindowColumnOffset + windowData.shiftColumns);
+            ((j + windowStartOffset) + (initialWindowColumnOffset * windowData.distance) + (windowData.shiftColumns * windowData.distance));
     assert(index >= 0);
     return index;
 }
