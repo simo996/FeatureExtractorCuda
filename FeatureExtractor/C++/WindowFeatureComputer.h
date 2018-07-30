@@ -11,25 +11,40 @@
 
 using namespace std;
 
+// Struct that represent all the supported directions
+typedef struct Direction{
+    string label;
+    int shiftRows;
+    int shiftColumns;
+} Direction;
+
+vector<Direction> getAllDirections();
+
+// Commodity structs that encapsulate the feature list computed for 1 direction
 struct FeatureBundle{
   string directionLabel;
   map<FeatureNames, double> features;
 };
+typedef vector<FeatureBundle> WindowFeatures; // will contain result for 4 directions
 
-typedef vector<FeatureBundle> WindowFeatures;
 
 class WindowFeatureComputer {
-  /*
-     * RESPONSABILITA CLASSE: Computare le feature per la finestra nelle 4 direzioni
-     */
-public:
-        WindowFeatureComputer(const Image& img, const Window& wd);
-        WindowFeatures computeBundledFeatures(); // 1 of each of the 4 dimensions
-        void printBundledFeatures(WindowFeatures featureList) const;
+    /*
+   * RESPONSABILITA CLASSE: Computare le feature per la finestra nelle 4 direzioni
+     * Fornire un stream di rappresentazione verso file
+   */
 
-        // TODO think about wich of the alternative suits better the ImageFeatureComputer
-        void printSeparatedFeatures(vector<map<FeatureNames, double>> featureList) const;
-        vector<map<FeatureNames, double>> computeFeatures(); // 1 of each of the 4 dimensions
+public:
+    WindowFeatureComputer(const Image& img, const Window& wd);
+    WindowFeatures computeWindowFeatures(); // 1 of each of the 4 dimensions
+    /* Oss. No sense in computing a single feature, simply select the one
+      needed from the complete list
+     */
+    // TODO return an ostream
+    static void printAllDirectionsFeatures(const WindowFeatures &featureList); // 4 directions with dir label
+    static void printAllDirectionsSingleFeature(const WindowFeatures &featureList, FeatureNames featureName);
+    static void printSingleDirectionAllFeatures(const FeatureBundle& featureList); // with dir
+    static void printSingleDirectionSingleFeature(const FeatureBundle& featureList,  FeatureNames featureName);
 
 private:
         // Initialization data to pass to each FeatureComputer

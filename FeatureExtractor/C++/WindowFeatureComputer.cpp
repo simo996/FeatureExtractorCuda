@@ -4,17 +4,6 @@
 
 #include <iostream>
 #include "WindowFeatureComputer.h"
-#include "FeatureComputer.h"
-
-WindowFeatureComputer::WindowFeatureComputer(const Image& img, const Window& wd)
-		: image(img), windowData(wd){
-}
-
-typedef struct Direction{
-	string label;
-	int shiftRows;
-	int shiftColumns;
-} Direction;
 
 vector<Direction> getAllDirections(){
 	Direction d0{"Direction 0°", 0, 1};
@@ -26,31 +15,14 @@ vector<Direction> getAllDirections(){
 	return out;
 }
 
-// TODO think about keeping this function or using the bundled version
-/*
-	This method will compute the features for all 4 supported directions
-*/
-vector<map<FeatureNames, double>> WindowFeatureComputer::computeFeatures(){
-    vector<map<FeatureNames, double>> featureList(4);
-
-   	vector<Direction> allDirections = getAllDirections();
-
-    for(int i = 0; i < 4; i++)
-    {
-    	Direction actualDir = allDirections[i];
-  		FeatureComputer fc(image, actualDir.shiftRows, actualDir.shiftColumns,
-						   windowData);
-  		map<FeatureNames, double> computedFeatures = fc.computeFeatures();
-  		featureList.at(i) = computedFeatures;
-    }
-	
-    return featureList;
+WindowFeatureComputer::WindowFeatureComputer(const Image& img, const Window& wd)
+		: image(img), windowData(wd){
 }
 
 /*
-	This method will compute the features for all 4 supported directions
+	This method will compute all the features for all 4 supported directions
 */
-vector<FeatureBundle> WindowFeatureComputer::computeBundledFeatures(){
+vector<FeatureBundle> WindowFeatureComputer::computeWindowFeatures(){
 	vector<FeatureBundle> featureList(4);
 
 	vector<Direction> allDirections = getAllDirections();
@@ -59,38 +31,45 @@ vector<FeatureBundle> WindowFeatureComputer::computeBundledFeatures(){
 		Direction actualDir = allDirections[i];
 		FeatureComputer fc(image, actualDir.shiftRows, actualDir.shiftColumns,
 						   windowData);
-		map<FeatureNames, double> computedFeatures = fc.computeFeatures();
+		map<FeatureNames, double> computedFeatures = fc.computeDirectionalFeatures();
 		featureList.at(i) = { actualDir.label, computedFeatures};
 	}
 
 	return featureList;
 }
 
-// TODO think about keeping this function or using the bundled version
 /*
-	This method will print the features for all 4 supported directions with
-	an explanatory label
+	This method will print all the features for all 4 supported directions
 */
-void WindowFeatureComputer::printSeparatedFeatures(vector<map<FeatureNames, double>> featureList) const{
-	vector<Direction> allDirections = getAllDirections();
-
-	for(int i = 0; i < 4; i++) {
-		Direction actualDir = allDirections[i];
-		cout << "\n\t** " << actualDir.label << " **" <<endl;
-		FeatureComputer::printFeatures(featureList[i]);
-		cout << endl;
+void WindowFeatureComputer::printAllDirectionsFeatures(const WindowFeatures &featureList){
+	for(int i = 0; i < featureList.size(); i++) {
+		printSingleDirectionAllFeatures(featureList[i]);
 	}
 }
 
 /*
-	This method will print the features for all 4 supported directions with
-	an explanatory label
+	This method will print the features for 1 supported direction with explanatory label
 */
-void WindowFeatureComputer::printBundledFeatures(vector<FeatureBundle> featureList) const{
-	for(int i = 0; i < featureList.size(); i++) {
-		cout << "\n\t** " << featureList.at(i).directionLabel << " **" <<endl;
-		FeatureComputer::printFeatures(featureList.at(i).features);
-		cout << endl;
-	}
+void WindowFeatureComputer::printSingleDirectionAllFeatures(const FeatureBundle& featureList){
+	cout << "\n\t** " << featureList.directionLabel << " **" <<endl;
+	FeatureComputer::printAllFeatures(featureList.features);
+	cout << endl;
+}
 
+/*
+	This method will print 1 feature for all 4 supported direction with their label
+*/
+void WindowFeatureComputer::printAllDirectionsSingleFeature(const WindowFeatures &featureList, FeatureNames fname){
+	for(int i = 0; i < featureList.size(); i++) {
+		printSingleDirectionSingleFeature(featureList[i], fname);
+	}
+}
+
+/*
+	This method will print 1 feature for 1 supported direction with direction's label
+*/
+void WindowFeatureComputer::printSingleDirectionSingleFeature(const FeatureBundle& featureList, const FeatureNames fname){
+	cout << "\n\t** " << featureList.directionLabel << " **" <<endl;
+	FeatureComputer::printFeature(featureList.features, fname);
+	cout << endl;
 }
