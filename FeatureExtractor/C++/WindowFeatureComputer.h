@@ -36,7 +36,9 @@ class WindowFeatureComputer {
 
 public:
     WindowFeatureComputer(const Image& img, const Window& wd);
-    WindowFeatures computeWindowFeatures(); // 1 of each of the 4 dimensions
+    // Will be computed features in the directions specified
+    // Default = 4 = all feautures ; oder 0->45->90->135°
+    WindowFeatures computeWindowFeatures(int numberOfDirections = 4);
     /* Oss. No sense in computing a single feature, simply select the one
       needed from the complete list
      */

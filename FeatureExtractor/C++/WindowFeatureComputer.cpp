@@ -20,13 +20,15 @@ WindowFeatureComputer::WindowFeatureComputer(const Image& img, const Window& wd)
 }
 
 /*
-	This method will compute all the features for all 4 supported directions
+	This method will compute all the features for all numberOfDirections directions
+ 	provided by a parameter to the program ; the order is 0,45,90,135° ;
+ 	By default all 4 directions are evaluated
 */
-vector<FeatureBundle> WindowFeatureComputer::computeWindowFeatures(){
-	vector<FeatureBundle> featureList(4);
+vector<FeatureBundle> WindowFeatureComputer::computeWindowFeatures(const int numberOfDirections) {
+	vector<FeatureBundle> featureList(numberOfDirections);
 
 	vector<Direction> allDirections = getAllDirections();
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < numberOfDirections; i++)
 	{
 		Direction actualDir = allDirections[i];
 		FeatureComputer fc(image, actualDir.shiftRows, actualDir.shiftColumns,
