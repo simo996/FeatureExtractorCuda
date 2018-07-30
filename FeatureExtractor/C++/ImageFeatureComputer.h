@@ -7,16 +7,17 @@
 #define FEATUREEXTRACTOR_IMAGEFEATURECOMPUTER_H
 
 #include "WindowFeatureComputer.h"
-#include "Window.h"
 
 
 class ImageFeatureComputer {
 public:
 	ImageFeatureComputer(const Image& img, const Window& window);
 	vector<WindowFeatures> computeAllFeatures();
+	static void printImageAllFeatures(const vector<WindowFeatures>& imageFeatureList);
+	static void printImageSingleFeature(const vector<WindowFeatures>& imageFeatureList, FeatureNames fname);
 private:
 	Image image;
-	// Information to pass to WindowFeatureComputer = to all generated windows
+	// Information to pass to WindowFeatureComputer equal to all generated windows
 	// dimension, distance, symmetric while
 	Window windowData;
 
