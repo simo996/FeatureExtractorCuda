@@ -1,6 +1,5 @@
 /*
- * La classe include i pixels e le informazioni di contorno dell'immagine
-    Created by simo on 29/07/18.
+ * This class embeds pixels and image's metadata used by other components
 */
 
 #ifndef FEATUREEXTRACTOR_IMAGE_H

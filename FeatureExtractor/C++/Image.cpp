@@ -1,10 +1,5 @@
-//
-// Created by simo on 29/07/18.
-//
-
 #include <iostream>
 #include "Image.h"
-
 
 int Image::getRows() const{
     return rows;
