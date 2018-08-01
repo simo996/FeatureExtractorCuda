@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <map>
+#include <string>
 #include <iostream>
 
 using namespace std;
@@ -24,6 +25,8 @@ class Features {
 public:
     // return a list of the 18 features
     static vector<FeatureNames> getAllSupportedFeatures();
+    // return a list of all the file names associated at features
+    static vector<string> getAllFeaturesFileNames();
     // print features labels and their values
     static void printAllFeatures(const map<FeatureNames, double>& features);
     // print single feature label and its value
@@ -31,6 +34,7 @@ public:
                                    FeatureNames featureName);
     // print the label associated with the enum
     static void printFeatureName(FeatureNames featureName);
+    static string getFeatureName(FeatureNames featureName);
 };
 
 

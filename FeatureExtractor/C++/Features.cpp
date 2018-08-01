@@ -15,6 +15,31 @@ vector<FeatureNames> Features::getAllSupportedFeatures() {
 
 }
 
+vector<string> Features::getAllFeaturesFileNames() {
+    // The right method will append the right extension to the filename
+    vector<string> fileNames = {
+            "ASM",
+            "AUTOCORRELATION",
+            "ENTROPY",
+            "MAXPROB",
+            "HOMOGENEITY",
+            "CONTRAST",
+            "CORRELATION",
+            "CLUSTERPROMINENCE",
+            "CLUSTERSHADE",
+            "SUMOFSQUARES",
+            "DISSIMILARITY",
+            "IDM",
+            "SUMAVERAGE",
+            "SUMENTROPY",
+            "SUMVARIANCE",
+            "DIFFENTROPY",
+            "DIFFVARIANCE",
+            "IMOC"
+    };
+    return fileNames;
+}
+
 /*
     This method will print to screen just the entire list of features provided
 */
@@ -48,70 +73,58 @@ void Features::printAllFeatures(const map<FeatureNames, double>& features){
 
 
 /*
-    This method will print to screen just the given feature
-    performing "a conversion ENUM->String"
+    This method will perform "a conversion ENUM->String"
 */
-// TODO think about moving closer to enum definition
-void Features::printFeatureName(FeatureNames featureName){
+string Features::getFeatureName(FeatureNames featureName){
     switch(featureName){
         case (ASM):
-            cout << "ASM: \t";
-            break;
+            return "ASM: ";
         case (AUTOCORRELATION):
-            cout << "AUTOCORRELATION: \t" ;
-            break;
+            return "AUTOCORRELATION: " ;
         case (ENTROPY):
-            cout << "ENTROPY: \t";
-            break;
+            return "ENTROPY: ";
         case (MAXPROB):
-            cout << "MAXIMUM PROBABILITY: \t";
-            break;
+            return "MAXIMUM PROBABILITY: ";
         case (HOMOGENEITY):
-            cout << "HOMOGENEITY: \t";
-            break;
+            return "HOMOGENEITY: ";
         case (CONTRAST):
-            cout << "CONTRAST: \t";
-            break;
+            return "CONTRAST: ";
         case (DISSIMILARITY):
-            cout << "DISSIMILARITY: \t";
-            break;
+            return "DISSIMILARITY: ";
         case (CORRELATION):
-            cout << "CORRELATION: \t";
-            break;
+            return "CORRELATION: ";
         case (CLUSTERPROMINENCE):
-            cout << "CLUSTER Prominence: \t";
-            break;
+            return "CLUSTER Prominence: ";
         case (CLUSTERSHADE):
-            cout << "CLUSTER SHADE: \t";
-            break;
+            return "CLUSTER SHADE: ";
         case (SUMOFSQUARES):
-            cout << "SUM OF SQUARES: \t" ;
-            break;
+            return "SUM OF SQUARES: " ;
         case (SUMAVERAGE):
-            cout << "SUM AVERAGE: \t";
-            break;
+            return "SUM AVERAGE: ";
         case (IDM):
-            cout << "IDM normalized: \t";
-            break;
+            return "IDM normalized: ";
         case (SUMENTROPY):
-            cout << "SUM ENTROPY: \t";
-            break;
+            return "SUM ENTROPY: ";
         case (SUMVARIANCE):
-            cout << "SUM VARIANCE: \t";
-            break;
+            return "SUM VARIANCE: ";
         case (DIFFENTROPY):
-            cout << "DIFF ENTROPY: \t";
-            break;
+            return "DIFF ENTROPY: ";
         case (DIFFVARIANCE):
-            cout << "DIFF VARIANCE: \t";
-            break;
+            return "DIFF VARIANCE: ";
         case (IMOC):
-            cout << "INFORMATION MEASURE OF CORRELATION: \t";
-            break;
+            return "INFORMATION MEASURE OF CORRELATION: ";
         default:
-            fputs("Fatal Error! Unrecognized direction", stderr);
+            fputs("Fatal Error! Unrecognized feature", stderr);
             exit(-1);
     }
+}
+
+
+/*
+    This method will print to screen the ENUM label
+*/
+void Features::printFeatureName(FeatureNames featureName){
+    cout << getFeatureName(featureName);
 }
 
 void Features::printSingleFeature(const map<FeatureNames, double>& features,
