@@ -50,22 +50,3 @@ void WindowFeatureComputer::printSingleDirectionAllFeatures(const map<FeatureNam
 	cout << endl;
 }
 
-/*
-	This method will print 1 feature for all 4 supported direction with their label
-*/
-void WindowFeatureComputer::printAllDirectionsSingleFeature(const WindowFeatures &featureList, FeatureNames fname){
-	// The number of directions is deducted from size of WindowFeatures
-	for(int i = 0; i < featureList.size(); i++) {
-        Direction::printDirectionLabel(i);
-        printSingleDirectionSingleFeature(featureList[i], fname);
-	}
-}
-
-
-/*
-	This method will print 1 feature for 1 supported direction with direction's label
-*/
-void WindowFeatureComputer::printSingleDirectionSingleFeature(const map<FeatureNames, double>& featureList, FeatureNames fname){
-	Features::printSingleFeature(featureList, fname);
-	cout << endl;
-}

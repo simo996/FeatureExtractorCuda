@@ -31,10 +31,8 @@ public:
      */
     // TODO return an ostream
     static void printAllDirectionsAllFeatures(const WindowFeatures &featureList); // 4 directions with dir label
-    static void printAllDirectionsSingleFeature(const WindowFeatures &featureList, FeatureNames featureName);
     // Print the label of the direction and the features
     static void printSingleDirectionAllFeatures(const map<FeatureNames, double>& featureList); // with dir
-    static void printSingleDirectionSingleFeature(const map<FeatureNames, double>& featureList, FeatureNames featureName);
 
 private:
         // Initialization data to pass to each FeatureComputer
