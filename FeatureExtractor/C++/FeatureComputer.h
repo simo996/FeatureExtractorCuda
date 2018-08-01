@@ -17,11 +17,10 @@ class FeatureComputer {
 
 public:
     FeatureComputer(const Image& img, int shiftRows, int shiftColumns, const Window& windowData);
+    // TODO refactor from map to static array, maybe create dedicated object
     map<FeatureNames, double> computeDirectionalFeatures();
-    // Methods for printing features and their label
-
 private:
-    // given data to initialize GLCM
+    // given data to initialize related GLCM
     Image image;
     Window windowData;
 
@@ -32,11 +31,8 @@ private:
     void extractDiffAggregatedFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
     void extractMarginalFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
 
-    // Support methods useful for debug purpose
-    static void printGLCM(const GLCM& glcm); // prints following information
-    static void printGlcmData(const GLCM& glcm);
-    static void printGlcmElements(const GLCM& glcm);
-    static void printGlcmAggregated(const GLCM& glcm);
+    // Support method useful for debugging this class
+    static void printGLCM(const GLCM& glcm); // prints glcms various information
 };
 
 

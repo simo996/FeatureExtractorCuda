@@ -22,18 +22,8 @@ map<FeatureNames, double> FeatureComputer::computeDirectionalFeatures() {
 
 /* TODO remove METHODS FOR DEBUG */
 void FeatureComputer::printGLCM(const GLCM& glcm){
-    printGlcmData(glcm);
-    printGlcmElements(glcm);
-    //printGlcmAggregated(glcm);
-}
-
-void FeatureComputer::printGlcmData(const GLCM& glcm){
     glcm.printGLCMData();
-}
-void FeatureComputer::printGlcmElements(const GLCM& glcm){
     glcm.printGLCMElements();
-}
-void FeatureComputer::printGlcmAggregated(const GLCM& glcm){
     glcm.printAggregated();
 }
 
