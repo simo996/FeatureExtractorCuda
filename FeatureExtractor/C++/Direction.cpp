@@ -20,19 +20,19 @@ vector<Direction> Direction::getAllDirections(){
     return out;
 }
 
-void Direction::printDirectionLabel(const int direction){
+string Direction::getDirectionLabel(const int direction){
     switch(direction){
         case 0:
-            cout << endl << " * Direction 0° *" << endl;
+            return " * Direction 0° *" ;
             break;
         case 1:
-            cout << endl << " * Direction 45° *" << endl;
+            return " * Direction 45° *";
             break;
         case 2:
-            cout << endl << " * Direction 90° *" << endl;
+            return " * Direction 90° *";
             break;
         case 3:
-            cout << endl << " * Direction 135° *" << endl;
+            return " * Direction 135° *d";
             break;
         default:
             cerr << "Fatal Error! Unrecognized direction";
@@ -40,6 +40,10 @@ void Direction::printDirectionLabel(const int direction){
     }
 }
 
+void Direction::printDirectionLabel(const int direction)
+{
+    cout << endl << getDirectionLabel(direction) << endl;
+}
 
 void Direction::printDirectionLabel(const Direction& direction) {
     cout << endl << "* " << direction.label << " *" << endl;
