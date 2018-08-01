@@ -8,24 +8,11 @@
 #include <vector>
 #include <map>
 #include "FeatureComputer.h"
+#include "Direction.h"
 
 using namespace std;
 
-// Struct that represent all the supported directions
-typedef struct Direction{
-    string label;
-    int shiftRows;
-    int shiftColumns;
-} Direction;
-
-vector<Direction> getAllDirections();
-
-// Commodity structs that encapsulate the feature list computed for 1 direction
-struct FeatureBundle{
-  string directionLabel;
-  map<FeatureNames, double> features;
-};
-typedef vector<FeatureBundle> WindowFeatures; // will contain result for 4 directions
+typedef vector<map<FeatureNames, double>> WindowFeatures; // will contain result for 4 directions
 
 
 class WindowFeatureComputer {
@@ -43,10 +30,11 @@ public:
       needed from the complete list
      */
     // TODO return an ostream
-    static void printAllDirectionsFeatures(const WindowFeatures &featureList); // 4 directions with dir label
+    static void printAllDirectionsAllFeatures(const WindowFeatures &featureList); // 4 directions with dir label
     static void printAllDirectionsSingleFeature(const WindowFeatures &featureList, FeatureNames featureName);
-    static void printSingleDirectionAllFeatures(const FeatureBundle& featureList); // with dir
-    static void printSingleDirectionSingleFeature(const FeatureBundle& featureList,  FeatureNames featureName);
+    // Print the label of the direction and the features
+    static void printSingleDirectionAllFeatures(const map<FeatureNames, double>& featureList); // with dir
+    static void printSingleDirectionSingleFeature(const map<FeatureNames, double>& featureList, FeatureNames featureName);
 
 private:
         // Initialization data to pass to each FeatureComputer

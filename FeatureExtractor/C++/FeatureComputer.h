@@ -7,28 +7,19 @@
 
 #include <vector>
 #include "GLCM.h"
-
-enum FeatureNames { ASM, AUTOCORRELATION, ENTROPY, MAXPROB, HOMOGENEITY, CONTRAST,
-    CORRELATION, CLUSTERPROMINENCE, CLUSTERSHADE, SUMOFSQUARES, DISSIMILARITY, IDM,
-    SUMAVERAGE, SUMENTROPY, SUMVARIANCE, DIFFENTROPY, DIFFVARIANCE, IMOC
-};
+#include "Features.h"
 
 class FeatureComputer {
     /*
      * RESPONSABILITA CLASSE: Computare le 18 features per la singola direzione della finestra
+     * Espone metodi per stampare i risultati
      */
 
 public:
     FeatureComputer(const Image& img, int shiftRows, int shiftColumns, const Window& windowData);
     map<FeatureNames, double> computeDirectionalFeatures();
-    // Support methods
-    static void printAllFeatures(const map<FeatureNames, double>& features);
-    static void printFeature(const map<FeatureNames, double>& features, 
-        FeatureNames featureName);
-    static void printGLCM(const GLCM& glcm); // print following information
-    static void printGlcmData(const GLCM& glcm);
-    static void printGlcmElements(const GLCM& glcm);
-    static void printGlcmAggregated(const GLCM& glcm);
+    // Methods for printing features and their label
+
 private:
     // given data to initialize GLCM
     Image image;
@@ -41,6 +32,11 @@ private:
     void extractDiffAggregatedFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
     void extractMarginalFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
 
+    // Support methods useful for debug purpose
+    static void printGLCM(const GLCM& glcm); // prints following information
+    static void printGlcmData(const GLCM& glcm);
+    static void printGlcmElements(const GLCM& glcm);
+    static void printGlcmAggregated(const GLCM& glcm);
 };
 
 
