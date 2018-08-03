@@ -10,13 +10,13 @@ class AggregatedGrayPair {
     public:
         void printPair() const;
         int getAggregatedGrayLevel() const;
-        AggregatedGrayPair(int i);
+        explicit AggregatedGrayPair(unsigned int i);
 
         bool operator<(const AggregatedGrayPair& other) const{
             return (grayLevel < other.getAggregatedGrayLevel());
         }
     private:
-        int grayLevel;
+        unsigned int grayLevel;
 
 };
 

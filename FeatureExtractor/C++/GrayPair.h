@@ -9,9 +9,9 @@
 class GrayPair {
     public:
         void printPair() const;
-        int getGrayLevelI() const;
-        int getGrayLevelJ() const;
-        GrayPair(int i, int j);
+        unsigned int getGrayLevelI() const;
+        unsigned int getGrayLevelJ() const;
+        explicit GrayPair(unsigned int i, unsigned int j);
 
         bool operator<(const GrayPair& other) const{
             if(grayLevelI != other.getGrayLevelI())
@@ -21,8 +21,8 @@ class GrayPair {
         }
     private:
     //  TODO versione alternativa con singolo int per entrambi
-        int grayLevelI;
-        int grayLevelJ;
+        unsigned int grayLevelI;
+        unsigned int grayLevelJ;
 
 };
 

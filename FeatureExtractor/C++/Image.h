@@ -7,19 +7,19 @@
 
 class Image {
 public:
-    Image(const int* pixels, int rows, int columns, int mxGrayLevel)
+    Image(const int* pixels, uint rows, uint columns, uint mxGrayLevel)
             :pixels(pixels), rows(rows), columns(columns), maxGrayLevel(mxGrayLevel){};
     //Image(Mat& image);
     const int* getPixels() const;
-    int getRows() const;
-    int getColumns() const;
-    int getMaxGrayLevel() const;
+    uint getRows() const;
+    uint getColumns() const;
+    uint getMaxGrayLevel() const;
     void printElements() const;
 private:
     const int * pixels;
-    const int rows;
-    const int columns;
-    const int maxGrayLevel;
+    const uint rows;
+    const uint columns;
+    const uint maxGrayLevel;
 };
 
 

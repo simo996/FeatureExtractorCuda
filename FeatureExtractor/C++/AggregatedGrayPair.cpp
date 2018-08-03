@@ -5,7 +5,7 @@
 #include <iostream>
 #include "AggregatedGrayPair.h"
 
-AggregatedGrayPair::AggregatedGrayPair(int i){
+AggregatedGrayPair::AggregatedGrayPair(unsigned int i){
     grayLevel = i;
 }
 

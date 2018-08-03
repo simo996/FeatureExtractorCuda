@@ -6,7 +6,7 @@
 #include "GrayPair.h"
 
 /* Constructors*/
-GrayPair::GrayPair (int i, int j) {
+GrayPair::GrayPair (unsigned int i, unsigned int j) {
    grayLevelI = i;
    grayLevelJ = j;
 }
@@ -17,10 +17,10 @@ void GrayPair::printPair()const {
 }
 
 /* Extracting pairs */
-int GrayPair::getGrayLevelI() const{
+uint GrayPair::getGrayLevelI() const{
     return grayLevelI;
 }
 
-int GrayPair::getGrayLevelJ() const{
+uint GrayPair::getGrayLevelJ() const{
     return grayLevelJ;
 }
