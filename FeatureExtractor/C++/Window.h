@@ -11,10 +11,10 @@
 class Window {
 public:
 	// Structural data uniform for all windows
-	int dimension;
-    int distance;
+	short int side; // side of each window
+    short int distance; // modulus of vector reference-neighbor pixel pair 
     bool symmetric;
-    Window(int dimension, int distance, bool symmetric = false);
+    Window(short int dimension, short int distance, bool symmetric = false);
     // Directions shifts to locate the pixel pair <reference,neighbor>
     // The 4 possible combinations are imposed after the creation of the window
     int shiftRows; 

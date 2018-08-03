@@ -20,10 +20,10 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(const int number
 	this->numberOfDirections = numberOfDirections;
 	vector<WindowFeatures> featuresList;
 
-	for(int i = 0; (i + windowData.dimension) <= image.getRows(); i++){
-		for(int j = 0; (j + windowData.dimension) <= image.getColumns() ; j++){
+	for(int i = 0; (i + windowData.side) <= image.getRows(); i++){
+		for(int j = 0; (j + windowData.side) <= image.getColumns() ; j++){
 			// Create local window information
-			Window actualWindow {windowData.dimension, windowData.distance,
+			Window actualWindow {windowData.side, windowData.distance,
 								 windowData.symmetric};
 			actualWindow.setSpacialOffsets(i,j);
 			// Launch the computation of features on the window
@@ -136,7 +136,7 @@ void ImageFeatureComputer::printAllDirectionsAllFeatureValues(const vector<map<F
 
 /*
  * This method will create ALL the images associated with each feature,
- * for ALL the dimension evaluated.
+ * for ALL the side evaluated.
 */
 void ImageFeatureComputer::saveAllFeatureImages(const vector<map<FeatureNames, vector<double>>> &imageFeatures){
 	string foldersPath[] ={ "Images0/", "Images45/", "Images90/", "Images135/"};
@@ -149,7 +149,7 @@ void ImageFeatureComputer::saveAllFeatureImages(const vector<map<FeatureNames, v
 
 /*
  * This method will create ALL the images associated with each feature,
- * for 1 dimension evaluated.
+ * for 1 side evaluated.
 */
 void ImageFeatureComputer::saveAllFeatureDirectedImages(const map<FeatureNames, vector<double>> &imageDirectedFeatures,
 														string outputFolderPath){
@@ -177,7 +177,7 @@ void saveImageToFile(const cv::Mat& img, const string fileName){
 
 /*
  * This method will create an image associated with a feature,
- * for a single dimension evaluated;
+ * for a single side evaluated;
 */
 void ImageFeatureComputer::saveFeatureImage(
 		const map<FeatureNames, vector<double>> &imageDirectedFeatures, FeatureNames fname, string filePath){

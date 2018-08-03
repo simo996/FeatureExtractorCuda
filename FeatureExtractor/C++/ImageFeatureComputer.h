@@ -40,7 +40,7 @@ private:
 	short int numberOfDirections;
 	Image image;
 	// Information to pass to WindowFeatureComputer equal to all generated windows
-	// dimension, distance, symmetric while
+	// side, distance, symmetric while
 	Window windowData;
 
 	// SUPPORT FILESAVE methods

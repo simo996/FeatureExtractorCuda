@@ -4,8 +4,8 @@
 
 #include "Window.h"
 
-Window::Window(const int dimension, const int distance, const bool symmetric){
-	this->dimension = dimension;
+Window::Window(const short int dimension, const short int distance, const bool symmetric){
+	this->side = dimension;
 	this->distance = distance;
 	this->symmetric = symmetric;
 }

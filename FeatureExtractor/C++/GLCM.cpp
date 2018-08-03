@@ -31,11 +31,11 @@ int GLCM::getMaxGrayLevel() const {
 }
 
 int GLCM::getBorderRows() const{
-   return (windowData.dimension - (windowData.distance * abs(windowData.shiftRows)));
+   return (windowData.side - (windowData.distance * abs(windowData.shiftRows)));
 }
 
 int GLCM::getBorderColumns() const{
-    return (windowData.dimension - (windowData.distance * abs(windowData.shiftColumns)));
+    return (windowData.side - (windowData.distance * abs(windowData.shiftColumns)));
 }
 
 void GLCM::printGLCMData() const{
@@ -43,7 +43,7 @@ void GLCM::printGLCMData() const{
     cout << "***\tGLCM Data\t***" << endl;
     cout << "Shift rows : " << windowData.shiftRows << endl;
     cout << "Shift columns: " << windowData.shiftColumns  << endl;
-    cout << "Father Window dimension: "<< windowData.dimension  << endl;
+    cout << "Father Window side: "<< windowData.side  << endl;
     cout << "Border Rows: "<< getBorderRows()  << endl;
     cout << "Border Columns: " << getBorderColumns()  << endl;
     cout << "Simmetric: ";
