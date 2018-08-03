@@ -33,13 +33,12 @@ public:
     void printGLCMAggregatedElements(map<AggregatedGrayPair, int> input, bool areSummed) const;
     void printAggregated() const;
     // Representation useful for HXY
-    map<int, int> codifyXMarginalProbabilities() const;
-    map<int, int> codifyYMarginalProbabilities() const;
+    map<unsigned int, int> codifyXMarginalProbabilities() const;
+    map<unsigned int, int> codifyYMarginalProbabilities() const;
     // Rendere statico
-    static void printMarginalProbability(map<int, int> marginalProb, char symbol);
+    static void printMarginalProbability(map<uint, int> marginalProb, char symbol);
 
-    private:
-    // TODO think about encapsulating in a struct initialization data
+private:
     Image img;
     int numberOfPairs;
     Window windowData;
