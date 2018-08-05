@@ -10,13 +10,31 @@
 #include <opencv2/core.hpp>
 #include "WindowFeatureComputer.h"
 
+using namespace cv;
+
+struct ProgramArguments{
+	short int windowSize;
+	bool symmetric;
+	short int distance;
+	short int numberOfDirections;
+	bool createImages;
+	short int chosenDevice; // 0 = gpu, 1=cpu, 'a'= auto
+	string imagePath;
+
+	ProgramArguments(short int windowSize = 4, bool symmetric = false,
+					 short int distance = 1, short int numberOfDirections = 4,
+					 bool createImages = true, short int chosenDevice = 0)
+			: windowSize(windowSize), symmetric(symmetric), distance(distance),
+			  numberOfDirections(numberOfDirections),
+			  createImages(createImages), chosenDevice(chosenDevice){}
+};
 
 class ImageFeatureComputer {
 public:
-	ImageFeatureComputer(const Image& img, const Window& window);
-	// Will be computed features in the directions specified
-	// Default = 4 = all feautures ; oder 0->45->90->135°
-    vector<WindowFeatures> computeAllFeatures(int numberOfDirections = 4);
+	ImageFeatureComputer(const ProgramArguments& progArg);
+
+	void compute();
+    vector<WindowFeatures> computeAllFeatures();
 
     // EXTRAPOLATING RESULTS
 	// This method will get all the feature names and all their values computed in the image
@@ -37,11 +55,8 @@ public:
 	// Method will print, for each direction, for each window, all the features
 	static void printImageAllDirectionsAllFeatures(const vector<WindowFeatures> &imageFeatureList);
 private:
-	short int numberOfDirections;
-	Image image;
-	// Information to pass to WindowFeatureComputer equal to all generated windows
-	// side, distance, symmetric while
-	Window windowData;
+	ProgramArguments progArg;
+
 
 	// SUPPORT FILESAVE methods
 	/* This method will save into the given folder, the features computed for the that directions */

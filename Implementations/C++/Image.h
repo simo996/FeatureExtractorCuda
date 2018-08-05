@@ -15,7 +15,7 @@ public:
     uint getColumns() const;
     uint getMaxGrayLevel() const;
     void printElements() const;
-private:
+    // Should belong to private class
     const uint * pixels;
     const uint rows;
     const uint columns;

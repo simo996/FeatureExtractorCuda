@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Image.h"
 
+
 uint Image::getRows() const{
     return rows;
 }

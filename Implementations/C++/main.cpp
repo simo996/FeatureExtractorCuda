@@ -6,24 +6,9 @@
 #include <getopt.h> // For options check
 #include "ImageFeatureComputer.h"
 
-using namespace std;
-using namespace cv;
+#define COMPRESSION_LZW 1
 
-Image useMockupMatrix(){
-    // This methods won't work until a copy mechanism is implemented into Image
-    // At distruction the pointer points to corrupted data
-    int testData[] = {0,0,1,1,
-                      1,0,1,1,
-                      0,2,2,2,
-                      2,2,3,3};
-    // Load Image object
-    int *image = testData;
-    int rows = 4;
-    int columns = 4;
-    int maxGrayLevel = 4;
-    Image img(image, rows, columns, maxGrayLevel);
-    return img;
-}
+using namespace std;
 
 Mat readImage(const char* fileName){
     Mat inputImage;
@@ -45,28 +30,13 @@ void showImage(const char* fileName){
     waitKey(0);
 }
 
-struct ProgramArguments{
-    short int windowSize;
-    bool symmetric;
-    short int distance;
-    short int numberOfDirections;
-    bool createImages;
-    short int chosenDevice; // 0 = gpu, 1=cpu, 'a'= auto
-    string imagePath;
-
-    ProgramArguments(short int windowSize = 4, bool symmetric = false,
-            short int distance = 1, short int numberOfDirections = 4,
-                    bool createImages = true, short int chosenDevice = 0)
-            : windowSize(windowSize), symmetric(symmetric), distance(distance),
-             numberOfDirections(numberOfDirections),
-             createImages(createImages), chosenDevice(chosenDevice){}
-};
 
 void printProgramUsage(){
     cout << endl << "Usage: FeatureExtractor <-s> <-i> <-d distance> <-w windowSize> <-n numberOfDirections> "
                     "imagePath" << endl;
     exit(2);
 }
+
 ProgramArguments checkOptions(int argc, char* argv[])
 {
     ProgramArguments progArg;
@@ -132,8 +102,11 @@ ProgramArguments checkOptions(int argc, char* argv[])
         cout << "imagepath: " << argv[optind];
         progArg.imagePath = argv[optind];
     } else{
+        progArg.imagePath= "mockupMatrix.png";
+        /*
         cout << "Missing image path!" << endl;
         printProgramUsage();
+         */
     }
     return progArg;
 }
@@ -141,51 +114,26 @@ ProgramArguments checkOptions(int argc, char* argv[])
 
 int main(int argc, char* argv[]) {
     cout << argv[0] << endl;
-    //ProgramArguments pa=checkOptions(argc, argv);
+    ProgramArguments pa=checkOptions(argc, argv);
 
-    // Mockup Matrix
-    int testData[] = {0,0,1,1,
-                      1,0,1,1,
-                      0,2,2,2,
-                      2,2,3,3};
-    // Load Image object
-    int *image = testData;
-    int rows = 4;
-    int columns = 4;
-    int maxGrayLevel = 4;
-    //img.printElements();
-    Image img(image, rows, columns, maxGrayLevel);
 
-    /* NON VA UN CAZZO
-    Mat save(rows, columns, CV_8UC1);
-    memcpy(save.data, image, (rows*columns) * sizeof(char));
-    cout << save << endl;
-     */
-
-    /* ANCHE PEGGIO
-    Mat brain = readImage("../../SampleImages/30.tiff");
+    Mat brain = imread("../../SampleImages/30.tiff",CV_LOAD_IMAGE_ANYDEPTH);
+    cout << "rows: " << brain.rows << " cols: " << brain.cols << " elements: " << brain.total() << endl;
     cout << brain;
+    // VEDERE FORMULA STRETCHING LINEARE
+    brain*=255;
+    cout << brain;
+
+    // MATLAB vedere se l'entropia viene = ad entropyfilt
     namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
     imshow( "Display window", brain );                   // Show our image inside it.
     waitKey(0);
-    */
 
-    // Load uniform window information (extracted from parameters
-    int distance = 1;
-    int windowDimension = 3;
-    Window wData(windowDimension, distance);
 
-    // Always check that
-    int directionConsidered = 1;
-    assert(directionConsidered <= 4 && directionConsidered >=0);
+    // Launch the external component
+    //ImageFeatureComputer ifc(pa);
+    //ifc.compute();
 
-    // Start Creating the GLCMs
-    ImageFeatureComputer ifc(img, wData);
-    vector<WindowFeatures> fs= ifc.computeAllFeatures(directionConsidered);
-    vector<map<FeatureNames, vector<double>>> formattedFeatures = ifc.getAllDirectionsAllFeatureValues(fs);
-
-    //ifc.printAllDirectionsAllFeatureValues(formattedFeatures);
-    //ifc.saveFeaturesToFiles(formattedFeatures);
 
     return 0;
 }

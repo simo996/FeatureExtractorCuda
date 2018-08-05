@@ -7,27 +7,71 @@
 #include <sys/stat.h>
 #include "ImageFeatureComputer.h"
 
-ImageFeatureComputer::ImageFeatureComputer(const Image& img, const Window& wd)
-        : image(img), windowData(wd){
+
+ImageFeatureComputer::ImageFeatureComputer(const ProgramArguments& progArg)
+:progArg(progArg)
+{
+
 }
 
+void ImageFeatureComputer::compute(){
+	// READ THE IMAGE from file system
+	Mat saved = imread(progArg.imagePath, CV_LOAD_IMAGE_ANYDEPTH);
+	cout << saved;
+	cout << endl << "depth image: " << saved.depth() << endl;
+
+	// COPY THE IMAGE DATA TO SMALL STRUCTURE
+	// Where the data will be put
+	uint pixels[saved.total()];
+
+	MatIterator_<uchar> it;
+	int i=0;
+	for (it = saved.begin<uchar>() ; it != saved.end<uchar>(); ++it) {
+		pixels[i] = *it;
+		i++;
+	}
+	// TODO change accordingly to image type
+	int maxGrayLevel = 4;
+
+	// CREATE IMAGE abstraction structure
+	Image img = Image(pixels, saved.rows, saved.cols, maxGrayLevel);
+	img.printElements();
+
+	// Compute every feature
+	vector<WindowFeatures> fs= computeAllFeatures();
+	vector<map<FeatureNames, vector<double>>> formattedFeatures = getAllDirectionsAllFeatureValues(fs);
+
+	// Print results to screen
+	printAllDirectionsAllFeatureValues(formattedFeatures);
+	// Save result to file
+	//saveFeaturesToFiles(formattedFeatures);
+	if(progArg.createImages){
+		saveAllFeatureImages(formattedFeatures);
+	}
+
+}
 /*
  * This method will compute all the features for every window for the
  * number of directions provided, in a window
  * By default all 4 directions are considered; order is 0->45->90->135°
  */
-vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(const int numberOfDirections){
-	this->numberOfDirections = numberOfDirections;
+vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(){
+
+	int numberOfDirections = progArg.numberOfDirections;
+	// Create data structure that incapsulate window parameters
+	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.symmetric);
+	Image img(0,0,0,0);
+
 	vector<WindowFeatures> featuresList;
 
-	for(int i = 0; (i + windowData.side) <= image.getRows(); i++){
-		for(int j = 0; (j + windowData.side) <= image.getColumns() ; j++){
+	for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
+		for(int j = 0; (j + windowData.side) <= img.getColumns() ; j++){
 			// Create local window information
 			Window actualWindow {windowData.side, windowData.distance,
 								 windowData.symmetric};
 			actualWindow.setSpacialOffsets(i,j);
 			// Launch the computation of features on the window
-			WindowFeatureComputer wfc(image, actualWindow);
+			WindowFeatureComputer wfc(img, actualWindow);
 			WindowFeatures wfs = wfc.computeWindowFeatures(numberOfDirections);
 			// save results
 			featuresList.push_back(wfs);
@@ -46,10 +90,11 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(const int number
  */
 vector<map<FeatureNames, vector<double>>> ImageFeatureComputer::getAllDirectionsAllFeatureValues(const vector<WindowFeatures>& imageFeatures){
 	vector<FeatureNames> supportedFeatures = Features::getAllSupportedFeatures();
-	vector<map<FeatureNames, vector<double>>> output(numberOfDirections);
+	int numberOfDirs = progArg.numberOfDirections;
+	vector<map<FeatureNames, vector<double>>> output(numberOfDirs);
 
 	// for each computed direction
-	for (int j = 0; j < numberOfDirections; ++j) {
+	for (int j = 0; j < numberOfDirs; ++j) {
 		map<FeatureNames, vector<double>> featuresInDirection;
 		// for each computed window
 		for (int i = 0; i < imageFeatures.size() ; ++i) {
@@ -69,7 +114,9 @@ vector<map<FeatureNames, vector<double>>> ImageFeatureComputer::getAllDirections
 
 void ImageFeatureComputer::saveFeaturesToFiles(const vector<map<FeatureNames, vector<double>>>& imageFeatures){
 	string foldersPath[] ={ "Values0/", "Values45/", "Values90/", "Values135/"};
-	for (int i = 0; i < numberOfDirections; ++i) {
+	int numberOfDirs = progArg.numberOfDirections;
+
+	for (int i = 0; i < numberOfDirs; ++i) {
 		saveDirectedFeaturesToFiles(imageFeatures[i], foldersPath[i]);
 	}
 }
@@ -117,10 +164,11 @@ void ImageFeatureComputer::saveFeatureToFile(const pair<FeatureNames, vector<dou
  */
 void ImageFeatureComputer::printAllDirectionsAllFeatureValues(const vector<map<FeatureNames, vector<double>>>& featureList)
 {
+	int numberOfDirs = progArg.numberOfDirections;
 	typedef map<FeatureNames, vector<double>>::const_iterator MI;
 	typedef vector<double>::const_iterator VI;
 	// For each direction
-	for (int i = 0; i < numberOfDirections; ++i) {
+	for (int i = 0; i < numberOfDirs; ++i) {
 		Direction::printDirectionLabel(i);
 		// for each computed feature
 		for (MI mappedFeature = featureList[i].begin(); mappedFeature != featureList[i].end(); ++mappedFeature) {
@@ -138,7 +186,8 @@ void ImageFeatureComputer::printAllDirectionsAllFeatureValues(const vector<map<F
  * This method will create ALL the images associated with each feature,
  * for ALL the side evaluated.
 */
-void ImageFeatureComputer::saveAllFeatureImages(const vector<map<FeatureNames, vector<double>>> &imageFeatures){
+void ImageFeatureComputer::saveAllFeatureImages(
+		const vector<map<FeatureNames, vector<double>>> &imageFeatures){
 	string foldersPath[] ={ "Images0/", "Images45/", "Images90/", "Images135/"};
 
 	// For each direction
@@ -180,12 +229,13 @@ void saveImageToFile(const cv::Mat& img, const string fileName){
  * for a single side evaluated;
 */
 void ImageFeatureComputer::saveFeatureImage(
-		const map<FeatureNames, vector<double>> &imageDirectedFeatures, FeatureNames fname, string filePath){
+		const map<FeatureNames, vector<double>> &imageDirectedFeatures,
+		FeatureNames fname, string filePath){
 	typedef vector<WindowFeatures>::const_iterator VI;
 
 	// Compute how many features will be used for creating the image
-	int numberOfRows = image.getRows() / windowData.distance;
-	int numberOfColumns = image.getColumns() / windowData.distance;
+	/*int numberOfRows = img.getRows() / windowData.distance;
+	int numberOfColumns = img.getColumns() / windowData.distance;
 	int imageSize = numberOfRows * numberOfColumns;
 
 	// Check if dimensions are compatible
@@ -193,6 +243,7 @@ void ImageFeatureComputer::saveFeatureImage(
 		cerr << "Fatal Error! Couldn't create the image";
 		exit(-2);
 	}
+
 
 	// Create a 2d matrix of double elements
 	cv::Mat imageFeature = cv::Mat(numberOfRows, numberOfColumns, CV_64F);
@@ -202,6 +253,7 @@ void ImageFeatureComputer::saveFeatureImage(
 
 	//cv::imshow
 	saveImageToFile(imageFeature, filePath);
+	 */
 }
 
 
