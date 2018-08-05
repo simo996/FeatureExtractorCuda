@@ -5,18 +5,20 @@
 #ifndef FEATUREEXTRACTOR_IMAGE_H
 #define FEATUREEXTRACTOR_IMAGE_H
 
+#include <vector>
+
+using namespace std;
 class Image {
 public:
-    Image(const uint* pixels, uint rows, uint columns, uint mxGrayLevel)
+    Image(vector<uint> pixels, uint rows, uint columns, uint mxGrayLevel)
             :pixels(pixels), rows(rows), columns(columns), maxGrayLevel(mxGrayLevel){};
-    //Image(Mat& image);
-    const uint * getPixels() const;
+    const vector<uint> getPixels() const;
     uint getRows() const;
     uint getColumns() const;
     uint getMaxGrayLevel() const;
     void printElements() const;
     // Should belong to private class
-    const uint * pixels;
+    vector<uint> pixels;
     const uint rows;
     const uint columns;
     const uint maxGrayLevel;

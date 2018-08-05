@@ -10,7 +10,7 @@ uint Image::getColumns() const{
     return columns;
 }
 
-const uint * Image::getPixels() const{
+const vector<uint> Image::getPixels() const{
     return pixels;
 }
 
