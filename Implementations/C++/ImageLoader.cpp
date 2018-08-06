@@ -57,14 +57,8 @@ Image ImageLoader::readImage(const string fileName){
     // COPY THE IMAGE DATA TO SMALL array
     // This array need to be moved to gpu shared memory
     // Where the data will be put
-    cout << "pre-allocazione" << endl;
-    vector<uint> pixels(65536);
-    int totalPixels = imgRead.total();
-    int maxVectorSize = pixels.max_size();
-    cout << "total pixels: " <<  totalPixels << endl;
-    cout << " VS max vector size: " << maxVectorSize;
 
-    cout << "allocato: " << (pixels.size() == imgRead.total());
+    vector<uint> pixels(imgRead.total());
 
     int maxGrayLevel;
    // TODO think again this mechanism , DRY
