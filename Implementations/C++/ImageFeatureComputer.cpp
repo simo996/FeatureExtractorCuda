@@ -16,18 +16,23 @@ ImageFeatureComputer::ImageFeatureComputer(const ProgramArguments& progArg)
 
 
 void ImageFeatureComputer::compute(){
+	cout << "* Loading image * " << endl;
 	Image img = ImageLoader::readImage(progArg.imagePath);
-	img.printElements();
-	exit(0);
+	cout << "* Image loaded * " << endl;
+
 	// Compute every feature
-	vector<WindowFeatures> fs= computeAllFeatures();
+	vector<WindowFeatures> fs= computeAllFeatures(img);
+	cout << "* Computing features * " << endl;
 	vector<map<FeatureNames, vector<double>>> formattedFeatures = getAllDirectionsAllFeatureValues(fs);
 
 	// Print results to screen
-	printAllDirectionsAllFeatureValues(formattedFeatures);
+	//printAllDirectionsAllFeatureValues(formattedFeatures);
+
 	// Save result to file
-	//saveFeaturesToFiles(formattedFeatures);
+	cout << "* Saving features to files *" << endl;
+	saveFeaturesToFiles(formattedFeatures);
 	if(progArg.createImages){
+		cout << "*  Creating feature images *" << endl;
 		saveAllFeatureImages(formattedFeatures);
 	}
 }
@@ -36,13 +41,14 @@ void ImageFeatureComputer::compute(){
  * number of directions provided, in a window
  * By default all 4 directions are considered; order is 0->45->90->135°
  */
-vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(){
+vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(const Image& img){
+	// TODO use this dimension in a static addressing way
+	int numberOfWindows = (img.rows - progArg.windowSize + 1)
+			* (img.columns - progArg.windowSize + 1);
 	vector<WindowFeatures> featuresList;
 
 	// Create data structure that incapsulate window parameters
 	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.symmetric);
-	/*
-	 * Image img(0,0,0,0);
 
 	// Slide windows on the image
 	for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
@@ -59,7 +65,7 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(){
 			featuresList.push_back(wfs);
 		}
 	}
-	*/
+
 	return featuresList;
 }
 

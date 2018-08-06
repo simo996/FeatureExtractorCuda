@@ -35,7 +35,7 @@ public:
 	ImageFeatureComputer(const ProgramArguments& progArg);
 
 	void compute();
-    vector<WindowFeatures> computeAllFeatures();
+    vector<WindowFeatures> computeAllFeatures(const Image& img);
 
     // EXTRAPOLATING RESULTS
 	// This method will get all the feature names and all their values computed in the image
