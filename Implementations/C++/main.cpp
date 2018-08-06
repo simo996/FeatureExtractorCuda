@@ -20,8 +20,13 @@ ProgramArguments checkOptions(int argc, char* argv[])
 {
     ProgramArguments progArg;
     int opt;
-    while((opt = getopt(argc, argv, "sw:d:in:h")) != -1){
+    while((opt = getopt(argc, argv, "sw:d:in:hc")) != -1){
         switch (opt){
+            case 'c':{
+                // Crop original dynamic resolution
+                progArg.crop = true;
+                break;
+            }
             case 's':{
                 // Make the glcm pairs symmetric
                 progArg.symmetric = true;

@@ -14,7 +14,9 @@
 using namespace cv;
 
 struct ProgramArguments{
+	// TODO document intensively
 	short int windowSize;
+	bool crop;
 	bool symmetric;
 	short int distance;
 	short int numberOfDirections;
@@ -22,10 +24,10 @@ struct ProgramArguments{
 	short int chosenDevice; // 0 = gpu, 1=cpu, 'a'= auto
 	string imagePath;
 
-	ProgramArguments(short int windowSize = 4, bool symmetric = false,
+	ProgramArguments(short int windowSize = 4, bool crop = false, bool symmetric = false,
 					 short int distance = 1, short int numberOfDirections = 4,
 					 bool createImages = true, short int chosenDevice = 0)
-			: windowSize(windowSize), symmetric(symmetric), distance(distance),
+			: windowSize(windowSize), crop(crop), symmetric(symmetric), distance(distance),
 			  numberOfDirections(numberOfDirections),
 			  createImages(createImages), chosenDevice(chosenDevice){}
 };
@@ -49,15 +51,14 @@ public:
 
     // IMAGING
     // This methow will produce and save all the images associated with each feature for each direction
-    void saveAllFeatureImages(const vector<map<FeatureNames, vector<double>>> &imageFeatures);
-
+    void saveAllFeatureImages(int rowNumber,  int colNumber,
+    		const vector<map<FeatureNames, vector<double>>> &imageFeatures);
 
 	// DEBUG, not really useful
 	// Method will print, for each direction, for each window, all the features
 	static void printImageAllDirectionsAllFeatures(const vector<WindowFeatures> &imageFeatureList);
 private:
 	ProgramArguments progArg;
-
 
 	// SUPPORT FILESAVE methods
 	/* This method will save into the given folder, the features computed for the that directions */
@@ -67,10 +68,12 @@ private:
 
 	// SUPPORT IMAGING methods
 	// This method will produce and save on the filesystem the image associated with a feature in 1 direction
-	void saveFeatureImage(const map<FeatureNames, vector<double>> &imageDirectedFeatures, FeatureNames fname,
+	void saveFeatureImage(int rowNumber,  int colNumber,
+			const map<FeatureNames, vector<double>> &imageDirectedFeatures, FeatureNames fname,
 						  string outputFilePath);
 	// This methow will produce and save all the images associated with each feature in 1 direction
-	void saveAllFeatureDirectedImages(const map<FeatureNames, vector<double>> &imageFeatures, const string outputFolderPath);
+	void saveAllFeatureDirectedImages(int rowNumber,  int colNumber,
+			const map<FeatureNames, vector<double>> &imageFeatures, const string outputFolderPath);
 
 };
 
