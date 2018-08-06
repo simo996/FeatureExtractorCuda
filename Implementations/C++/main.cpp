@@ -4,10 +4,11 @@
 #include <assert.h>
 #include <fstream>
 #include <getopt.h> // For options check
-#include <opencv2/imgproc.hpp>
+#include <chrono> // Performance monitor
 #include "ImageFeatureComputer.h"
 
 using namespace std;
+using namespace chrono;
 
 void printProgramUsage(){
     cout << endl << "Usage: FeatureExtractor <-s> <-i> <-d distance> <-w windowSize> <-n numberOfDirections> "
@@ -84,7 +85,7 @@ ProgramArguments checkOptions(int argc, char* argv[])
         /*
         cout << "Missing image path!" << endl;
         printProgramUsage();
-         */
+        */
     }
     return progArg;
 }
@@ -102,10 +103,16 @@ int main(int argc, char* argv[]) {
     // MATLAB vedere se l'entropia viene = ad entropyfilt
 
 
+    typedef high_resolution_clock Clock;
+    Clock::time_point t1 = high_resolution_clock::now();
+
     // Launch the external component
     ImageFeatureComputer ifc(pa);
     ifc.compute();
 
+    Clock::time_point t2 = high_resolution_clock::now();
+    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+    cout << "* Processing took " << time_span.count() << " seconds." << endl;
 
     return 0;
 }
