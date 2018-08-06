@@ -19,6 +19,11 @@ Mat ImageLoader::readMriImage(const string fileName){
         cerr << "ERROR! Unsupported depth type: " << inputImage.type();
         exit(-4);
     }
+    if(! inputImage.data )  // Check for invalid input
+    {
+        cout <<  "Could not open or find the image" << std::endl ;
+        exit(-1);
+    }
 
     return inputImage;
 }
@@ -35,18 +40,22 @@ Mat ImageLoader::readMriImage(const string fileName){
 */
 
 inline void readUchars(vector<uint>& output, Mat& img){
-    for(int r = 0 ; r < img.rows; r++){
-        for(int  c = 0; c < img.cols; c++){
-            output[r *img.step + c] = img.at<uchar> (r,c);
-        }
+    typedef MatConstIterator_<uchar> MI;
+    int address = 0;
+    for(MI element = img.begin<uchar>() ; element != img.end<uchar>() ; element++)
+    {
+        output[address] = *element;
+        address++;
     }
 }
 
 inline void readUint(vector<uint>& output, Mat& img){
-    for(int r = 0 ; r < img.rows; r++){
-        for(int  c = 0; c < img.cols; c++){
-            output[r *img.step + c] = img.at<ushort> (r,c);
-        }
+    typedef MatConstIterator_<ushort> MI;
+    int address = 0;
+    for(MI element = img.begin<ushort>() ; element != img.end<ushort>() ; element++)
+    {
+        output[address] = *element;
+        address++;
     }
 }
 
@@ -57,7 +66,6 @@ Image ImageLoader::readImage(const string fileName){
     // COPY THE IMAGE DATA TO SMALL array
     // This array need to be moved to gpu shared memory
     // Where the data will be put
-
     vector<uint> pixels(imgRead.total());
 
     int maxGrayLevel;
@@ -65,11 +73,11 @@ Image ImageLoader::readImage(const string fileName){
     switch (imgRead.type()){
         case CV_16UC1:
             readUint(pixels, imgRead);
-            maxGrayLevel = (2 << 16) -1;
+            maxGrayLevel = 65535;
             break;
         case CV_8UC1:
             readUchars(pixels, imgRead);
-            maxGrayLevel = (2 << 8) -1;
+            maxGrayLevel = 255;
             break;
         default:
             cerr << "ERROR! Unsupported depth type: " << imgRead.type();
