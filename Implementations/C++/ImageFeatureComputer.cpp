@@ -14,29 +14,11 @@ ImageFeatureComputer::ImageFeatureComputer(const ProgramArguments& progArg)
 
 }
 
+
 void ImageFeatureComputer::compute(){
-	// READ THE IMAGE from file system
-	Mat saved = imread(progArg.imagePath, CV_LOAD_IMAGE_ANYDEPTH);
-	cout << saved;
-	cout << endl << "depth image: " << saved.depth() << endl;
-
-	// COPY THE IMAGE DATA TO SMALL STRUCTURE
-	// Where the data will be put
-	uint pixels[saved.total()];
-
-	MatIterator_<uchar> it;
-	int i=0;
-	for (it = saved.begin<uchar>() ; it != saved.end<uchar>(); ++it) {
-		pixels[i] = *it;
-		i++;
-	}
-	// TODO change accordingly to image type
-	int maxGrayLevel = 4;
-
-	// CREATE IMAGE abstraction structure
-	Image img = Image(pixels, saved.rows, saved.cols, maxGrayLevel);
+	Image img = ImageLoader::readImage(progArg.imagePath);
 	img.printElements();
-
+	exit(0);
 	// Compute every feature
 	vector<WindowFeatures> fs= computeAllFeatures();
 	vector<map<FeatureNames, vector<double>>> formattedFeatures = getAllDirectionsAllFeatureValues(fs);
@@ -48,7 +30,6 @@ void ImageFeatureComputer::compute(){
 	if(progArg.createImages){
 		saveAllFeatureImages(formattedFeatures);
 	}
-
 }
 /*
  * This method will compute all the features for every window for the
@@ -56,28 +37,29 @@ void ImageFeatureComputer::compute(){
  * By default all 4 directions are considered; order is 0->45->90->135°
  */
 vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(){
-
-	int numberOfDirections = progArg.numberOfDirections;
-	// Create data structure that incapsulate window parameters
-	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.symmetric);
-	Image img(0,0,0,0);
-
 	vector<WindowFeatures> featuresList;
 
+	// Create data structure that incapsulate window parameters
+	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.symmetric);
+	/*
+	 * Image img(0,0,0,0);
+
+	// Slide windows on the image
 	for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
 		for(int j = 0; (j + windowData.side) <= img.getColumns() ; j++){
 			// Create local window information
 			Window actualWindow {windowData.side, windowData.distance,
 								 windowData.symmetric};
+			// tell the window its relative offset (starting point) inside the image
 			actualWindow.setSpacialOffsets(i,j);
 			// Launch the computation of features on the window
 			WindowFeatureComputer wfc(img, actualWindow);
-			WindowFeatures wfs = wfc.computeWindowFeatures(numberOfDirections);
+			WindowFeatures wfs = wfc.computeWindowFeatures(progArg.numberOfDirections);
 			// save results
 			featuresList.push_back(wfs);
 		}
 	}
-
+	*/
 	return featuresList;
 }
 

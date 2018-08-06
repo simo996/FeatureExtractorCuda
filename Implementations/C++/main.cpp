@@ -4,32 +4,10 @@
 #include <assert.h>
 #include <fstream>
 #include <getopt.h> // For options check
+#include <opencv2/imgproc.hpp>
 #include "ImageFeatureComputer.h"
 
-#define COMPRESSION_LZW 1
-
 using namespace std;
-
-Mat readImage(const char* fileName){
-    Mat inputImage;
-    try{
-        inputImage = imread(fileName, CV_LOAD_IMAGE_ANYDEPTH);
-    }
-    catch (cv::Exception& e) {
-        const char *err_msg = e.what();
-        cout << "Exception occurred: " << err_msg << endl;
-    }
-
-    return inputImage;
-}
-
-
-void showImage(const char* fileName){
-    Mat inputImage = imread(fileName, IMREAD_GRAYSCALE);
-    imshow("Output", inputImage);
-    waitKey(0);
-}
-
 
 void printProgramUsage(){
     cout << endl << "Usage: FeatureExtractor <-s> <-i> <-d distance> <-w windowSize> <-n numberOfDirections> "
@@ -102,7 +80,7 @@ ProgramArguments checkOptions(int argc, char* argv[])
         cout << "imagepath: " << argv[optind];
         progArg.imagePath = argv[optind];
     } else{
-        progArg.imagePath= "mockupMatrix.png";
+        progArg.imagePath= "../../../SampleImages/brain1.tiff";
         /*
         cout << "Missing image path!" << endl;
         printProgramUsage();
@@ -114,25 +92,19 @@ ProgramArguments checkOptions(int argc, char* argv[])
 
 int main(int argc, char* argv[]) {
     cout << argv[0] << endl;
-    ProgramArguments pa=checkOptions(argc, argv);
+    ProgramArguments pa = checkOptions(argc, argv);
 
-
-    Mat brain = imread("../../SampleImages/30.tiff",CV_LOAD_IMAGE_ANYDEPTH);
-    cout << "rows: " << brain.rows << " cols: " << brain.cols << " elements: " << brain.total() << endl;
-    cout << brain;
-    // VEDERE FORMULA STRETCHING LINEARE
-    brain*=255;
-    cout << brain;
-
+    /*
+    Mat brain = ImageLoader::readMriImage("../../../SampleImages/brain1.tiff");
+    ImageLoader::printMatImageData(brain);
+    ImageLoader::showImageStretched(brain, "brain1");
+    */
     // MATLAB vedere se l'entropia viene = ad entropyfilt
-    namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
-    imshow( "Display window", brain );                   // Show our image inside it.
-    waitKey(0);
 
 
     // Launch the external component
-    //ImageFeatureComputer ifc(pa);
-    //ifc.compute();
+    ImageFeatureComputer ifc(pa);
+    ifc.compute();
 
 
     return 0;
