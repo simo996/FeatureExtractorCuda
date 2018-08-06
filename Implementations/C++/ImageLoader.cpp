@@ -6,10 +6,13 @@
 #include "ImageLoader.h"
 
 
-Mat ImageLoader::readMriImage(const string fileName){
+Mat ImageLoader::readMriImage(const string fileName, bool cropResolution){
     Mat inputImage;
     try{
-        inputImage = imread(fileName, CV_LOAD_IMAGE_ANYDEPTH);
+        if(cropResolution)
+            inputImage = imread(fileName, CV_LOAD_IMAGE_GRAYSCALE);
+        else
+            inputImage = imread(fileName, CV_LOAD_IMAGE_ANYDEPTH);
     }
     catch (cv::Exception& e) {
         const char *err_msg = e.what();
@@ -59,9 +62,9 @@ inline void readUint(vector<uint>& output, Mat& img){
     }
 }
 
-Image ImageLoader::readImage(const string fileName){
+Image ImageLoader::readImage(const string fileName, bool cropResolution){
     // Open image from file system
-    Mat imgRead = readMriImage(fileName);
+    Mat imgRead = readMriImage(fileName, cropResolution);
 
     // COPY THE IMAGE DATA TO SMALL array
     // This array need to be moved to gpu shared memory
@@ -83,9 +86,6 @@ Image ImageLoader::readImage(const string fileName){
             cerr << "ERROR! Unsupported depth type: " << imgRead.type();
             exit(-4);
     }
-
-    // TODO change accordingly to image type
-    maxGrayLevel = 4; // only for mockup matrix
 
     // CREATE IMAGE abstraction structure
     Image img = Image(pixels, imgRead.rows, imgRead.cols, maxGrayLevel);
@@ -138,4 +138,14 @@ void ImageLoader::showImageStretched(Mat& img, string windowName){
     // TODO think about showing a single image with 2 math hstacked
 
     waitKey(0);
+}
+
+void ImageLoader::saveImageToFile(const Mat& img, const string fileName){
+    try {
+        imwrite(fileName, img);
+    }catch (exception& e){
+        cout << e.what() << '\n';
+        cerr << "Fatal Error! Couldn't save the image";
+        exit(-3);
+    }
 }
