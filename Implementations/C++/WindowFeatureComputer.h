@@ -13,7 +13,7 @@
 using namespace std;
 
 typedef vector<vector<double>> WindowFeatures; // will contain result for 4 directions
-
+typedef vector<double> FeatureValues;
 
 class WindowFeatureComputer {
     /*
