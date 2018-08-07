@@ -24,7 +24,7 @@ void ImageFeatureComputer::compute(){
 	cout << "* COMPUTING features * " << endl;
 	vector<WindowFeatures> fs= computeAllFeatures(img);
 	vector<map<FeatureNames, vector<double>>> formattedFeatures = getAllDirectionsAllFeatureValues(fs);
-	cout << "* Features computed* " << endl;
+	cout << "* Features computed * " << endl;
 
 	// Print result+s to screen
 	//printAllDirectionsAllFeatureValues(formattedFeatures);
@@ -32,12 +32,14 @@ void ImageFeatureComputer::compute(){
 	// Save result to file
 	cout << "* Saving features to files *" << endl;
 	saveFeaturesToFiles(formattedFeatures);
+
+	// Save feature images
 	if(progArg.createImages){
-		cout << "*  Creating feature images *" << endl;
+		cout << "* Creating feature images *" << endl;
 		// Compute how many features will be used for creating the image
-		int numberOfRows = img.getRows() - progArg.windowSize;
-        int numberOfColumns = img.getColumns() - progArg.windowSize;
-        saveAllFeatureImages(formattedFeatures, numberOfRows, numberOfColumns);
+		int numberOfRows = img.getRows() - progArg.windowSize + 1;
+        int numberOfColumns = img.getColumns() - progArg.windowSize + 1;
+        saveAllFeatureImages(numberOfRows, numberOfColumns, formattedFeatures);
 
 	}
 }
@@ -188,7 +190,7 @@ void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 
 	// For each direction
 	for(int i=0; i < imageFeatures.size(); i++){
-		saveAllFeatureDirectedImages(imageFeatures[i], foldersPath[i]);
+		saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[i], foldersPath[i]);
 	}
 }
 
@@ -205,8 +207,17 @@ void ImageFeatureComputer::saveAllFeatureDirectedImages(const int rowNumber,
 	int i = 0;
 
 	for(MI feature = imageDirectedFeatures.begin(); feature != imageDirectedFeatures.end(); feature++){
-		saveFeatureImage(imageDirectedFeatures, feature->first,
-						 outputFolderPath.append(fileDestinations[i]));
+		if (mkdir(outputFolderPath.c_str(), 0777) == -1) {
+			if (errno == EEXIST) {
+				// alredy exists
+			} else {
+				// something else
+				cout << "cannot create save folder;  error:" << strerror(errno) << endl;
+			}
+		}
+		string newFileName(outputFolderPath);
+		saveFeatureImage(rowNumber, colNumber, imageDirectedFeatures, feature->first,
+						 newFileName.append(fileDestinations[i]));
 		i++;
 	}
 }
@@ -224,25 +235,26 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
 
 	// Check if dimensions are compatible
 	if(imageDirectedFeatures.at(fname).size() != imageSize){
+		cout << imageDirectedFeatures.at(fname).size();
 		cerr << "Fatal Error! Couldn't create the image";
 		exit(-2);
 	}
 
 	// Create a 2d matrix of double elements
 	Mat imageFeature = Mat(rowNumber, colNumber, CV_64F);
-	// TODO CHECK se va a capo da solo e non fa tutto su una riga
 	// Copy the values into the image
 	memcpy(imageFeature.data, imageDirectedFeatures.at(fname).data(), imageSize * sizeof(double));
 
-	//cv::imshow
-	if(fname == ENTROPY)
-		ImageLoader::showImage(imageFeature, "ENTROPY");
+	// Convert image to a 256 grayscale
+	Mat convertedImage;
+	imageFeature.convertTo(convertedImage, CV_16U);
+	// Save each image to file system
 	ImageLoader::saveImageToFile(imageFeature, filePath);
 }
 
 
 
-// TODO this is a debugging method
+// TODO this is a debugging method, think about removing it
 /*
  * This method will print ALL 18 the features, for all the windows of the image,
  * in all 4 directions

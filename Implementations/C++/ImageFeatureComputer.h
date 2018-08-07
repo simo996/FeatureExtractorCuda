@@ -26,7 +26,7 @@ struct ProgramArguments{
 
 	ProgramArguments(short int windowSize = 4, bool crop = false, bool symmetric = false,
 					 short int distance = 1, short int numberOfDirections = 4,
-					 bool createImages = true, short int chosenDevice = 0)
+					 bool createImages = false, short int chosenDevice = 0)
 			: windowSize(windowSize), crop(crop), symmetric(symmetric), distance(distance),
 			  numberOfDirections(numberOfDirections),
 			  createImages(createImages), chosenDevice(chosenDevice){}
