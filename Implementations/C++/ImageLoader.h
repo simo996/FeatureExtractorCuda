@@ -17,11 +17,15 @@ using namespace cv;
 class ImageLoader {
 public:
     static Mat readMriImage(string fileName, bool cropResolution);
-    static Image readImage(const string fileName, bool cropResolution);
-    static void saveImageToFile(const Mat& img, const string fileName);
-    static void showImage(Mat& img, string windowName);
-    static void showImageStretched(Mat& img, string windowName);
-    static void printMatImageData(Mat& img);
+    static Image readImage(string fileName, bool cropResolution);
+    static void writeToDouble(int rows, int cols, const vector<double>& input, Mat& output);
+    static Mat concatenateStretchImage(const Mat& inputImage);
+    static Mat stretchImage(const Mat& inputImage);
+    static void saveImageToFile(const Mat& img, const string& fileName);
+    static void showImage(const Mat& img, const string& windowName);
+    static void showImagePaused(const Mat& img, const string& windowName);
+    static void showImageStretched(const Mat& img, const string& windowName);
+    static void printMatImageData(const Mat& img);
 };
 
 

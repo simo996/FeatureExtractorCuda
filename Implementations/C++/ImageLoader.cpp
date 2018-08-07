@@ -15,17 +15,18 @@ Mat ImageLoader::readMriImage(const string fileName, bool cropResolution){
         const char *err_msg = e.what();
         cerr << "Exception occurred: " << err_msg << endl;
     }
-    if((inputImage.depth() != CV_8UC1) && (inputImage.depth() != CV_16UC1)){
-        cerr << "ERROR! Unsupported depth type: " << inputImage.type();
-        exit(-4);
-    }
     if(! inputImage.data )  // Check for invalid input
     {
         cout <<  "Could not open or find the image" << std::endl ;
         exit(-1);
     }
-    // TODO think if this burns pixels > 256
-    if(cropResolution)
+    // If not a grayscale 256/6536 depth, it must be a color image
+    if((inputImage.depth() != CV_8UC1) && (inputImage.depth() != CV_16UC1)){
+        // reduce color channel from 3 to 1
+        cvtColor(inputImage, inputImage, CV_RGB2GRAY);
+        inputImage.convertTo(inputImage, CV_8UC1);
+    }
+    if((cropResolution) && (inputImage.depth() != CV_8UC1))
         inputImage.convertTo(inputImage, CV_8UC1);
 
     return inputImage;
@@ -41,6 +42,16 @@ Mat ImageLoader::readMriImage(const string fileName, bool cropResolution){
  * If matrix is of type CV_32F then use Mat.at<float>(y,x).
  * If matrix is of type CV_64F then use Mat.at<double>(y,x).
 */
+
+void ImageLoader::writeToDouble(const int rows, const int cols,
+        const vector<double>& input, Mat& output){
+    for (int r = 0; r < rows; ++r) {
+        for (int c = 0; c < cols; ++c) {
+            output.at<double>(r,c) = input[r * rows+ cols];
+        }
+    }
+}
+
 
 inline void readUchars(vector<uint>& output, Mat& img){
     typedef MatConstIterator_<uchar> MI;
@@ -92,7 +103,7 @@ Image ImageLoader::readImage(const string fileName, bool cropResolution){
     return img;
 }
 
-void ImageLoader::printMatImageData(Mat& img){
+void ImageLoader::printMatImageData(const Mat& img){
     cout << "\t- Image metadata -" << endl;
     cout << "\tRows: " << img.rows << " x Columns: "  << img.cols << endl;
     cout << "\tPixel count: " << img.total() << endl;
@@ -114,33 +125,58 @@ void ImageLoader::printMatImageData(Mat& img){
     //cout << img;
 }
 
-void ImageLoader::showImage(Mat& img, string windowName){
-    namedWindow("Original" + windowName, WINDOW_AUTOSIZE );// Create a window for display.
-    imshow("Original" + windowName, img );                   // Show our image inside it.
+void ImageLoader::showImage(const Mat& img, const string& windowName){
+    namedWindow(windowName, WINDOW_AUTOSIZE );// Create a window for display.
+    imshow(windowName, img );                   // Show our image inside it.
+}
+
+void ImageLoader::showImagePaused(const Mat& img, const string& windowName){
+    namedWindow(windowName, WINDOW_AUTOSIZE );// Create a window for display.
+    imshow(windowName, img );                   // Show our image inside it.
     waitKey(0);
 }
 
-void ImageLoader::showImageStretched(Mat& img, string windowName){
+Mat ImageLoader::stretchImage(const Mat& inputImage){
     Mat stretched;
-    // Transformation need to be called on a gray scale CV_8U
-    //img.convertTo(stretched, CV_8U);
-    //equalizeHist(img, stretched);
+
+    // Stretch can only be applied to gray scale CV_8U
+    if(inputImage.type() != CV_8UC1){
+        inputImage.convertTo(inputImage, CV_8U);
+    }
 
     Ptr<CLAHE> clahe = createCLAHE(4);
-    clahe->apply(img, stretched);
+    clahe->apply(inputImage, stretched);
 
-    // Original
-    showImage(img, "Original-" + windowName);
-
-    // Stretched smartly
-    showImage(stretched, "Stretched-" + windowName);
-
-    // TODO think about showing a single image with 2 math hstacked
-
-    waitKey(0);
+    return stretched;
 }
 
-void ImageLoader::saveImageToFile(const Mat& img, const string fileName){
+Mat ImageLoader::concatenateStretchImage(const Mat& inputImage){
+    Mat stretched;
+
+    // Transformation need to be called on a gray scale CV_8U
+    cout << inputImage.type();
+    if(inputImage.type() != CV_8UC1){
+        inputImage.convertTo(inputImage, CV_8U);
+    }
+
+    Ptr<CLAHE> clahe = createCLAHE(4);
+    clahe->apply(inputImage, stretched);
+
+    Mat concat;
+    hconcat(inputImage, stretched);
+
+    return concat;
+}
+
+void ImageLoader::showImageStretched(const Mat& img, const string& windowName){
+    Mat stretched = stretchImage(img);
+
+    showImage(img, "Original" + windowName);
+    showImage(stretched, "Stretched" + windowName);
+
+}
+
+void ImageLoader::saveImageToFile(const Mat& img, const string& fileName){
     try {
         imwrite(fileName +".png", img);
     }catch (exception& e){
