@@ -41,18 +41,17 @@ public:
 
     // EXTRAPOLATING RESULTS
 	// This method will get all the feature names and all their values computed in the image
-	vector<map<FeatureNames, vector<double>>> getAllDirectionsAllFeatureValues(const vector<WindowFeatures>& imageFeatures);
+	vector<vector<FeatureValues>> getAllDirectionsAllFeatureValues(const vector<WindowFeatures>& imageFeatures);
 	// This method will print all the feature names and all their values computed in the image
-	void printAllDirectionsAllFeatureValues(const vector<map<FeatureNames, vector<double>>>& featureList);
+	void printAllDirectionsAllFeatureValues(const vector<vector<FeatureValues>>& featureList);
 
 	// SAVING RESULTS ON FILES
 	/* This method will save on different folders, the features computed for the distinct directions */
-	void saveFeaturesToFiles(const vector<map<FeatureNames, vector<double>>>& imageFeatures);
+	void saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures);
 
     // IMAGING
     // This methow will produce and save all the images associated with each feature for each direction
-    void saveAllFeatureImages(int rowNumber,  int colNumber,
-    		const vector<map<FeatureNames, vector<double>>> &imageFeatures);
+    void saveAllFeatureImages(int rowNumber,  int colNumber, const vector<vector<FeatureValues>>& imageFeatures);
 
 	// DEBUG, not really useful
 	// Method will print, for each direction, for each window, all the features
@@ -62,18 +61,18 @@ private:
 
 	// SUPPORT FILESAVE methods
 	/* This method will save into the given folder, the features computed for the that directions */
-	void saveDirectedFeaturesToFiles(const map<FeatureNames, vector<double>>& imageFeatures, const string path);
+	void saveDirectedFeaturesToFiles(const vector<FeatureValues>& imageDirectedFeatures,
+			const string& outputFolderPath);
 	/* This method will save into the given folder, 1 feature computed for the that directions */
 	void saveFeatureToFile(const pair<FeatureNames, vector<double>>& imageFeatures, const string path);
 
 	// SUPPORT IMAGING methods
-	// This method will produce and save on the filesystem the image associated with a feature in 1 direction
-	void saveFeatureImage(int rowNumber,  int colNumber,
-			const map<FeatureNames, vector<double>> &imageDirectedFeatures, FeatureNames fname,
-						  string outputFilePath);
 	// This methow will produce and save all the images associated with each feature in 1 direction
 	void saveAllFeatureDirectedImages(int rowNumber,  int colNumber,
-			const map<FeatureNames, vector<double>> &imageFeatures, const string outputFolderPath);
+			const vector<vector<double>> &imageFeatures, const string& outputFolderPath);
+	// This method will produce and save on the filesystem the image associated with a feature in 1 direction
+	void saveFeatureImage(int rowNumber,  int colNumber,
+			const FeatureValues& featureValues, const string& outputFilePath);
 
 };
 

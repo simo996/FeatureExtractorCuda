@@ -23,7 +23,7 @@ void ImageFeatureComputer::compute(){
 	// Compute every feature
 	cout << "* COMPUTING features * " << endl;
 	vector<WindowFeatures> fs= computeAllFeatures(img);
-	vector<map<FeatureNames, vector<double>>> formattedFeatures = getAllDirectionsAllFeatureValues(fs);
+	vector<vector<FeatureValues>> formattedFeatures = getAllDirectionsAllFeatureValues(fs);
 	cout << "* Features computed * " << endl;
 
 	// Print result+s to screen
@@ -82,21 +82,24 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(const Image& img
 
 
 /*
- * This method will generate a vector of maps (1 for each direction) of features names and all their values found in the image
+ * This method will generate a vector of vectors (1 for each direction) of features names and all their values found in the image
  * Es. <Entropy , (0.1, 0.2, 3, 4 , ...)>
  * Es. <IMOC, (-1,-2,0)>
  */
-vector<map<FeatureNames, vector<double>>> ImageFeatureComputer::getAllDirectionsAllFeatureValues(const vector<WindowFeatures>& imageFeatures){
+vector<vector<FeatureValues>> ImageFeatureComputer::getAllDirectionsAllFeatureValues(const vector<WindowFeatures>& imageFeatures){
 	vector<FeatureNames> supportedFeatures = Features::getAllSupportedFeatures();
 	int numberOfDirs = progArg.numberOfDirections;
-	vector<map<FeatureNames, vector<double>>> output(numberOfDirs);
+	// Direzioni[] aventi Features[] aventi double[]
+	vector<vector<FeatureValues>> output(numberOfDirs);
 
 	// for each computed direction
 	for (int j = 0; j < numberOfDirs; ++j) {
-		map<FeatureNames, vector<double>> featuresInDirection;
+		// 1 external vector cell for each of the 18 features
+		// each cell has all the values of that feature
+		vector<FeatureValues> featuresInDirection(supportedFeatures.size());
+
 		// for each computed window
 		for (int i = 0; i < imageFeatures.size() ; ++i) {
-
 			// for each supported feature
 			for (int k = 0; k < supportedFeatures.size(); ++k) {
 				FeatureNames actualFeature = supportedFeatures[k];
@@ -104,28 +107,19 @@ vector<map<FeatureNames, vector<double>>> ImageFeatureComputer::getAllDirections
 				featuresInDirection[actualFeature].push_back(imageFeatures.at(i).at(j).at(actualFeature));
 			}
 		}
-		output[j]=featuresInDirection;
+		output[j] = featuresInDirection;
 	}
 
 	return output;
 }
 
-void ImageFeatureComputer::saveFeaturesToFiles(const vector<map<FeatureNames, vector<double>>>& imageFeatures){
+void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures){
 	string foldersPath[] ={ "Values0/", "Values45/", "Values90/", "Values135/"};
 	int numberOfDirs = progArg.numberOfDirections;
 
 	for (int i = 0; i < numberOfDirs; ++i) {
-		saveDirectedFeaturesToFiles(imageFeatures[i], foldersPath[i]);
-	}
-}
-
-void ImageFeatureComputer::saveDirectedFeaturesToFiles(const map<FeatureNames, vector<double>>& imageDirectedFeatures, const string outputFolderPath){
-	typedef map<FeatureNames, vector<double>>::const_iterator MI;
-	vector<string> fileDestinations = Features::getAllFeaturesFileNames();
-
-	int i = 0;
-	for(MI featurePairs = imageDirectedFeatures.begin(); featurePairs != imageDirectedFeatures.end(); featurePairs++){
-		if (mkdir(outputFolderPath.c_str(), 0777) == -1) {
+		// First create the the folder
+		if (mkdir(foldersPath[i].c_str(), 0777) == -1) {
 			if (errno == EEXIST) {
 				// alredy exists
 			} else {
@@ -133,9 +127,19 @@ void ImageFeatureComputer::saveDirectedFeaturesToFiles(const map<FeatureNames, v
 				cout << "cannot create save folder;  error:" << strerror(errno) << endl;
 			}
 		}
-		string newFileName(outputFolderPath);
-		saveFeatureToFile(*featurePairs, newFileName.append(fileDestinations[i]));
-		i++;
+		saveDirectedFeaturesToFiles(imageFeatures[i], foldersPath[i]);
+	}
+}
+
+void ImageFeatureComputer::saveDirectedFeaturesToFiles(const vector<FeatureValues>& imageDirectedFeatures,
+		const string& outputFolderPath){
+	vector<string> fileDestinations = Features::getAllFeaturesFileNames();
+
+	// for each feature
+	for(int i = 0; i < imageDirectedFeatures.size(); i++) {
+		string newFileName(outputFolderPath); // create the right file path
+		pair<FeatureNames , FeatureValues> featurePair = make_pair((FeatureNames) i, imageDirectedFeatures[i]);
+		saveFeatureToFile(featurePair, newFileName.append(fileDestinations[i]));
 	}
 }
 
@@ -160,7 +164,7 @@ void ImageFeatureComputer::saveFeatureToFile(const pair<FeatureNames, vector<dou
  * Es. <Entropy , (0.1, 0.2, 3, 4 , ...)>
  * Es. <IMOC, (-1,-2,0)>
  */
-void ImageFeatureComputer::printAllDirectionsAllFeatureValues(const vector<map<FeatureNames, vector<double>>>& featureList)
+void ImageFeatureComputer::printAllDirectionsAllFeatureValues(const vector<vector<FeatureValues>>& featureList)
 {
 	int numberOfDirs = progArg.numberOfDirections;
 	typedef map<FeatureNames, vector<double>>::const_iterator MI;
@@ -169,11 +173,12 @@ void ImageFeatureComputer::printAllDirectionsAllFeatureValues(const vector<map<F
 	for (int i = 0; i < numberOfDirs; ++i) {
 		Direction::printDirectionLabel(i);
 		// for each computed feature
-		for (MI mappedFeature = featureList[i].begin(); mappedFeature != featureList[i].end(); ++mappedFeature) {
-			Features::printFeatureName(mappedFeature->first); // print the feature label
+		for (int j = 0; j < featureList[i].size(); ++j) {
+			Features::printFeatureName((FeatureNames) i); // print the feature label
+
 			// Print all values
-			for(VI featureValue = mappedFeature->second.begin(); featureValue != mappedFeature->second.end(); featureValue++){
-				cout << *featureValue << " ";
+			for (int k = 0; k < featureList[i][j].size() ; ++k) {
+				cout << featureList[i][j][k] << " ";
 			}
 			cout << endl;
 		}
@@ -185,11 +190,20 @@ void ImageFeatureComputer::printAllDirectionsAllFeatureValues(const vector<map<F
  * for ALL the directions evaluated.
 */
 void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
-		const int colNumber, const vector<map<FeatureNames, vector<double>>> &imageFeatures){
+		const int colNumber, const vector<vector<FeatureValues>>& imageFeatures){
 	string foldersPath[] ={ "Images0/", "Images45/", "Images90/", "Images135/"};
 
 	// For each direction
 	for(int i=0; i < imageFeatures.size(); i++){
+		// Create the folder
+		if (mkdir(foldersPath[i].c_str(), 0777) == -1) {
+			if (errno == EEXIST) {
+				// alredy exists
+			} else {
+				// something else
+				cout << "cannot create save folder;  error:" << strerror(errno) << endl;
+			}
+		}
 		saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[i], foldersPath[i]);
 	}
 }
@@ -199,26 +213,14 @@ void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
  * for 1 direction evaluated.
 */
 void ImageFeatureComputer::saveAllFeatureDirectedImages(const int rowNumber,
-		const int colNumber, const map<FeatureNames, vector<double>> &imageDirectedFeatures,
-														string outputFolderPath){
-	typedef map<FeatureNames, vector<double>>::const_iterator MI;
+		const int colNumber, const vector<FeatureValues>& imageDirectedFeatures, const string& outputFolderPath){
 
 	vector<string> fileDestinations = Features::getAllFeaturesFileNames();
-	int i = 0;
 
-	for(MI feature = imageDirectedFeatures.begin(); feature != imageDirectedFeatures.end(); feature++){
-		if (mkdir(outputFolderPath.c_str(), 0777) == -1) {
-			if (errno == EEXIST) {
-				// alredy exists
-			} else {
-				// something else
-				cout << "cannot create save folder;  error:" << strerror(errno) << endl;
-			}
-		}
+	// For each feature
+	for(int i = 0; i < imageDirectedFeatures.size(); i++) {
 		string newFileName(outputFolderPath);
-		saveFeatureImage(rowNumber, colNumber, imageDirectedFeatures, feature->first,
-						 newFileName.append(fileDestinations[i]));
-		i++;
+		saveFeatureImage(rowNumber, colNumber, imageDirectedFeatures[i], newFileName.append(fileDestinations[i]));
 	}
 }
 
@@ -227,22 +229,21 @@ void ImageFeatureComputer::saveAllFeatureDirectedImages(const int rowNumber,
  * for a single side evaluated;
 */
 void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
-		const int colNumber, const map<FeatureNames, vector<double>> &imageDirectedFeatures,
-		FeatureNames fname, string filePath){
+		const int colNumber, const FeatureValues& featureValues,const string& filePath){
 	typedef vector<WindowFeatures>::const_iterator VI;
 
 	int imageSize = rowNumber * colNumber;
 
 	// Check if dimensions are compatible
-	if(imageDirectedFeatures.at(fname).size() != imageSize){
-		cerr << "Fatal Error! Couldn't create the image; size unexpected " << imageDirectedFeatures.at(fname).size();
+	if(featureValues.size() != imageSize){
+		cerr << "Fatal Error! Couldn't create the image; size unexpected " << featureValues.size();
 		exit(-2);
 	}
 
 	// Create a 2d matrix of double elements
 	Mat imageFeature = Mat(rowNumber, colNumber, CV_64F);
 	// Copy the values into the image
-	memcpy(imageFeature.data, imageDirectedFeatures.at(fname).data(), imageSize * sizeof(double));
+	memcpy(imageFeature.data, featureValues.data(), imageSize * sizeof(double));
 
 	// Convert image to a 256 grayscale
 	Mat convertedImage;
