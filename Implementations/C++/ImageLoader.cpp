@@ -9,9 +9,6 @@
 Mat ImageLoader::readMriImage(const string fileName, bool cropResolution){
     Mat inputImage;
     try{
-        if(cropResolution)
-            inputImage = imread(fileName, CV_LOAD_IMAGE_GRAYSCALE);
-        else
             inputImage = imread(fileName, CV_LOAD_IMAGE_ANYDEPTH);
     }
     catch (cv::Exception& e) {
@@ -27,6 +24,9 @@ Mat ImageLoader::readMriImage(const string fileName, bool cropResolution){
         cout <<  "Could not open or find the image" << std::endl ;
         exit(-1);
     }
+    // TODO think if this burns pixels > 256
+    if(cropResolution)
+        inputImage.convertTo(inputImage, CV_8UC1);
 
     return inputImage;
 }
@@ -65,7 +65,7 @@ inline void readUint(vector<uint>& output, Mat& img){
 Image ImageLoader::readImage(const string fileName, bool cropResolution){
     // Open image from file system
     Mat imgRead = readMriImage(fileName, cropResolution);
-
+    printMatImageData(imgRead);
     // COPY THE IMAGE DATA TO SMALL array
     // This array need to be moved to gpu shared memory
     // Where the data will be put
@@ -93,23 +93,22 @@ Image ImageLoader::readImage(const string fileName, bool cropResolution){
 }
 
 void ImageLoader::printMatImageData(Mat& img){
-    cout << "* Image metadata *" << endl;
-    cout << "rows: " << img.rows << " - cols: "  << img.cols << endl;
-    cout << "pixel count: " << img.total();
-    cout << " dynamic: ";
+    cout << "\t- Image metadata -" << endl;
+    cout << "\tRows: " << img.rows << " x Columns: "  << img.cols << endl;
+    cout << "\tPixel count: " << img.total() << endl;
+    cout << "\tDynamic: ";
     switch (img.type()){
         case 0:
-            cout << "256 level depth";
+            cout << "256 gray levels depth";
             break;
         case 2:
-            cout << "65536 level depth";
+            cout << "65536 gray levels depth";
             break;
         default:
             // TODO allow translation from signed to unsigned int
             cerr << "ERROR! Unsupported depth type: " << img.type();
             exit(-4);
             break;
-
     }
     cout << endl;
     //cout << img;
@@ -118,6 +117,7 @@ void ImageLoader::printMatImageData(Mat& img){
 void ImageLoader::showImage(Mat& img, string windowName){
     namedWindow("Original" + windowName, WINDOW_AUTOSIZE );// Create a window for display.
     imshow("Original" + windowName, img );                   // Show our image inside it.
+    waitKey(0);
 }
 
 void ImageLoader::showImageStretched(Mat& img, string windowName){
@@ -142,7 +142,7 @@ void ImageLoader::showImageStretched(Mat& img, string windowName){
 
 void ImageLoader::saveImageToFile(const Mat& img, const string fileName){
     try {
-        imwrite(fileName, img);
+        imwrite(fileName +".png", img);
     }catch (exception& e){
         cout << e.what() << '\n';
         cerr << "Fatal Error! Couldn't save the image";
