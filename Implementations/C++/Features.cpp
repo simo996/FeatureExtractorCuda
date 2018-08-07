@@ -43,7 +43,7 @@ vector<string> Features::getAllFeaturesFileNames() {
 /*
     This method will print to screen just the entire list of features provided
 */
-void Features::printAllFeatures(const map<FeatureNames, double>& features){
+void Features::printAllFeatures(const vector<double>& features){
     cout << endl;
     // Autonomous
     cout << "ASM: \t" << features.at(ASM) << endl;
@@ -127,15 +127,17 @@ void Features::printFeatureName(FeatureNames featureName){
     cout << getFeatureName(featureName);
 }
 
-void Features::printSingleFeature(const map<FeatureNames, double>& features,
+string Features::printFeatureNameAndValue(const double value, FeatureNames fname){
+    return (getFeatureName(fname) + "\t" + to_string(value));
+}
+
+void Features::printSingleFeature(const vector<double>& features,
                                          FeatureNames featureName){
 
-    typedef map<FeatureNames, double>::const_iterator MI;
-    for (MI element = features.end(); element != features.end(); ++element)
-    {
+    for (int i = 0; i < features.size(); ++i) {
         // Print the label with the apposite method
-        printFeatureName(element->first);
+        printFeatureName((FeatureNames) i);
         // Print the value
-        cout << element->second << endl;
+        cout << features[i] << endl;
     }
 }

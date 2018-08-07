@@ -28,11 +28,13 @@ public:
     // return a list of all the file names associated at features
     static vector<string> getAllFeaturesFileNames();
     // print features labels and their values
-    static void printAllFeatures(const map<FeatureNames, double>& features);
+    static void printAllFeatures(const vector<double>& features);
     // print single feature label and its value
-    static void printSingleFeature(const map<FeatureNames, double> &features,
+    static void printSingleFeature(const vector<double> &features,
                                    FeatureNames featureName);
-    // print the label associated with the enum
+    static string printFeatureNameAndValue(double value, FeatureNames fname);
+
+        // print the label associated with the enum
     static void printFeatureName(FeatureNames featureName);
     static string getFeatureName(FeatureNames featureName);
 };

@@ -15,8 +15,8 @@ WindowFeatureComputer::WindowFeatureComputer(const Image& img, const Window& wd)
  	provided by a parameter to the program ; the order is 0,45,90,135° ;
  	By default all 4 directions are evaluated
 */
-vector<map<FeatureNames, double>> WindowFeatureComputer::computeWindowFeatures(const int numberOfDirections) {
-	vector<map<FeatureNames, double>> featureList(numberOfDirections);
+vector<vector<double>> WindowFeatureComputer::computeWindowFeatures(const int numberOfDirections) {
+	vector<vector<double>> featureList(numberOfDirections);
 
 	vector<Direction> allDirections = Direction::getAllDirections();
 	for(int i = 0; i < numberOfDirections; i++)
@@ -24,7 +24,7 @@ vector<map<FeatureNames, double>> WindowFeatureComputer::computeWindowFeatures(c
 		Direction actualDir = allDirections[i];
 		FeatureComputer fc(image, actualDir.shiftRows, actualDir.shiftColumns,
 						   windowData);
-		map<FeatureNames, double> computedFeatures = fc.computeDirectionalFeatures();
+		vector<double> computedFeatures = fc.computeDirectionalFeatures();
 		featureList[i] =  computedFeatures;
 	}
 
@@ -45,7 +45,7 @@ void WindowFeatureComputer::printAllDirectionsAllFeatures(const WindowFeatures &
 /*
 	This method will print ALL the features for 1 supported direction with explanatory label
 */
-void WindowFeatureComputer::printSingleDirectionAllFeatures(const map<FeatureNames, double>& featureList){
+void WindowFeatureComputer::printSingleDirectionAllFeatures(const vector<double>& featureList){
 	Features::printAllFeatures(featureList);
 	cout << endl;
 }

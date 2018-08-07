@@ -13,10 +13,10 @@ FeatureComputer::FeatureComputer(const Image& img, const int shiftRows,
     windowData.setDirectionShifts(shiftRows, shiftColumns);
 }
 
-map<FeatureNames, double> FeatureComputer::computeDirectionalFeatures() {
+vector<double> FeatureComputer::computeDirectionalFeatures() {
     GLCM glcm(image, windowData);
     //printGLCM(glcm); // Print data and elements for debugging
-    map<FeatureNames, double> features = computeBatchFeatures(glcm);
+    vector<double> features = computeBatchFeatures(glcm);
     return features;
 }
 
@@ -139,8 +139,8 @@ inline double computeHyStep(const double grayLevelProbability){
     This methods will call the cumulative methods that extract features based
     on their type
 */
-map<FeatureNames, double> FeatureComputer::computeBatchFeatures(const GLCM& glcm) {
-    map<FeatureNames, double> features;
+vector<double> FeatureComputer::computeBatchFeatures(const GLCM& glcm) {
+    vector<double> features(Features::getAllSupportedFeatures().size());
 
     // Features computable from glcm Elements
     extractAutonomousFeatures(glcm, features);
@@ -158,7 +158,7 @@ map<FeatureNames, double> FeatureComputer::computeBatchFeatures(const GLCM& glcm
 /*
     This method will compute all the features computable from glcm gray level pairs
 */
-void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, map<FeatureNames, double>& features){
+void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>& features){
     // Intermediate values
     double mean = 0;
     double muX = 0;
@@ -260,7 +260,7 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, map<FeatureNam
     This method will compute the 3 features obtained from the pairs <k, int freq>
     where k is the sum of the 2 gray leveles <i,j> in a pixel pair of the glcm
 */
-void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, map<FeatureNames, double>& features) {
+void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, vector<double>& features) {
     map<AggregatedGrayPair, int> summedPairs = glcm.codifySummedPairs();
     int numberOfPairs = glcm.getNumberOfPairs();
     // TODO think about not retaining local variables and directly accessing the map
@@ -299,7 +299,7 @@ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, map<Feature
     where k is the absolute difference of the 2 gray leveles in a pixel pair 
     <i,j> of the glcm
 */
-void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, map<FeatureNames, double>& features) {
+void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, vector<double>& features) {
     map<AggregatedGrayPair, int> subtractedPairs = glcm.codifySubtractedPairs();
     int numberOfPairs= glcm.getNumberOfPairs();
     // TODO think about not retaining local variables and directly accessing the map
@@ -327,7 +327,7 @@ void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, map<Featur
     representation" of the pairs <(X, ?), int frequency> and the pairs
     <(?, X), int frequency> of reference/neighbor pixel
 */
-void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, map<FeatureNames, double>& features){
+void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, vector<double>& features){
     map<uint, int> marginalPairsX = glcm.codifyXMarginalProbabilities();
     map<uint, int> marginalPairsY = glcm.codifyYMarginalProbabilities();
     int numberOfPairs = glcm.getNumberOfPairs();

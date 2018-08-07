@@ -12,7 +12,7 @@
 
 using namespace std;
 
-typedef vector<map<FeatureNames, double>> WindowFeatures; // will contain result for 4 directions
+typedef vector<vector<double>> WindowFeatures; // will contain result for 4 directions
 
 
 class WindowFeatureComputer {
@@ -32,7 +32,7 @@ public:
     // TODO return an ostream
     static void printAllDirectionsAllFeatures(const WindowFeatures &featureList); // 4 directions with dir label
     // Print the label of the direction and the features
-    static void printSingleDirectionAllFeatures(const map<FeatureNames, double>& featureList); // with dir
+    static void printSingleDirectionAllFeatures(const vector<double>& featureList); // with dir
 
 private:
         // Initialization data to pass to each FeatureComputer

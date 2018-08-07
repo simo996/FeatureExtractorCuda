@@ -18,18 +18,18 @@ class FeatureComputer {
 public:
     FeatureComputer(const Image& img, int shiftRows, int shiftColumns, const Window& windowData);
     // TODO refactor from map to static array, maybe create dedicated object
-    map<FeatureNames, double> computeDirectionalFeatures();
+    vector<double> computeDirectionalFeatures();
 private:
     // given data to initialize related GLCM
     Image image;
     Window windowData;
 
     // Actual computation of all 18 features
-    map<FeatureNames, double> computeBatchFeatures(const GLCM& metaGLCM);
-    void extractAutonomousFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
-    void extractSumAggregatedFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
-    void extractDiffAggregatedFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
-    void extractMarginalFeatures(const GLCM& metaGLCM, map<FeatureNames, double>& features);
+    vector<double> computeBatchFeatures(const GLCM& metaGLCM);
+    void extractAutonomousFeatures(const GLCM& metaGLCM, vector<double>& features);
+    void extractSumAggregatedFeatures(const GLCM& metaGLCM, vector<double>& features);
+    void extractDiffAggregatedFeatures(const GLCM& metaGLCM, vector<double>& features);
+    void extractMarginalFeatures(const GLCM& metaGLCM, vector<double>& features);
 
     // Support method useful for debugging this class
     static void printGLCM(const GLCM& glcm); // prints glcms various information
