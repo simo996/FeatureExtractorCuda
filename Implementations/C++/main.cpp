@@ -11,7 +11,7 @@ using namespace std;
 using namespace chrono;
 
 void printProgramUsage(){
-    cout << endl << "Usage: FeatureExtractor <-s> <-i> <-d distance> <-w windowSize> <-n numberOfDirections> "
+    cout << endl << "Usage: FeatureExtractor [<-s>] [<-i>] [<-d distance>] [<-w windowSize>] [<-n numberOfDirections>] "
                     "imagePath" << endl;
     exit(2);
 }
@@ -49,9 +49,9 @@ ProgramArguments checkOptions(int argc, char* argv[])
             case 'w': {
                 // Decide what the size of each sub-window of the image will be
                 short int windowSize = atoi(optarg);
-                if ((windowSize < 3) || (windowSize > 100)) {
+                if ((windowSize < 3) || (windowSize > 10000)) {
                     cout << "ERROR ! The size of the sub-windows to be extracted option (-w) "
-                            "must have a value between 4 and 100";
+                            "must have a value between 4 and 10000";
                     printProgramUsage();
                 }
                 progArg.windowSize = windowSize;
@@ -86,7 +86,7 @@ ProgramArguments checkOptions(int argc, char* argv[])
         cout << "imagepath: " << argv[optind];
         progArg.imagePath = argv[optind];
     } else{
-        progArg.imagePath= "../../../SampleImages/brain1.tiff";
+        progArg.imagePath= "../../../SampleImages/miska.jpg";
         /*
         cout << "Missing image path!" << endl;
         printProgramUsage();
@@ -99,13 +99,6 @@ ProgramArguments checkOptions(int argc, char* argv[])
 int main(int argc, char* argv[]) {
     cout << argv[0] << endl;
     ProgramArguments pa = checkOptions(argc, argv);
-
-    /*
-    Mat brain = ImageLoader::readMriImage("../../../SampleImages/brain1.tiff");
-    ImageLoader::printMatImageData(brain);
-    ImageLoader::showImageStretched(brain, "brain1");
-    */
-    // MATLAB vedere se l'entropia viene = ad entropyfilt
 
 
     typedef high_resolution_clock Clock;
