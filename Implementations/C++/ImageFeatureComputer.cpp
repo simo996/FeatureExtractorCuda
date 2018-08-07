@@ -20,6 +20,7 @@ void ImageFeatureComputer::compute(){
 	Image img = ImageLoader::readImage(progArg.imagePath, progArg.crop);
 	cout << "* Image loaded * " << endl;
 
+
 	// Compute every feature
 	cout << "* COMPUTING features * " << endl;
 	vector<WindowFeatures> fs= computeAllFeatures(img);
@@ -241,13 +242,20 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
 	}
 
 	// Create a 2d matrix of double elements
-	Mat imageFeature = Mat(rowNumber, colNumber, CV_64F);
+	Mat_<double> imageFeature = Mat(rowNumber, colNumber, CV_64F);
 	// Copy the values into the image
 	memcpy(imageFeature.data, featureValues.data(), imageSize * sizeof(double));
 
 	// Convert image to a 256 grayscale
 	Mat convertedImage;
-	imageFeature.convertTo(convertedImage, CV_16U);
+	imageFeature.convertTo(convertedImage, CV_8UC1);
+
+	// DEBUG SEE IMAGES
+	ImageLoader::showImage(imageFeature, "ORIGINAL DOUBLE FEATURE");
+	ImageLoader::showImageStretched(convertedImage, "CONVERTED ");
+	waitKey(0);
+
+
 	// Save each image to file system
 	ImageLoader::saveImageToFile(imageFeature, filePath);
 }
