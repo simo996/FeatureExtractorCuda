@@ -24,16 +24,12 @@ string Direction::getDirectionLabel(const int direction){
     switch(direction){
         case 0:
             return " * Direction 0° *" ;
-            break;
         case 1:
             return " * Direction 45° *";
-            break;
         case 2:
             return " * Direction 90° *";
-            break;
         case 3:
             return " * Direction 135° *d";
-            break;
         default:
             cerr << "Fatal Error! Unrecognized direction";
             exit(-1);
@@ -41,9 +37,9 @@ string Direction::getDirectionLabel(const int direction){
 }
 
 void Direction::printDirectionLabel(const int direction)
-{
-    cout << endl << getDirectionLabel(direction) << endl;
-}
+    {
+        cout << endl << getDirectionLabel(direction) << endl;
+    }
 
 void Direction::printDirectionLabel(const Direction& direction) {
     cout << endl << "* " << direction.label << " *" << endl;
