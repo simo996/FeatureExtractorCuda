@@ -19,6 +19,7 @@ void ImageFeatureComputer::compute(){
 	cout << "* LOADING image * " << endl;
 	Image img = ImageLoader::readImage(progArg.imagePath, progArg.crop);
 	cout << "* Image loaded * " << endl;
+	printExtimatedSizes(img);
 
 
 	// Compute every feature
@@ -27,7 +28,7 @@ void ImageFeatureComputer::compute(){
 	vector<vector<FeatureValues>> formattedFeatures = getAllDirectionsAllFeatureValues(fs);
 	cout << "* Features computed * " << endl;
 
-	// Print result+s to screen
+	// Print results to screen
 	//printAllDirectionsAllFeatureValues(formattedFeatures);
 
 	// Save result to file
@@ -45,7 +46,17 @@ void ImageFeatureComputer::compute(){
 	}
 }
 
+void ImageFeatureComputer::printExtimatedSizes(const Image& img){
+    int numberOfRows = img.getRows() - progArg.windowSize + 1;
+    int numberOfColumns = img.getColumns() - progArg.windowSize + 1;
 
+    int numberOfWindows = numberOfRows * numberOfColumns;
+    int featureNumber = numberOfWindows * 18 * progArg.numberOfDirections;
+	cout << "\t- Size estimation - " << endl;
+    cout << "\tTotal features number: " << featureNumber << endl;
+    int featureSize = (((featureNumber*8)/1024)/1024);
+    cout << "\tTotal features weight: " <<  featureSize << " MB" << endl;
+}
 
 /*
      * This method will compute all the features for every window for the
@@ -246,8 +257,9 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
 	// Copy the values into the image
 	memcpy(imageFeature.data, featureValues.data(), imageSize * sizeof(double));
 
-	// Convert image to a 256 grayscale
-	Mat convertedImage;
+	// Convert image to a 255 grayscale
+	Mat convertedImage = imageFeature.clone();
+	normalize(convertedImage, convertedImage, 0, 255, NORM_MINMAX);
 	imageFeature.convertTo(convertedImage, CV_8UC1);
 
 	// DEBUG SEE IMAGES
@@ -261,20 +273,6 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
 }
 
 
-
-// TODO this is a debugging method, think about removing it
-/*
- * This method will print ALL 18 the features, for all the windows of the image,
- * in all 4 directions
- */
-void ImageFeatureComputer::printImageAllDirectionsAllFeatures(const vector<WindowFeatures>& imageFeatureList){
-	typedef vector<WindowFeatures>::const_iterator VI;
-
-	for (VI windowElement = imageFeatureList.begin(); windowElement!= imageFeatureList.end() ; windowElement++)
-	{
-		WindowFeatureComputer::printAllDirectionsAllFeatures(*windowElement);
-	}
-}
 
 
 

@@ -42,8 +42,6 @@ public:
     // EXTRAPOLATING RESULTS
 	// This method will get all the feature names and all their values computed in the image
 	vector<vector<FeatureValues>> getAllDirectionsAllFeatureValues(const vector<WindowFeatures>& imageFeatures);
-	// This method will print all the feature names and all their values computed in the image
-	void printAllDirectionsAllFeatureValues(const vector<vector<FeatureValues>>& featureList);
 
 	// SAVING RESULTS ON FILES
 	/* This method will save on different folders, the features computed for the distinct directions */
@@ -53,9 +51,7 @@ public:
     // This methow will produce and save all the images associated with each feature for each direction
     void saveAllFeatureImages(int rowNumber,  int colNumber, const vector<vector<FeatureValues>>& imageFeatures);
 
-	// DEBUG, not really useful
-	// Method will print, for each direction, for each window, all the features
-	static void printImageAllDirectionsAllFeatures(const vector<WindowFeatures> &imageFeatureList);
+
 private:
 	ProgramArguments progArg;
 
@@ -74,6 +70,11 @@ private:
 	void saveFeatureImage(int rowNumber,  int colNumber,
 			const FeatureValues& featureValues, const string& outputFilePath);
 
+	// DEBUG info
+	void printExtimatedSizes(const Image& img);
+
+	// This method will print all the feature names and all their values computed in the image
+	void printAllDirectionsAllFeatureValues(const vector<vector<FeatureValues>>& featureList);
 };
 
 
