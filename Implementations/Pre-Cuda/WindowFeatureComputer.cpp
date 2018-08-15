@@ -7,8 +7,9 @@
 
 
 
-WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls, const ImageData& img, const Window& wd)
-		: pixels(pxls), image(img), windowData(wd){
+WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
+		const ImageData& img, const Window& wd, WorkArea wa): pixels(pxls),
+		image(img), windowData(wd), workArea(wa){
 }
 
 /*
@@ -24,7 +25,7 @@ vector<vector<double>> WindowFeatureComputer::computeWindowFeatures(const int nu
 	{
 		Direction actualDir = allDirections[i];
 		FeatureComputer fc(pixels, image, actualDir.shiftRows, actualDir.shiftColumns,
-						   windowData);
+						   windowData, workArea);
 		vector<double> computedFeatures = fc.computeDirectionalFeatures();
 		featureList[i] =  computedFeatures;
 	}

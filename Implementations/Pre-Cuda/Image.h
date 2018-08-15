@@ -10,11 +10,11 @@
 
 using namespace std;
 
-class ImageAllocated {
+class Image {
 public:
-    ImageAllocated(const vector<unsigned int> pixels, unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
+    Image(vector<unsigned int> pixels, unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
             :pixels(pixels), rows(rows), columns(columns), maxGrayLevel(mxGrayLevel){};
-    const vector<unsigned int> getPixels() const;
+    vector<unsigned int> getPixels() const;
     unsigned int getRows() const;
     unsigned int getColumns() const;
     unsigned int getMaxGrayLevel() const;
@@ -22,7 +22,7 @@ public:
 
 private:
     // Should belong to private class
-    const vector<unsigned int> pixels;
+    vector<unsigned int> pixels;
     const unsigned int rows;
     const unsigned int columns;
     const unsigned int maxGrayLevel;

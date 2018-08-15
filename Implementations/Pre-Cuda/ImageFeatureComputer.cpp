@@ -11,6 +11,12 @@
 ImageFeatureComputer::ImageFeatureComputer(const ProgramArguments& progArg)
 :progArg(progArg){}
 
+void printTest(AggregatedGrayPair * pointer, int length){
+	for (int i = 0; i < length; ++i) {
+		pointer[i].printPair();
+	}
+	cout << endl;
+}
 
 
 void ImageFeatureComputer::compute(){
@@ -24,14 +30,12 @@ void ImageFeatureComputer::compute(){
     cout << "* Image loaded * " << endl;
 	printExtimatedSizes(imgData);
 
+
 	// Compute every feature
 	cout << "* COMPUTING features * " << endl;
 	vector<WindowFeatures> fs= computeAllFeatures(image.getPixels().data(), imgData);
 	vector<vector<FeatureValues>> formattedFeatures = getAllDirectionsAllFeatureValues(fs);
 	cout << "* Features computed * " << endl;
-
-	// Print results to screen
-	//printAllDirectionsAllFeatureValues(formattedFeatures);
 
 	// Save result to file
 	cout << "* Saving features to files *" << endl;
@@ -66,14 +70,29 @@ void ImageFeatureComputer::printExtimatedSizes(const ImageData& img){
      * By default all 4 directions are considered; order is 0->45->90->135°
      */
 vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * pixels, const ImageData& img){
-	// TODO use this dimension in a static addressing way
+	// Pre-Allocate working area
+	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.symmetric);
+	int extimatedWindowRows = windowData.side; // 0° has all rows
+	int extimateWindowCols = windowData.side - (windowData.distance * 1); // at least 1 column is lost
+	int numberOfPairsInWindow = extimatedWindowRows * extimateWindowCols;
+	if(windowData.symmetric)
+		numberOfPairsInWindow *= 2;
+
+	// Each 1 of these data structures allow 1 thread to work
+	vector<GrayPair> elements(numberOfPairsInWindow);
+	vector<AggregatedGrayPair> summedPairs(numberOfPairsInWindow);
+	vector<AggregatedGrayPair> subtractedPairs(numberOfPairsInWindow);
+	vector<AggregatedGrayPair> xMarginalPairs(numberOfPairsInWindow);
+	vector<AggregatedGrayPair> yMarginalPairs(numberOfPairsInWindow);
+	WorkArea wa(numberOfPairsInWindow, elements.data(), summedPairs.data(),
+				subtractedPairs.data(), xMarginalPairs.data(), yMarginalPairs.data());
+
+	// Pre-Allocate the array that will contain features
 	int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
 			* (img.getColumns() - progArg.windowSize + 1);
 	vector<WindowFeatures> featuresList(numberOfWindows);
 
-	// Create data structure that incapsulate window parameters
-	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.symmetric);
-
+	// START GPU WORK
 	// Slide windows on the image
 	int k = 0;
 	for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
@@ -84,13 +103,15 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 			// tell the window its relative offset (starting point) inside the image
 			actualWindow.setSpacialOffsets(i,j);
 			// Launch the computation of features on the window
-			WindowFeatureComputer wfc(pixels, img, actualWindow);
+			WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
 			WindowFeatures wfs = wfc.computeWindowFeatures(progArg.numberOfDirections);
 			// save results
-			featuresList[k]= wfs;
+			featuresList[k] = wfs;
 			k++;
 		}
 	}
+
+	// Resumes CPU control copying back results
 
 	return featuresList;
 }
@@ -174,32 +195,6 @@ void ImageFeatureComputer::saveFeatureToFile(const pair<FeatureNames, vector<dou
 
 }
 
-/*
- * This method will print the given vector of maps (1 for each direction)
- * of features names and all their values found in the image
- * Es. <Entropy , (0.1, 0.2, 3, 4 , ...)>
- * Es. <IMOC, (-1,-2,0)>
- */
-void ImageFeatureComputer::printAllDirectionsAllFeatureValues(const vector<vector<FeatureValues>>& featureList)
-{
-	int numberOfDirs = progArg.numberOfDirections;
-	typedef map<FeatureNames, vector<double>>::const_iterator MI;
-	typedef vector<double>::const_iterator VI;
-	// For each direction
-	for (int i = 0; i < numberOfDirs; ++i) {
-		Direction::printDirectionLabel(i);
-		// for each computed feature
-		for (int j = 0; j < featureList[i].size(); ++j) {
-			Features::printFeatureName((FeatureNames) i); // print the feature label
-
-			// Print all values
-			for (int k = 0; k < featureList[i][j].size() ; ++k) {
-				cout << featureList[i][j][k] << " ";
-			}
-			cout << endl;
-		}
-	}
-}
 
 /*
  * This method will create ALL the images associated with each feature,
@@ -263,17 +258,12 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
 
 	// Convert image to a 255 grayscale
 	Mat convertedImage = imageFeature.clone();
-	normalize(convertedImage, convertedImage, 0, 255, NORM_MINMAX);
-	imageFeature.convertTo(convertedImage, CV_8UC1);
-
-	// DEBUG SEE IMAGES
-	ImageLoader::showImage(imageFeature, "ORIGINAL DOUBLE FEATURE");
-	ImageLoader::showImageStretched(convertedImage, "CONVERTED ");
-	waitKey(0);
-
+	normalize(convertedImage, convertedImage, 0, 255, NORM_MINMAX, CV_8UC1);
+	// Linear stretch to improve clarity
+	Mat stretched = ImageLoader::stretchImage(convertedImage);
 
 	// Save each image to file system
-	ImageLoader::saveImageToFile(imageFeature, filePath);
+	ImageLoader::saveImageToFile(stretched, filePath);
 }
 
 

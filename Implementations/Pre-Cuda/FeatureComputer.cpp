@@ -10,12 +10,13 @@
 using namespace std;
 
 FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& img, const int shiftRows,
-                                 const int shiftColumns, const Window& wd): pixels(pixels), image(img), windowData(wd) {
+                                 const int shiftColumns, const Window& wd, const WorkArea wa)
+                                 : pixels(pixels), image(img), windowData(wd) , workArea(wa) {
     windowData.setDirectionShifts(shiftRows, shiftColumns);
 }
 
 vector<double> FeatureComputer::computeDirectionalFeatures() {
-    GLCM glcm(pixels, image, windowData);
+    GLCM glcm(pixels, image, windowData, workArea);
     //printGLCM(glcm); // Print data and elements for debugging
     vector<double> features = computeBatchFeatures(glcm);
     return features;

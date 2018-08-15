@@ -10,6 +10,7 @@
 #include "AggregatedGrayPair.h"
 #include "Window.h"
 #include "ImageData.h"
+#include "WorkArea.h"
 
 
 using namespace std;
@@ -27,7 +28,8 @@ public:
     unsigned int getNumberOfUniqueMarginalElements(const vector<unsigned int>& src);
 
     // Standard initializer constructor
-    GLCM(const unsigned int * pixels, const ImageData& image, Window& windowData);
+    GLCM(const unsigned int * pixels, const ImageData& image, Window& windowData, WorkArea wa);
+    ~GLCM();
 
     // Utilities
     void printGLCMData() const;
@@ -42,12 +44,18 @@ public:
 private:
     const unsigned int * pixels;
     ImageData img;
-
-    // WARNING, SE SIMMETRICA LO SPAZIO DEVE RADDOPPIARE
+    WorkArea workArea;
     int numberOfPairs;
     Window windowData;
 
-    // Addressing methods to get to neighbor pixel
+    // Methods to access the working area's elements
+    GrayPair * getGrayPairs();
+    AggregatedGrayPair * getSummedPairs();
+    AggregatedGrayPair * getSubtractedPairs();
+    AggregatedGrayPair * getxMarginalPairs();
+    AggregatedGrayPair * getyMarginalPairs();
+
+        // Addressing methods to get to neighbor pixel
     int computeWindowColumnOffset();
     int computeWindowRowOffset();
     // Geometric limits in the father windows

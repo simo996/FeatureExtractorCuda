@@ -73,8 +73,6 @@ private:
 	// DEBUG info
 	void printExtimatedSizes(const ImageData& img);
 
-	// This method will print all the feature names and all their values computed in the image
-	void printAllDirectionsAllFeatureValues(const vector<vector<FeatureValues>>& featureList);
 };
 
 

@@ -17,6 +17,6 @@ add_executable(FeatureExtractor main.cpp
         WindowFeatureComputer.cpp WindowFeatureComputer.h
         ImageFeatureComputer.cpp ImageFeatureComputer.h
         ImageLoader.cpp ImageLoader.h
-        Image.cpp Image.h)
+        Image.cpp Image.h WorkArea.cpp WorkArea.h)
 
 target_link_libraries(FeatureExtractor ${OpenCV_LIBS})

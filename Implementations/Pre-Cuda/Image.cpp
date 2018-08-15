@@ -3,25 +3,25 @@
 //
 
 
-#include "ImageAllocated.h"
+#include "Image.h"
 
-unsigned int ImageAllocated::getRows() const{
+unsigned int Image::getRows() const{
     return rows;
 }
 
-unsigned int ImageAllocated::getColumns() const{
+unsigned int Image::getColumns() const{
     return columns;
 }
 
-const vector<unsigned int> ImageAllocated::getPixels() const{
+vector<unsigned int> Image::getPixels() const{
     return pixels;
 }
 
-unsigned int ImageAllocated::getMaxGrayLevel() const{
+unsigned int Image::getMaxGrayLevel() const{
     return maxGrayLevel;
 }
 
-void ImageAllocated::printElements() const {
+void Image::printElements() const {
     std::cout << "Img = " << std::endl;
 
     for (unsigned int i = 0; i < rows; i++) {
