@@ -10,7 +10,7 @@
 using namespace std;
 
 FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& img, const int shiftRows,
-                                 const int shiftColumns, const Window& wd, const WorkArea wa)
+                                 const int shiftColumns, const Window& wd, WorkArea& wa)
                                  : pixels(pixels), image(img), windowData(wd) , workArea(wa) {
     windowData.setDirectionShifts(shiftRows, shiftColumns);
 }

@@ -17,14 +17,14 @@ class FeatureComputer {
 
 public:
     FeatureComputer(const unsigned int * pixels, const ImageData& img,
-            int shiftRows, int shiftColumns, const Window& windowData, WorkArea wa);
+            int shiftRows, int shiftColumns, const Window& windowData, WorkArea& wa);
     vector<double> computeDirectionalFeatures();
 private:
     // given data to initialize related GLCM
     const unsigned int * pixels;
     ImageData image;
     Window windowData;
-    WorkArea workArea;
+    WorkArea& workArea;
 
     // Actual computation of all 18 features
     vector<double> computeBatchFeatures(const GLCM& metaGLCM);

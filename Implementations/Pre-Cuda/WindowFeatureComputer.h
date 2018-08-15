@@ -22,7 +22,7 @@ class WindowFeatureComputer {
    */
 
 public:
-    WindowFeatureComputer(unsigned int * pixels, const ImageData& img, const Window& wd, WorkArea wa);
+    WindowFeatureComputer(unsigned int * pixels, const ImageData& img, const Window& wd, WorkArea& wa);
     // Will be computed features in the directions specified
     // Default = 4 = all feautures ; oder 0->45->90->135°
     WindowFeatures computeWindowFeatures(int numberOfDirections = 4);
@@ -36,7 +36,7 @@ public:
 
 private:
         // Initialization data to pass to each FeatureComputer
-        WorkArea workArea;
+        WorkArea& workArea;
         unsigned int * pixels;
         ImageData image;
         Window windowData;

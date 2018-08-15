@@ -5,40 +5,26 @@
 #ifndef PRE_CUDA_WORKAREA_H
 #define PRE_CUDA_WORKAREA_H
 
-
+#include <vector>
 #include "GrayPair.h"
 #include "AggregatedGrayPair.h"
 
+using namespace std;
+
 class WorkArea {
 public:
-    WorkArea(int length, GrayPair* pairs, AggregatedGrayPair * summed,
-            AggregatedGrayPair * subtracted, AggregatedGrayPair * xMarginal,
-            AggregatedGrayPair * yMarginal): numberOfElements(length), grayPairs(pairs), summedPairs(summed),
-            subtractedPairs(subtracted), xMarginalPairs(xMarginal), yMarginalPairs(yMarginal){};
-
-    // Set to default (0 for every field) each element
+    WorkArea(int length, vector<GrayPair>& grayPairs, vector<AggregatedGrayPair>& summedPairs,
+            vector<AggregatedGrayPair>& subtractedPairs, vector<AggregatedGrayPair>& xMarginalPairs,
+            vector<AggregatedGrayPair>& yMarginalPairs): numberOfElements(length), grayPairs(grayPairs),
+            summedPairs(summedPairs), subtractedPairs(subtractedPairs), xMarginalPairs(xMarginalPairs),
+            yMarginalPairs(yMarginalPairs){};
     void cleanup();
-    GrayPair * getGrayPairs(){
-        return grayPairs;
-    };
-    AggregatedGrayPair * getSummedPairs(){
-        return summedPairs;
-    }
-    AggregatedGrayPair * getSubtractedPairs(){
-        return summedPairs;
-    }
-    AggregatedGrayPair * getxMarginalPairs(){
-        return xMarginalPairs;
-    }
-    AggregatedGrayPair * getyMarginalPairs(){
-        return yMarginalPairs;
-    }
-private:
-    GrayPair * grayPairs;
-    AggregatedGrayPair * summedPairs;
-    AggregatedGrayPair * subtractedPairs;
-    AggregatedGrayPair * xMarginalPairs;
-    AggregatedGrayPair * yMarginalPairs;
+
+    vector<GrayPair>& grayPairs;
+    vector<AggregatedGrayPair>& summedPairs;
+    vector<AggregatedGrayPair>& subtractedPairs;
+    vector<AggregatedGrayPair>& xMarginalPairs;
+    vector<AggregatedGrayPair>& yMarginalPairs;
     int numberOfElements;
 
 };

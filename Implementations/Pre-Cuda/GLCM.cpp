@@ -13,16 +13,14 @@ using namespace std;
 
 // Constructors
 GLCM::GLCM(const unsigned int * pixels, const ImageData& image,
-        Window& windowData, WorkArea wa): pixels(pixels), img(image),
-        windowData(windowData), workArea(wa){
+        Window& windowData, WorkArea& wa): pixels(pixels), img(image),
+        windowData(windowData),  workArea(wa) ,elements(wa.grayPairs),
+        summedPairs(wa.summedPairs), subtractedPairs(wa.subtractedPairs),
+        xMarginalPairs(wa.xMarginalPairs), yMarginalPairs(wa.yMarginalPairs)
+        {
     this->numberOfPairs = getBorderRows() * getBorderColumns();
     if(this->windowData.symmetric)
         this->numberOfPairs *= 2;
-    elements = vector<GrayPair> (numberOfPairs);
-    summedPairs = vector<AggregatedGrayPair> (numberOfPairs);
-    subtractedPairs = vector<AggregatedGrayPair> (numberOfPairs);
-    xMarginalPairs = vector<AggregatedGrayPair> (numberOfPairs);
-    yMarginalPairs = vector<AggregatedGrayPair> (numberOfPairs);
 
     initializeGlcmElements();
 }
@@ -30,26 +28,6 @@ GLCM::GLCM(const unsigned int * pixels, const ImageData& image,
 // Set the working area to initial condition
 GLCM::~GLCM(){
     workArea.cleanup();
-}
-
-GrayPair * GLCM::getGrayPairs() {
-    return workArea.getGrayPairs();
-}
-
-AggregatedGrayPair * GLCM::getSummedPairs(){
-    return workArea.getSummedPairs();
-}
-
-AggregatedGrayPair * GLCM::getSubtractedPairs(){
-    return workArea.getSubtractedPairs();
-}
-
-AggregatedGrayPair * GLCM::getxMarginalPairs(){
-    return workArea.getxMarginalPairs();
-}
-
-AggregatedGrayPair * GLCM::getyMarginalPairs(){
-    return workArea.getyMarginalPairs();
 }
 
 // Warning, se simmetrica lo spazio deve raddoppiare

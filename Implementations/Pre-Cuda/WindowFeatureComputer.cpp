@@ -8,7 +8,7 @@
 
 
 WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
-		const ImageData& img, const Window& wd, WorkArea wa): pixels(pxls),
+		const ImageData& img, const Window& wd, WorkArea& wa): pixels(pxls),
 		image(img), windowData(wd), workArea(wa){
 }
 

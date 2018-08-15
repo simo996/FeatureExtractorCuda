@@ -17,18 +17,17 @@ using namespace std;
 
 class GLCM {
 public:
-    vector<GrayPair> elements;
-    vector<AggregatedGrayPair> summedPairs;
-    vector<AggregatedGrayPair> subtractedPairs;
-    vector<AggregatedGrayPair> xMarginalPairs;
-    vector<AggregatedGrayPair> yMarginalPairs;
+    vector<GrayPair>& elements;
+    vector<AggregatedGrayPair>& summedPairs;
+    vector<AggregatedGrayPair>& subtractedPairs;
+    vector<AggregatedGrayPair>& xMarginalPairs;
+    vector<AggregatedGrayPair>& yMarginalPairs;
 
     unsigned int getNumberOfUniquePairs() const;
     unsigned int getNumberOfUniqueAggregatedElements(const vector<AggregatedGrayPair>& src) const;
-    unsigned int getNumberOfUniqueMarginalElements(const vector<unsigned int>& src);
 
     // Standard initializer constructor
-    GLCM(const unsigned int * pixels, const ImageData& image, Window& windowData, WorkArea wa);
+    GLCM(const unsigned int * pixels, const ImageData& image, Window& windowData, WorkArea& wa);
     ~GLCM();
 
     // Utilities
@@ -44,18 +43,11 @@ public:
 private:
     const unsigned int * pixels;
     ImageData img;
-    WorkArea workArea;
     int numberOfPairs;
     Window windowData;
+    WorkArea& workArea;
 
-    // Methods to access the working area's elements
-    GrayPair * getGrayPairs();
-    AggregatedGrayPair * getSummedPairs();
-    AggregatedGrayPair * getSubtractedPairs();
-    AggregatedGrayPair * getxMarginalPairs();
-    AggregatedGrayPair * getyMarginalPairs();
-
-        // Addressing methods to get to neighbor pixel
+    // Addressing methods to get to neighbor pixel
     int computeWindowColumnOffset();
     int computeWindowRowOffset();
     // Geometric limits in the father windows

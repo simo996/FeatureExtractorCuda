@@ -84,8 +84,8 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 	vector<AggregatedGrayPair> subtractedPairs(numberOfPairsInWindow);
 	vector<AggregatedGrayPair> xMarginalPairs(numberOfPairsInWindow);
 	vector<AggregatedGrayPair> yMarginalPairs(numberOfPairsInWindow);
-	WorkArea wa(numberOfPairsInWindow, elements.data(), summedPairs.data(),
-				subtractedPairs.data(), xMarginalPairs.data(), yMarginalPairs.data());
+	WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
+				subtractedPairs, xMarginalPairs, yMarginalPairs);
 
 	// Pre-Allocate the array that will contain features
 	int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
