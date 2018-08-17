@@ -15,10 +15,10 @@ using namespace cv;
 
 struct ProgramArguments{
 	// TODO document intensively
-	short int windowSize;
+	int windowSize;
 	bool crop;
 	bool symmetric;
-	short int distance;
+	int distance;
 	short int numberOfDirections;
 	bool createImages;
 	short int chosenDevice; // 0 = gpu, 1=cpu, 'a'= auto

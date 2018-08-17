@@ -39,16 +39,17 @@ ProgramArguments checkOptions(int argc, char* argv[])
             }
             case 'd': {
                 // Choose the distance between
-                short int windowSize = atoi(optarg);
-                if ((windowSize < 3) || (windowSize > 100)) {
+                int distance = atoi(optarg);
+                if (distance < 1) {
+                    cout << "ERROR ! The distance between every pixel pair must be >= 1 ";
                     printProgramUsage();
                 }
-                progArg.windowSize = windowSize;
+                progArg.distance = distance;
                 break;
             }
             case 'w': {
                 // Decide what the size of each sub-window of the image will be
-                short int windowSize = atoi(optarg);
+                int windowSize = atoi(optarg);
                 if ((windowSize < 3) || (windowSize > 10000)) {
                     cout << "ERROR ! The size of the sub-windows to be extracted option (-w) "
                             "must have a value between 4 and 10000";
@@ -86,7 +87,7 @@ ProgramArguments checkOptions(int argc, char* argv[])
         cout << "imagepath: " << argv[optind];
         progArg.imagePath = argv[optind];
     } else{
-        progArg.imagePath= "../../../SampleImages/miska.jpg";
+        progArg.imagePath= "../../../SampleImages/brain1.tiff";
         /*
         cout << "Missing image path!" << endl;
         printProgramUsage();
