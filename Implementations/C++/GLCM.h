@@ -17,7 +17,12 @@ using namespace std;
 class GLCM {
 public:
     // Internal State
-    map<GrayPair, int> grayPairsMap;
+    map<GrayPair, int> grayPairs;
+    map<AggregatedGrayPair, int> summedPairs;
+    map<AggregatedGrayPair, int> subtractedPairs;
+    map<uint, int> xMarginalPairs;
+    map<uint, int> yMarginalPairs;
+
     // Standard initializer constructor
     GLCM(const Image& image, Window& windowData);
     // Utilities
@@ -27,14 +32,9 @@ public:
     int getNumberOfPairs() const;
     int getMaxGrayLevel() const;
 
-    // Representations useful for aggregated features
-    map<AggregatedGrayPair, int> codifySummedPairs() const;
-    map<AggregatedGrayPair, int> codifySubtractedPairs() const;
     void printGLCMAggregatedElements(map<AggregatedGrayPair, int> input, bool areSummed) const;
     void printAggregated() const;
-    // Representation useful for HXY
-    map<unsigned int, int> codifyXMarginalProbabilities() const;
-    map<unsigned int, int> codifyYMarginalProbabilities() const;
+
     // Rendere statico
     static void printMarginalProbability(map<uint, int> marginalProb, char symbol);
 
@@ -50,9 +50,16 @@ private:
     int getBorderRows() const;
     int getBorderColumns() const;
     // Methods to build the glcm from input pixel and directional data
-    void initializeGlcmElements();
     int getReferenceIndex(int i, int j, int initialRowOffset, int initialColumnOffset);
     int getNeighborIndex(int i, int j, int initialColumnOffset);
+    void initializeGlcmElements();
+    // Representations useful for aggregated features
+    void codifySummedPairs();
+    void codifySubtractedPairs();
+    // Representation useful for HXY
+    void codifyXMarginalProbabilities();
+    void codifyYMarginalProbabilities();
+
 
 };
 

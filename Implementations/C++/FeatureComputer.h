@@ -17,8 +17,7 @@ class FeatureComputer {
 
 public:
     FeatureComputer(const Image& img, int shiftRows, int shiftColumns, const Window& windowData);
-    // TODO refactor from map to static array, maybe create dedicated object
-    vector<double> computeDirectionalFeatures();
+    vector<double> computeFeatures();
 private:
     // given data to initialize related GLCM
     Image image;

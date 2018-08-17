@@ -16,6 +16,10 @@ GLCM::GLCM(const Image& image, Window& windowData)
         : img(image), windowData(windowData){
     this->numberOfPairs = getBorderRows() * getBorderColumns();
     initializeGlcmElements();
+    codifySummedPairs();
+    codifySubtractedPairs();
+    codifyYMarginalProbabilities();
+    codifyXMarginalProbabilities();
 }
 
 int GLCM::getNumberOfPairs() const {
@@ -60,7 +64,7 @@ void GLCM::printGLCMElements() const{
     cout << "* GrayPairs *" << endl;
 
     typedef map<GrayPair, int>::const_iterator MapIterator;
-    for(MapIterator mi=grayPairsMap.begin(); mi!=grayPairsMap.end(); mi++)
+    for(MapIterator mi=grayPairs.begin(); mi!=grayPairs.end(); mi++)
     {
         mi->first.printPair();
         cout << "\tmult: " <<mi->second;
@@ -136,11 +140,11 @@ void GLCM::initializeGlcmElements() {
             neighborGrayLevel = img.getPixels()[neighborIndex];
 
             GrayPair actualPair(referenceGrayLevel, neighborGrayLevel);
-            grayPairsMap[actualPair] += 1;
+            grayPairs[actualPair] += 1;
             if(windowData.symmetric) // Create the symmetric counterpart
             {
                 GrayPair simmetricPair(neighborGrayLevel, referenceGrayLevel);
-                grayPairsMap[simmetricPair] += 1;
+                grayPairs[simmetricPair] += 1;
             }
             
         }
@@ -153,18 +157,16 @@ void GLCM::initializeGlcmElements() {
     map<int k, int freq> where k is the sum of both grayLevels of the GrayPair.
     This representation is used in computeSumXXX() features
 */
-map<AggregatedGrayPair, int> GLCM::codifySummedPairs() const{
-    map<AggregatedGrayPair, int> aggregatedPairs;
-    
+void GLCM::codifySummedPairs() {
     typedef map<GrayPair, int>::const_iterator MapIterator;
-    for(MapIterator mi=grayPairsMap.begin(); mi!=grayPairsMap.end(); mi++)
+
+    for(MapIterator mi=grayPairs.begin(); mi!=grayPairs.end(); mi++)
     {
         uint k= mi->first.getGrayLevelI() + mi->first.getGrayLevelJ();
         AggregatedGrayPair element(k);
 
-        aggregatedPairs[element] += mi->second;
+        summedPairs[element] += mi->second;
     }
-    return aggregatedPairs;
 }
 
 /*
@@ -173,24 +175,22 @@ map<AggregatedGrayPair, int> GLCM::codifySummedPairs() const{
     of the GrayPair.
     This representation is used in computeDiffXXX() features
 */
-map<AggregatedGrayPair, int> GLCM::codifySubtractedPairs() const{
-    map<AggregatedGrayPair, int> aggregatedPairs;
-    
+void GLCM::codifySubtractedPairs(){
     typedef map<GrayPair, int>::const_iterator MapIterator;
-    for(MapIterator mi=grayPairsMap.begin(); mi!=grayPairsMap.end(); mi++)
+
+    for(MapIterator mi=grayPairs.begin(); mi!=grayPairs.end(); mi++)
     {
         int diff = mi->first.getGrayLevelI() - mi->first.getGrayLevelJ();
         uint k= static_cast<uint>(abs(diff));
         AggregatedGrayPair element(k);
 
-        aggregatedPairs[element] += mi->second;
+        subtractedPairs[element] += mi->second;
     }
-    return aggregatedPairs;
 }
 
 void GLCM::printAggregated() const{
-    printGLCMAggregatedElements(codifySummedPairs(), true);
-    printGLCMAggregatedElements(codifySubtractedPairs(), false);
+    printGLCMAggregatedElements(summedPairs, true);
+    printGLCMAggregatedElements(subtractedPairs, false);
 }
 
 void GLCM::printGLCMAggregatedElements(map<AggregatedGrayPair, int> input, bool areSummed) const{
@@ -214,17 +214,14 @@ void GLCM::printGLCMAggregatedElements(map<AggregatedGrayPair, int> input, bool 
     (ie. how many times k is present in all GrayPair<k, ?>)
     This representation is used for computing features HX, HXY, HXY1, imoc
 */
-map<uint, int> GLCM::codifyXMarginalProbabilities() const{
-    map<uint, int> xMarginalPairs;
-
+void GLCM::codifyXMarginalProbabilities() {
     typedef map<GrayPair, int>::const_iterator GrayPairsMapIterator;
-    for(GrayPairsMapIterator mi=grayPairsMap.begin(); mi!=grayPairsMap.end(); mi++)
+
+    for(GrayPairsMapIterator mi=grayPairs.begin(); mi!=grayPairs.end(); mi++)
     {
         uint firstGrayPair = mi->first.getGrayLevelI();
         xMarginalPairs[firstGrayPair] += mi->second;
     }
-
-    return xMarginalPairs;
 }
 
 /*
@@ -234,17 +231,14 @@ map<uint, int> GLCM::codifyXMarginalProbabilities() const{
     (ie. how many times k is present in all GrayPair<?, k>)
     This representation is used for computing features HX, HXY, HXY1, imoc
 */
-map<uint, int> GLCM::codifyYMarginalProbabilities() const{
-    map<uint, int> yMarginalPairs;
-    
+void GLCM::codifyYMarginalProbabilities() {
     typedef map<GrayPair, int>::const_iterator GrayPairsMapIterator;
-    for(GrayPairsMapIterator mi=grayPairsMap.begin(); mi!=grayPairsMap.end(); mi++)
+
+    for(GrayPairsMapIterator mi=grayPairs.begin(); mi!=grayPairs.end(); mi++)
     {
         uint secondGrayPair = mi->first.getGrayLevelJ();
         yMarginalPairs[secondGrayPair] += mi->second;
     }
-
-    return yMarginalPairs;
 }
 
 void GLCM::printMarginalProbability(const map<uint, int> marginalProb, const char symbol) {
