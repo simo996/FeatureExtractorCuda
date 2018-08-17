@@ -24,7 +24,7 @@ vector<vector<double>> WindowFeatureComputer::computeWindowFeatures(const int nu
 		Direction actualDir = allDirections[i];
 		FeatureComputer fc(image, actualDir.shiftRows, actualDir.shiftColumns,
 						   windowData);
-		vector<double> computedFeatures = fc.computeDirectionalFeatures();
+		vector<double> computedFeatures = fc.computeFeatures();
 		featureList[i] =  computedFeatures;
 	}
 
