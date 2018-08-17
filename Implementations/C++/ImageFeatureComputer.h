@@ -45,7 +45,7 @@ public:
 
 	// SAVING RESULTS ON FILES
 	/* This method will save on different folders, the features computed for the distinct directions */
-	void saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures);
+	void saveFeaturesToFiles    (const vector<vector<FeatureValues>>& imageFeatures);
 
     // IMAGING
     // This methow will produce and save all the images associated with each feature for each direction

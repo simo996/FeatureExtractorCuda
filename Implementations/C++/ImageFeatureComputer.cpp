@@ -252,24 +252,18 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
 		exit(-2);
 	}
 
-	// Create a 2d matrix of double elements
-	Mat_<double> imageFeature = Mat(rowNumber, colNumber, CV_64F);
-	// Copy the values into the image
-	memcpy(imageFeature.data, featureValues.data(), imageSize * sizeof(double));
+    Mat_<double> imageFeature = Mat(rowNumber, colNumber, CV_64F);
+    // Copy the values into the image
+    memcpy(imageFeature.data, featureValues.data(), imageSize * sizeof(double));
 
-	// Convert image to a 255 grayscale
-	Mat convertedImage = imageFeature.clone();
-	normalize(convertedImage, convertedImage, 0, 255, NORM_MINMAX);
-	imageFeature.convertTo(convertedImage, CV_8UC1);
+    // Convert image to a 255 grayscale
+    Mat convertedImage = imageFeature.clone();
+    normalize(convertedImage, convertedImage, 0, 255, NORM_MINMAX, CV_8UC1);
+    // Linear stretch to improve clarity
+    Mat stretched = ImageLoader::stretchImage(convertedImage);
 
-	// DEBUG SEE IMAGES
-	ImageLoader::showImage(imageFeature, "ORIGINAL DOUBLE FEATURE");
-	ImageLoader::showImageStretched(convertedImage, "CONVERTED ");
-	waitKey(0);
-
-
-	// Save each image to file system
-	ImageLoader::saveImageToFile(imageFeature, filePath);
+    // Save each image to file system
+    ImageLoader::saveImageToFile(stretched, filePath);
 }
 
 
