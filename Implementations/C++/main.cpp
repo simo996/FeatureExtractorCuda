@@ -82,6 +82,10 @@ ProgramArguments checkOptions(int argc, char* argv[])
 
 
     }
+    if(progArg.distance > progArg.windowSize){
+        cout << "WARNING: distance can't be > of each window size; distance value corrected to 1" << endl;
+        progArg.distance = 1;
+    }
     // The last parameter must be the image path
     if(optind +1 == argc){
         cout << "imagepath: " << argv[optind];

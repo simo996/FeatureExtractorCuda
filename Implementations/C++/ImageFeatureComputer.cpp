@@ -14,13 +14,24 @@ ImageFeatureComputer::ImageFeatureComputer(const ProgramArguments& progArg)
 
 }
 
+void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
+	int imageSmallestSide = img.getRows();
+	if(img.getColumns() < imageSmallestSide)
+		imageSmallestSide = img.getColumns();
+	if(progArg.windowSize > imageSmallestSide)
+		cout << "WARNING! The window side specified with the option -w"
+		  "exceeds the smallest dimension (" << imageSmallestSide << ") of the image read!" << endl;
+		cout << "Window side is corrected to (" << imageSmallestSide << ")" << endl;
+		progArg.windowSize = imageSmallestSide;
+
+}
 
 void ImageFeatureComputer::compute(){
 	cout << "* LOADING image * " << endl;
 	Image img = ImageLoader::readImage(progArg.imagePath, progArg.crop);
 	cout << "* Image loaded * " << endl;
+	checkOptionCompatibility(progArg, img);
 	printExtimatedSizes(img);
-
 
 	// Compute every feature
 	cout << "* COMPUTING features * " << endl;
