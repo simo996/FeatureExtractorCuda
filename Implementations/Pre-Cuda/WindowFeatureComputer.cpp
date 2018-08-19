@@ -19,27 +19,21 @@ WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
  	By default all 4 directions are evaluated
 */
 void WindowFeatureComputer::computeWindowFeatures() {
-	vector<vector<double>> featureList(windowData.numberOfDirections);
-
 	vector<Direction> allDirections = Direction::getAllDirections();
+
 	for(int i = 0; i < windowData.numberOfDirections; i++)
 	{
+		// Get shift vector for each direction of interest
 		Direction actualDir = allDirections[i];
+		// create the autonomous thread of computation
 		FeatureComputer fc(pixels, image, actualDir.shiftRows, actualDir.shiftColumns,
-						   windowData, workArea);
-		vector<double> computedFeatures = fc.computeDirectionalFeatures();
-		featureList[i] =  computedFeatures;
+						   windowData, workArea, i);
 	}
-
-	// this will be thread idx e thread idy
-	int rowOffset = windowData.imageRowsOffset;
-	int colOffset = windowData.imageColumnsOffset;
-	int offset = (rowOffset * (image.getRows() - windowData.side + 1)) + colOffset;
-	workArea.output[offset] = featureList;
 }
 
 /*
 	This method will print all the features for all 4 supported directions
+        TODO REMOVE
 */
 void WindowFeatureComputer::printAllDirectionsAllFeatures(const WindowFeatures &featureList){
 	// The number of directions is deducted from size of WindowFeatures
@@ -51,6 +45,7 @@ void WindowFeatureComputer::printAllDirectionsAllFeatures(const WindowFeatures &
 
 /*
 	This method will print ALL the features for 1 supported direction with explanatory label
+ 	TODO REMOVE
 */
 void WindowFeatureComputer::printSingleDirectionAllFeatures(const vector<double>& featureList){
 	Features::printAllFeatures(featureList);

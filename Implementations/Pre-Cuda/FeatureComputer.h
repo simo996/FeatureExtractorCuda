@@ -17,22 +17,27 @@ class FeatureComputer {
 
 public:
     FeatureComputer(const unsigned int * pixels, const ImageData& img,
-            int shiftRows, int shiftColumns, const Window& windowData, WorkArea& wa);
-    vector<double> computeDirectionalFeatures();
+            int shiftRows, int shiftColumns, const Window& windowData,
+            WorkArea& wa, short int directionNumber);
+    void computeDirectionalFeatures();
 private:
     // given data to initialize related GLCM
     const unsigned int * pixels;
     ImageData image;
     Window windowData;
     WorkArea& workArea;
+    // offset to indentify where to put results
+    short int directionOffset;
+    int outputWindowOffset;
 
     // Actual computation of all 18 features
-    vector<double> computeBatchFeatures(const GLCM& metaGLCM);
+    void computeBatchFeatures(const GLCM& metaGLCM);
     void extractAutonomousFeatures(const GLCM& metaGLCM, vector<double>& features);
     void extractSumAggregatedFeatures(const GLCM& metaGLCM, vector<double>& features);
     void extractDiffAggregatedFeatures(const GLCM& metaGLCM, vector<double>& features);
     void extractMarginalFeatures(const GLCM& metaGLCM, vector<double>& features);
 
+    void computeOutputWindowFeaturesIndex();
     // Support method useful for debugging this class
     static void printGLCM(const GLCM& glcm); // prints glcms various information
 };

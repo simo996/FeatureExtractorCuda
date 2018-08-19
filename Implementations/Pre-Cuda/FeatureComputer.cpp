@@ -9,17 +9,21 @@
 
 using namespace std;
 
-FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& img, const int shiftRows,
-                                 const int shiftColumns, const Window& wd, WorkArea& wa)
-                                 : pixels(pixels), image(img), windowData(wd) , workArea(wa) {
+FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& img,
+        const int shiftRows, const int shiftColumns,
+        const Window& wd, WorkArea& wa, const short int directionNumber)
+                                 : pixels(pixels), image(img),
+                                 directionOffset(directionNumber),
+                                 windowData(wd), workArea(wa) {
     windowData.setDirectionShifts(shiftRows, shiftColumns);
+    computeOutputWindowFeaturesIndex();
+    computeDirectionalFeatures();
 }
 
-vector<double> FeatureComputer::computeDirectionalFeatures() {
+void FeatureComputer::computeDirectionalFeatures() {
     GLCM glcm(pixels, image, windowData, workArea);
     //printGLCM(glcm); // Print data and elements for debugging
-    vector<double> features = computeBatchFeatures(glcm);
-    return features;
+    computeBatchFeatures(glcm);
 }
 
 /* TODO remove METHODS FOR DEBUG */
@@ -141,8 +145,9 @@ inline double computeHyStep(const double grayLevelProbability){
     This methods will call the cumulative methods that extract features based
     on their type
 */
-vector<double> FeatureComputer::computeBatchFeatures(const GLCM& glcm) {
-    vector<double> features(Features::getAllSupportedFeatures().size());
+void FeatureComputer::computeBatchFeatures(const GLCM& glcm) {
+    // get reference to the memlocation where to put results
+    vector<double>& features = workArea.output[outputWindowOffset][directionOffset];
 
     // Features computable from glcm Elements
     extractAutonomousFeatures(glcm, features);
@@ -153,10 +158,15 @@ vector<double> FeatureComputer::computeBatchFeatures(const GLCM& glcm) {
 
     // Imoc
     extractMarginalFeatures(glcm, features);
-
-    return features;
 }
 
+void FeatureComputer::computeOutputWindowFeaturesIndex(){
+    // this will be thread idx e thread idy
+    int rowOffset = windowData.imageRowsOffset;
+    int colOffset = windowData.imageColumnsOffset;
+    // this value identifies the window part of the result in the global array
+    outputWindowOffset = (rowOffset * (image.getRows() - windowData.side + 1)) + colOffset;
+}
 /*
     This method will compute all the features computable from glcm gray level pairs
 */
@@ -205,6 +215,7 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>
         muY += (j * actualPairProbability);
     }
 
+    features[ASM] = angularSecondMoment;
     features[ASM]= angularSecondMoment;
     features[AUTOCORRELATION]= autoCorrelation;
     features[ENTROPY]= (-1 * entropy);
