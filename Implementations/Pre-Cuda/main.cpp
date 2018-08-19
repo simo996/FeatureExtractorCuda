@@ -84,12 +84,16 @@ ProgramArguments checkOptions(int argc, char* argv[])
 
 
     }
+    if(progArg.distance > progArg.windowSize){
+        cout << "WARNING: distance can't be > of each window size; distance value corrected to 1" << endl;
+        progArg.distance = 1;
+    }
     // The last parameter must be the image path
     if(optind +1 == argc){
         cout << "imagepath: " << argv[optind];
         progArg.imagePath = argv[optind];
     } else{
-        progArg.imagePath= "../../../SampleImages/cells.png";
+        progArg.imagePath= "../../../SampleImages/brain1.tiff";
         /*
         cout << "Missing image path!" << endl;
         printProgramUsage();
@@ -103,7 +107,6 @@ int main(int argc, char* argv[]) {
     cout << argv[0] << endl;
 
     ProgramArguments pa = checkOptions(argc, argv);
-
 
     typedef high_resolution_clock Clock;
     Clock::time_point t1 = high_resolution_clock::now();
