@@ -10,6 +10,7 @@
 WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
 		const ImageData& img, const Window& wd, WorkArea& wa): pixels(pxls),
 		image(img), windowData(wd), workArea(wa){
+	computeWindowFeatures();
 }
 
 /*
@@ -17,11 +18,11 @@ WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
  	provided by a parameter to the program ; the order is 0,45,90,135° ;
  	By default all 4 directions are evaluated
 */
-vector<vector<double>> WindowFeatureComputer::computeWindowFeatures(const int numberOfDirections) {
-	vector<vector<double>> featureList(numberOfDirections);
+void WindowFeatureComputer::computeWindowFeatures() {
+	vector<vector<double>> featureList(windowData.numberOfDirections);
 
 	vector<Direction> allDirections = Direction::getAllDirections();
-	for(int i = 0; i < numberOfDirections; i++)
+	for(int i = 0; i < windowData.numberOfDirections; i++)
 	{
 		Direction actualDir = allDirections[i];
 		FeatureComputer fc(pixels, image, actualDir.shiftRows, actualDir.shiftColumns,
@@ -30,7 +31,11 @@ vector<vector<double>> WindowFeatureComputer::computeWindowFeatures(const int nu
 		featureList[i] =  computedFeatures;
 	}
 
-	return featureList;
+	// this will be thread idx e thread idy
+	int rowOffset = windowData.imageRowsOffset;
+	int colOffset = windowData.imageColumnsOffset;
+	int offset = (rowOffset * (image.getRows() - windowData.side + 1)) + colOffset;
+	workArea.output[offset] = featureList;
 }
 
 /*

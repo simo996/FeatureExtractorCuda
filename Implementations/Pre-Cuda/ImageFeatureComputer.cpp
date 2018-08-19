@@ -11,11 +11,18 @@
 ImageFeatureComputer::ImageFeatureComputer(const ProgramArguments& progArg)
 :progArg(progArg){}
 
-void printTest(AggregatedGrayPair * pointer, int length){
-	for (int i = 0; i < length; ++i) {
-		pointer[i].printPair();
-	}
-	cout << endl;
+
+void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
+    int imageSmallestSide = img.getRows();
+    if(img.getColumns() < imageSmallestSide)
+        imageSmallestSide = img.getColumns();
+    if(progArg.windowSize > imageSmallestSide){
+        cout << "WARNING! The window side specified with the option -w"
+                "exceeds the smallest dimension (" << imageSmallestSide << ") of the image read!" << endl;
+        cout << "Window side is corrected to (" << imageSmallestSide << ")" << endl;
+        progArg.windowSize = imageSmallestSide;
+    }
+
 }
 
 
@@ -24,10 +31,9 @@ void ImageFeatureComputer::compute(){
 
 	// Image from imageLoader
 	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop);
-
 	ImageData imgData(image.getRows(), image.getColumns(), image.getMaxGrayLevel());
-
     cout << "* Image loaded * " << endl;
+    checkOptionCompatibility(progArg, image);
 	printExtimatedSizes(imgData);
 
 
@@ -84,30 +90,26 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 	vector<AggregatedGrayPair> subtractedPairs(numberOfPairsInWindow);
 	vector<AggregatedGrayPair> xMarginalPairs(numberOfPairsInWindow);
 	vector<AggregatedGrayPair> yMarginalPairs(numberOfPairsInWindow);
-	WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
-				subtractedPairs, xMarginalPairs, yMarginalPairs);
 
 	// Pre-Allocate the array that will contain features
 	int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
 			* (img.getColumns() - progArg.windowSize + 1);
 	vector<WindowFeatures> featuresList(numberOfWindows);
 
+    WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
+                subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
+
 	// START GPU WORK
 	// Slide windows on the image
-	int k = 0;
 	for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
 		for(int j = 0; (j + windowData.side) <= img.getColumns() ; j++){
 			// Create local window information
 			Window actualWindow {windowData.side, windowData.distance,
-								 windowData.symmetric};
+								 progArg.numberOfDirections, windowData.symmetric};
 			// tell the window its relative offset (starting point) inside the image
 			actualWindow.setSpacialOffsets(i,j);
 			// Launch the computation of features on the window
 			WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
-			WindowFeatures wfs = wfc.computeWindowFeatures(progArg.numberOfDirections);
-			// save results
-			featuresList[k] = wfs;
-			k++;
 		}
 	}
 
