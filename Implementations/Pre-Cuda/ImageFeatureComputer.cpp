@@ -94,7 +94,8 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 	// Pre-Allocate the array that will contain features
 	int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
 			* (img.getColumns() - progArg.windowSize + 1);
-	vector<WindowFeatures> featuresList(numberOfWindows);
+	vector<vector<vector<double>>> featuresList(numberOfWindows,
+	        vector<vector<double>>(progArg.numberOfDirections, vector<double> (18)));
 
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
