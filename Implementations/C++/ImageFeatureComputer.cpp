@@ -24,7 +24,6 @@ void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
         cout << "Window side is corrected to (" << imageSmallestSide << ")" << endl;
         progArg.windowSize = imageSmallestSide;
     }
-
 }
 
 void ImageFeatureComputer::compute(){
