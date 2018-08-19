@@ -4,10 +4,12 @@
 
 #include "Window.h"
 
-Window::Window(const short int dimension, const short int distance, const bool symmetric){
+Window::Window(const short int dimension, const short int distance,
+			   short int dirNumber, const bool symmetric){
 	this->side = dimension;
 	this->distance = distance;
 	this->symmetric = symmetric;
+	this->numberOfDirections = dirNumber;
 }
 
 void Window::setDirectionShifts(const int shiftRows, const int shiftColumns){
