@@ -15,9 +15,10 @@ class WorkArea {
 public:
     WorkArea(int length, vector<GrayPair>& grayPairs, vector<AggregatedGrayPair>& summedPairs,
             vector<AggregatedGrayPair>& subtractedPairs, vector<AggregatedGrayPair>& xMarginalPairs,
-            vector<AggregatedGrayPair>& yMarginalPairs): numberOfElements(length), grayPairs(grayPairs),
-            summedPairs(summedPairs), subtractedPairs(subtractedPairs), xMarginalPairs(xMarginalPairs),
-            yMarginalPairs(yMarginalPairs){};
+            vector<AggregatedGrayPair>& yMarginalPairs, vector<vector<vector<double>>>& out):
+            numberOfElements(length), grayPairs(grayPairs), summedPairs(summedPairs),
+            subtractedPairs(subtractedPairs), xMarginalPairs(xMarginalPairs),
+            yMarginalPairs(yMarginalPairs), output(out){};
     void cleanup();
 
     vector<GrayPair>& grayPairs;
@@ -25,6 +26,7 @@ public:
     vector<AggregatedGrayPair>& subtractedPairs;
     vector<AggregatedGrayPair>& xMarginalPairs;
     vector<AggregatedGrayPair>& yMarginalPairs;
+    vector<vector<vector<double>>>& output;
     int numberOfElements;
 
 };
