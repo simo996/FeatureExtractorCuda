@@ -3,7 +3,8 @@ Appunti/
 Implementations/C++/.idea/
 Implementations/C++/.idea/workspace.xml
 Implementations/C++/CMakeFiles/
-Pre-Cuda/C++/.idea/
-Pre-Cuda/C++/cmake-build-debug/
-Pre-Cuda/C++/CMakeFiles/
-Pre-Cuda/C++/cmake-build-debug/
+Implementations/C++/.bin/
+
+Implementations/Pre-Cuda/.idea/
+Implementations/Pre-Cuda/bin/
+Implementations/Pre-Cuda/cmake-build-debug/
