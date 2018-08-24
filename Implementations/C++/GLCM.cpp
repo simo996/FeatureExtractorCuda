@@ -14,7 +14,7 @@ using namespace std;
 // Constructors
 GLCM::GLCM(const Image& image, Window& windowData)
         : img(image), windowData(windowData){
-    this->numberOfPairs = getBorderRows() * getBorderColumns();
+    this->numberOfPairs = getWindowRowBorder() * getWindowColsBorder();
     initializeGlcmElements();
     codifySummedPairs();
     codifySubtractedPairs();
@@ -34,11 +34,11 @@ int GLCM::getMaxGrayLevel() const {
     return img.getMaxGrayLevel();
 }
 
-int GLCM::getBorderRows() const{
+int GLCM::getWindowRowBorder() const{
    return (windowData.side - (windowData.distance * abs(windowData.shiftRows)));
 }
 
-int GLCM::getBorderColumns() const{
+int GLCM::getWindowColsBorder() const{
     return (windowData.side - (windowData.distance * abs(windowData.shiftColumns)));
 }
 
@@ -48,8 +48,8 @@ void GLCM::printGLCMData() const{
     cout << "Shift rows : " << windowData.shiftRows << endl;
     cout << "Shift columns: " << windowData.shiftColumns  << endl;
     cout << "Father Window side: "<< windowData.side  << endl;
-    cout << "Border Rows: "<< getBorderRows()  << endl;
-    cout << "Border Columns: " << getBorderColumns()  << endl;
+    cout << "Border Rows: "<< getWindowRowBorder()  << endl;
+    cout << "Border Columns: " << getWindowColsBorder()  << endl;
     cout << "Simmetric: ";
     if(windowData.symmetric){
         cout << "Yes" << endl;
@@ -127,9 +127,9 @@ void GLCM::initializeGlcmElements() {
 
     uint referenceGrayLevel;
     uint neighborGrayLevel;
-    for (int i = 0; i < getBorderRows() ; i++)
+    for (int i = 0; i < getWindowRowBorder() ; i++)
     {
-        for (int j = 0; j < getBorderColumns(); j++)
+        for (int j = 0; j < getWindowColsBorder(); j++)
         {
             // Extract the two pixels in the pair
             int referenceIndex = getReferenceIndex(i, j,
@@ -146,7 +146,7 @@ void GLCM::initializeGlcmElements() {
                 GrayPair simmetricPair(neighborGrayLevel, referenceGrayLevel);
                 grayPairs[simmetricPair] += 1;
             }
-            
+
         }
     }
 
