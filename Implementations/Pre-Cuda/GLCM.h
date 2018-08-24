@@ -51,8 +51,8 @@ private:
     int computeWindowColumnOffset();
     int computeWindowRowOffset();
     // Geometric limits in the father windows
-    int getBorderRows() const;
-    int getBorderColumns() const;
+    int getWindowRowsBorder() const;
+    int getWindowColsBorder() const;
     int getReferenceIndex(int i, int j, int initialRowOffset, int initialColumnOffset);
     int getNeighborIndex(int i, int j, int initialColumnOffset);
     // Methods to build the glcm from input pixel and directional data
