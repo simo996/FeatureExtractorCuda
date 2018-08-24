@@ -43,13 +43,12 @@ Mat ImageLoader::readMriImage(const string fileName, bool cropResolution){
  * If matrix is of type CV_64F then use Mat.at<double>(y,x).
 */
 
-void ImageLoader::writeToDouble(const int rows, const int cols,
-        const vector<double>& input, Mat& output){
-    for (int r = 0; r < rows; ++r) {
-        for (int c = 0; c < cols; ++c) {
-            output.at<double>(r,c) = input[r * rows+ cols];
-        }
-    }
+Mat ImageLoader::createDoubleMat(const int rows, const int cols,
+        const vector<double>& input){
+    Mat_<double> output = Mat(rows, cols, CV_64F);
+    // Copy the values into the image
+    memcpy(output.data, input.data(), rows * cols * sizeof(double));
+    return output;
 }
 
 
@@ -136,6 +135,13 @@ void ImageLoader::showImagePaused(const Mat& img, const string& windowName){
     waitKey(0);
 }
 
+Mat ImageLoader::convertToGrayScale(const Mat& inputImage) {
+    // Convert image to a 255 grayscale
+    Mat convertedImage = inputImage.clone();
+    normalize(convertedImage, convertedImage, 0, 255, NORM_MINMAX, CV_8UC1);
+    return convertedImage;
+}
+
 Mat ImageLoader::stretchImage(const Mat& inputImage){
     Mat stretched;
 
@@ -174,6 +180,17 @@ void ImageLoader::showImageStretched(const Mat& img, const string& windowName){
     showImage(img, "Original" + windowName);
     showImage(stretched, "Stretched" + windowName);
 
+}
+
+void ImageLoader::stretchAndSave(const Mat &img, const string &fileName){
+    Mat stretched = stretchImage(img);
+    try {
+        imwrite(fileName +".png", stretched);
+    }catch (exception& e){
+        cout << e.what() << '\n';
+        cerr << "Fatal Error! Couldn't save the image";
+        exit(-3);
+    }
 }
 
 void ImageLoader::saveImageToFile(const Mat& img, const string& fileName){
