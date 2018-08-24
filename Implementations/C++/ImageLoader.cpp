@@ -136,6 +136,13 @@ void ImageLoader::showImagePaused(const Mat& img, const string& windowName){
     waitKey(0);
 }
 
+Mat ImageLoader::convertToGrayScale(const Mat& inputImage) {
+    // Convert image to a 255 grayscale
+    Mat convertedImage = inputImage.clone();
+    normalize(convertedImage, convertedImage, 0, 255, NORM_MINMAX, CV_8UC1);
+    return convertedImage;
+}
+
 Mat ImageLoader::stretchImage(const Mat& inputImage){
     Mat stretched;
 
@@ -150,30 +157,23 @@ Mat ImageLoader::stretchImage(const Mat& inputImage){
     return stretched;
 }
 
-Mat ImageLoader::concatenateStretchImage(const Mat& inputImage){
-    Mat stretched;
-
-    // Transformation need to be called on a gray scale CV_8U
-    cout << inputImage.type();
-    if(inputImage.type() != CV_8UC1){
-        inputImage.convertTo(inputImage, CV_8U);
-    }
-
-    Ptr<CLAHE> clahe = createCLAHE(4);
-    clahe->apply(inputImage, stretched);
-
-    Mat concat;
-    hconcat(inputImage, stretched);
-
-    return concat;
-}
 
 void ImageLoader::showImageStretched(const Mat& img, const string& windowName){
     Mat stretched = stretchImage(img);
 
     showImage(img, "Original" + windowName);
     showImage(stretched, "Stretched" + windowName);
+}
 
+void ImageLoader::stretchAndSave(const Mat &img, const string &fileName){
+    Mat stretched = stretchImage(img);
+    try {
+        imwrite(fileName +".png", stretched);
+    }catch (exception& e){
+        cout << e.what() << '\n';
+        cerr << "Fatal Error! Couldn't save the image";
+        exit(-3);
+    }
 }
 
 void ImageLoader::saveImageToFile(const Mat& img, const string& fileName){

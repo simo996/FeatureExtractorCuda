@@ -267,14 +267,8 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
     // Copy the values into the image
     memcpy(imageFeature.data, featureValues.data(), imageSize * sizeof(double));
 
-    // Convert image to a 255 grayscale
-    Mat convertedImage = imageFeature.clone();
-    normalize(convertedImage, convertedImage, 0, 255, NORM_MINMAX, CV_8UC1);
-    // Linear stretch to improve clarity
-    Mat stretched = ImageLoader::stretchImage(convertedImage);
-
-    // Save each image to file system
-    ImageLoader::saveImageToFile(stretched, filePath);
+    Mat convertedImage = ImageLoader::convertToGrayScale(imageFeature);
+    ImageLoader::stretchAndSave(convertedImage, filePath);
 }
 
 

@@ -19,8 +19,9 @@ public:
     static Mat readMriImage(string fileName, bool cropResolution);
     static Image readImage(string fileName, bool cropResolution);
     static void writeToDouble(int rows, int cols, const vector<double>& input, Mat& output);
-    static Mat concatenateStretchImage(const Mat& inputImage);
+    static Mat convertToGrayScale(const Mat& inputImage);
     static Mat stretchImage(const Mat& inputImage);
+    static void stretchAndSave(const Mat &img, const string &fileName);
     static void saveImageToFile(const Mat& img, const string& fileName);
     static void showImage(const Mat& img, const string& windowName);
     static void showImagePaused(const Mat& img, const string& windowName);
