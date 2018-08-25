@@ -30,25 +30,3 @@ void WindowFeatureComputer::computeWindowFeatures() {
 						   windowData, workArea, i);
 	}
 }
-
-/*
-	This method will print all the features for all 4 supported directions
-        TODO REMOVE
-*/
-void WindowFeatureComputer::printAllDirectionsAllFeatures(const WindowFeatures &featureList){
-	// The number of directions is deducted from size of WindowFeatures
-	for(int i = 0; i < featureList.size(); i++) {
-        Direction::printDirectionLabel(i);
-        printSingleDirectionAllFeatures(featureList[i]);
-	}
-}
-
-/*
-	This method will print ALL the features for 1 supported direction with explanatory label
- 	TODO REMOVE
-*/
-void WindowFeatureComputer::printSingleDirectionAllFeatures(const vector<double>& featureList){
-	Features::printAllFeatures(featureList);
-	cout << endl;
-}
-

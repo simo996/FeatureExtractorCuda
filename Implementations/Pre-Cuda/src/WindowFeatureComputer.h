@@ -29,11 +29,6 @@ public:
     /* Oss. No sense in computing a single feature, simply select the one
       needed from the complete list
      */
-    // TODO return an ostream
-    static void printAllDirectionsAllFeatures(const WindowFeatures &featureList); // 4 directions with dir label
-    // Print the label of the direction and the features
-    static void printSingleDirectionAllFeatures(const vector<double>& featureList); // with dir
-
 private:
         // Initialization data to pass to each FeatureComputer
         WorkArea& workArea;
