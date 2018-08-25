@@ -16,14 +16,32 @@ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& i
                                  directionOffset(directionNumber),
                                  windowData(wd), workArea(wa) {
     windowData.setDirectionShifts(shiftRows, shiftColumns);
+    // deduct what feature this thread is computing
     computeOutputWindowFeaturesIndex();
+    // get the pointer to the memlocation where to put feature results
+    int featuresCount = Features::getAllSupportedFeatures().size();
+    int actualWindowOffset = (outputWindowOffset *
+                              (windowData.numberOfDirections * featuresCount));
+    int intraWindowOffset = (directionOffset * featuresCount);
+    double * rightLocation = workArea.output.data() + actualWindowOffset + intraWindowOffset;
+    featureOutput = rightLocation;
+    // Compute features
     computeDirectionalFeatures();
 }
 
 void FeatureComputer::computeDirectionalFeatures() {
     GLCM glcm(pixels, image, windowData, workArea);
     //printGLCM(glcm); // Print data and elements for debugging
-    computeBatchFeatures(glcm);
+
+    // Features computable from glcm Elements
+    extractAutonomousFeatures(glcm, featureOutput);
+
+    // Feature computable from aggregated glcm pairs
+    extractSumAggregatedFeatures(glcm, featureOutput);
+    extractDiffAggregatedFeatures(glcm, featureOutput);
+
+    // Imoc
+    extractMarginalFeatures(glcm, featureOutput);
 }
 
 /* TODO remove METHODS FOR DEBUG */
@@ -141,24 +159,6 @@ inline double computeHyStep(const double grayLevelProbability){
     return (grayLevelProbability * log(grayLevelProbability));
 }
 
-/* 
-    This methods will call the cumulative methods that extract features based
-    on their type
-*/
-void FeatureComputer::computeBatchFeatures(const GLCM& glcm) {
-    // get reference to the memlocation where to put results
-    vector<double>& features = workArea.output[outputWindowOffset][directionOffset];
-
-    // Features computable from glcm Elements
-    extractAutonomousFeatures(glcm, features);
-
-    // Feature computable from aggregated glcm pairs
-    extractSumAggregatedFeatures(glcm, features);
-    extractDiffAggregatedFeatures(glcm, features);
-
-    // Imoc
-    extractMarginalFeatures(glcm, features);
-}
 
 void FeatureComputer::computeOutputWindowFeaturesIndex(){
     // this will be thread idx e thread idy
@@ -170,7 +170,7 @@ void FeatureComputer::computeOutputWindowFeaturesIndex(){
 /*
     This method will compute all the features computable from glcm gray level pairs
 */
-void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>& features){
+void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* features){
     // Intermediate values
     double mean = 0;
     double muX = 0;
@@ -180,7 +180,6 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>
 
     // Actual features
     // TODO think about not retaining local variables and directly accessing the map
-
     double angularSecondMoment = 0;
     double autoCorrelation = 0;
     double entropy = 0;
@@ -216,7 +215,6 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>
     }
 
     features[ASM] = angularSecondMoment;
-    features[ASM]= angularSecondMoment;
     features[AUTOCORRELATION]= autoCorrelation;
     features[ENTROPY]= (-1 * entropy);
     features[MAXPROB]= maxprob;
@@ -272,7 +270,7 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>
     This method will compute the 3 features obtained from the pairs <k, int freq>
     where k is the sum of the 2 gray leveles <i,j> in a pixel pair of the glcm
 */
-void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, vector<double>& features) {
+void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, double* features) {
     int numberOfPairs = glcm.getNumberOfPairs();
     // TODO think about not retaining local variables and directly accessing the map
     double sumavg = 0;
@@ -309,7 +307,7 @@ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, vector<doub
     where k is the absolute difference of the 2 gray leveles in a pixel pair 
     <i,j> of the glcm
 */
-void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, vector<double>& features) {
+void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, double* features) {
     int numberOfPairs= glcm.getNumberOfPairs();
     // TODO think about not retaining local variables and directly accessing the map
     double diffentropy = 0;
@@ -335,7 +333,7 @@ void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, vector<dou
     representation" of the pairs <(X, ?), int frequency> and the pairs
     <(?, X), int frequency> of reference/neighbor pixel
 */
-void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, vector<double>& features){
+void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, double* features){
     int numberOfPairs = glcm.getNumberOfPairs();
     double hx = 0;
 
@@ -380,7 +378,6 @@ void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, vector<double>& 
         hxy1 += actualPairProbability * log(xMarginalProbability * yMarginalProbability);
     }
     hxy1 *= -1;
-    // TODO think about not retaining local variables and directly accessing the map
     features[IMOC] = (hxy - hxy1)/(max(hx, hy));
 
 }

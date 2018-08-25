@@ -29,13 +29,13 @@ private:
     // offset to indentify where to put results
     short int directionOffset;
     int outputWindowOffset;
+    double * featureOutput;
 
     // Actual computation of all 18 features
-    void computeBatchFeatures(const GLCM& metaGLCM);
-    void extractAutonomousFeatures(const GLCM& metaGLCM, vector<double>& features);
-    void extractSumAggregatedFeatures(const GLCM& metaGLCM, vector<double>& features);
-    void extractDiffAggregatedFeatures(const GLCM& metaGLCM, vector<double>& features);
-    void extractMarginalFeatures(const GLCM& metaGLCM, vector<double>& features);
+    void extractAutonomousFeatures(const GLCM& metaGLCM, double* features);
+    void extractSumAggregatedFeatures(const GLCM& metaGLCM, double* features);
+    void extractDiffAggregatedFeatures(const GLCM& metaGLCM, double* features);
+    void extractMarginalFeatures(const GLCM& metaGLCM, double* features);
 
     void computeOutputWindowFeaturesIndex();
     // Support method useful for debugging this class

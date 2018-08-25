@@ -71,6 +71,37 @@ void ImageFeatureComputer::printExtimatedSizes(const ImageData& img){
 }
 
 /*
+ * From linear to structured array of windowsFeature each containing
+ * an array of directional features each containing all the feature values
+*/
+vector<vector<vector<double>>> formatOutputResults(const double* featureValues,
+                                                   const int numberOfWindows, const int numberOfDirections, const int featuresCount){
+    vector<vector<vector<double>>> output(numberOfWindows,
+                                          vector<vector<double>>(numberOfDirections, vector<double> (featuresCount)));
+    // How many double values fit into a window
+    int windowResultsSize = numberOfDirections * featuresCount;
+    // How many double values fit into a direction
+    int directionResultSize = featuresCount;
+
+    for (int k = 0; k < numberOfWindows; ++k) {
+        int windowOffset = k * windowResultsSize;
+        const double* windowResultsStartingPoint = featureValues + windowOffset;
+
+        vector<vector<double>> singleWindowFeatures(numberOfDirections);
+
+        for (int i = 0; i < numberOfDirections; ++i) {
+            int directionOffset = i * directionResultSize;
+            const double* dirResultsStartingPoint = windowResultsStartingPoint + directionOffset;
+            // Copy each of the values
+            vector<double> singleDirectionFeatures(dirResultsStartingPoint, dirResultsStartingPoint + directionResultSize);
+            singleWindowFeatures[i] = singleDirectionFeatures;
+        }
+        output[k] = singleWindowFeatures;
+    }
+    return output;
+}
+
+/*
      * This method will compute all the features for every window for the
      * number of directions provided, in a window
      * By default all 4 directions are considered; order is 0->45->90->135°
@@ -78,24 +109,31 @@ void ImageFeatureComputer::printExtimatedSizes(const ImageData& img){
 vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * pixels, const ImageData& img){
 	// Pre-Allocate working area
 	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.symmetric);
-	int extimatedWindowRows = windowData.side; // 0° has all rows
-	int extimateWindowCols = windowData.side - (windowData.distance * 1); // at least 1 column is lost
-	int numberOfPairsInWindow = extimatedWindowRows * extimateWindowCols;
-	if(windowData.symmetric)
-		numberOfPairsInWindow *= 2;
 
-	// Each 1 of these data structures allow 1 thread to work
+	// How many windows need to be allocated
+    int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
+                          * (img.getColumns() - progArg.windowSize + 1);
+    // How many directions need to be allocated for each window
+    short int numberOfDirs = progArg.numberOfDirections;
+    // How many feature values need to be allocated for each direction
+    int featuresCount = Features::getAllSupportedFeatures().size();
+
+    // Pre-Allocate the array that will contain features
+    vector<double> featuresList(numberOfWindows * numberOfDirs * featuresCount);
+
+    // 	Pre-Allocate working area
+    int extimatedWindowRows = windowData.side; // 0° has all rows
+    int extimateWindowCols = windowData.side - (windowData.distance * 1); // at least 1 column is lost
+    int numberOfPairsInWindow = extimatedWindowRows * extimateWindowCols;
+    if(windowData.symmetric)
+        numberOfPairsInWindow *= 2;
+
+    // Each 1 of these data structures allow 1 thread to work
 	vector<GrayPair> elements(numberOfPairsInWindow);
 	vector<AggregatedGrayPair> summedPairs(numberOfPairsInWindow);
 	vector<AggregatedGrayPair> subtractedPairs(numberOfPairsInWindow);
 	vector<AggregatedGrayPair> xMarginalPairs(numberOfPairsInWindow);
 	vector<AggregatedGrayPair> yMarginalPairs(numberOfPairsInWindow);
-
-	// Pre-Allocate the array that will contain features
-	int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
-			* (img.getColumns() - progArg.windowSize + 1);
-	vector<vector<vector<double>>> featuresList(numberOfWindows,
-	        vector<vector<double>>(progArg.numberOfDirections, vector<double> (18)));
 
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
@@ -106,7 +144,7 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 		for(int j = 0; (j + windowData.side) <= img.getColumns() ; j++){
 			// Create local window information
 			Window actualWindow {windowData.side, windowData.distance,
-								 progArg.numberOfDirections, windowData.symmetric};
+                                 numberOfDirs, windowData.symmetric};
 			// tell the window its relative offset (starting point) inside the image
 			actualWindow.setSpacialOffsets(i,j);
 			// Launch the computation of features on the window
@@ -114,9 +152,10 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 		}
 	}
 
-	// Resumes CPU control copying back results
-
-	return featuresList;
+	// Give the data structure
+    vector<vector<vector<double>>> output =
+            formatOutputResults(featuresList.data(), numberOfWindows, numberOfDirs, featuresCount);
+	return output;
 }
 
 
