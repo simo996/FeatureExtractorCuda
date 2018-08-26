@@ -6,6 +6,7 @@
 #define PRE_CUDA_PROGRAMARGUMENTS_H
 
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -24,7 +25,10 @@ public:
                      bool createImages = false)
             : windowSize(windowSize), crop(crop), symmetric(symmetric), distance(distance),
               numberOfDirections(numberOfDirections),
-              createImages(createImages){}
+              createImages(createImages){};
+    static void printProgramUsage();
+    static ProgramArguments checkOptions(int argc, char* argv[]);
+
 };
 
 
