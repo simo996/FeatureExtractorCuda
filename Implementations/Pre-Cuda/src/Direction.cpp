@@ -3,45 +3,62 @@
 //
 
 #include <iostream>
+#include <cstring>
 #include "Direction.h"
 
-
-Direction::Direction(string label, int shiftrws, int shiftcols)
-        :label(label),shiftRows(shiftrws), shiftColumns(shiftcols){
-}
-
-vector<Direction> Direction::getAllDirections(){
-    Direction d0{"Direction 0°", 0, 1};
-    Direction d45{"Direction 45°", -1, 1};
-    Direction d90{"Direction 90°", -1, 0};
-    Direction d135{"Direction 135°", -1, -1};
-
-    vector<Direction> out = {d0, d45, d90, d135};
-    return out;
-}
-
-string Direction::getDirectionLabel(const int direction){
-    switch(direction){
-        case 0:
-            return " * Direction 0° *" ;
-        case 1:
-            return " * Direction 45° *";
-        case 2:
-            return " * Direction 90° *";
-        case 3:
-            return " * Direction 135° *d";
+Direction::Direction(int directionNumber) {
+    switch (directionNumber){
+        case 0:{
+            char templabel[20] = "Direction 0°";
+            memcpy(this->label, templabel, 20);
+            this->label[20] = 0;
+            shiftRows = 0;
+            shiftColumns = 1;
+            break;
+        }
+        case 1:{
+            char templabel[20] = "Direction 45°";
+            memcpy(this->label, templabel, 20);
+            this->label[20] = 0;
+            shiftRows = -1;
+            shiftColumns = 1;
+            break;
+        }
+        case 2:{
+            char templabel[20] = "Direction 90°";
+            memcpy(this->label, templabel, 20);
+            this->label[20] = 0;
+            shiftRows = -1;
+            shiftColumns = 0;
+            break;
+        }
+        case 3:{
+            char templabel[20] = "Direction 135°";
+            memcpy(this->label, templabel, 20);
+            this->label[20] = 0;
+            shiftRows = -1;
+            shiftColumns = -1;
+            break;
+        }
         default:
-            cerr << "Fatal Error! Unrecognized direction";
+            fprintf(stderr, "Unrecognized direction");
             exit(-1);
     }
 }
 
-void Direction::printDirectionLabel(const int direction)
-    {
-        cout << endl << getDirectionLabel(direction) << endl;
+void Direction::printDirectionLabel(const int direction){
+    switch(direction){
+        case 0:
+            printf(" * Direction 0° *\n");
+        case 1:
+            printf(" * Direction 45° *\n");
+        case 2:
+            printf(" * Direction 90° *\n");
+        case 3:
+            printf(" * Direction 135° *\n");
+        default:
+            fprintf(stderr, "Fatal Error! Unrecognized direction");
+            exit(-1);
     }
-
-void Direction::printDirectionLabel(const Direction& direction) {
-    cout << endl << "* " << direction.label << " *" << endl;
 }
 
