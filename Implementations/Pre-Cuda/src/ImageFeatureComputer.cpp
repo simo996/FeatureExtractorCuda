@@ -119,7 +119,8 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
     int featuresCount = Features::getAllSupportedFeatures().size();
 
     // Pre-Allocate the array that will contain features
-    vector<double> featuresList(numberOfWindows * numberOfDirs * featuresCount);
+    double* featuresList = (double*) malloc(numberOfWindows * numberOfDirs * featuresCount * sizeof(double));
+
 
     // 	Pre-Allocate working area
     int extimatedWindowRows = windowData.side; // 0° has all rows
@@ -131,11 +132,11 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
     int numberOfThreads = 1;
     // Each 1 of these data structures allow 1 thread to work
     // TODO from vector to plain pointers
-	vector<GrayPair> elements(numberOfPairsInWindow * numberOfThreads);
-	vector<AggregatedGrayPair> summedPairs(numberOfPairsInWindow * numberOfThreads);
-	vector<AggregatedGrayPair> subtractedPairs(numberOfPairsInWindow * numberOfThreads);
-	vector<AggregatedGrayPair> xMarginalPairs(numberOfPairsInWindow * numberOfThreads);
-	vector<AggregatedGrayPair> yMarginalPairs(numberOfPairsInWindow * numberOfThreads);
+	GrayPair* elements = (GrayPair*) malloc(sizeof(GrayPair) * numberOfPairsInWindow * numberOfThreads);
+	AggregatedGrayPair* summedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
+    AggregatedGrayPair* subtractedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
+    AggregatedGrayPair* xMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
+    AggregatedGrayPair* yMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
 
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
@@ -156,7 +157,13 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 
 	// Give the data structure
     vector<vector<vector<double>>> output =
-            formatOutputResults(featuresList.data(), numberOfWindows, numberOfDirs, featuresCount);
+            formatOutputResults(featuresList, numberOfWindows, numberOfDirs, featuresCount);
+
+	free(featuresList);
+	free(summedPairs);
+	free(subtractedPairs);
+	free(xMarginalPairs);
+	free(yMarginalPairs);
 	return output;
 }
 

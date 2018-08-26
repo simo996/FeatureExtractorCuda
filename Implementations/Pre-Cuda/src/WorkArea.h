@@ -5,7 +5,6 @@
 #ifndef PRE_CUDA_WORKAREA_H
 #define PRE_CUDA_WORKAREA_H
 
-#include <vector>
 #include "GrayPair.h"
 #include "AggregatedGrayPair.h"
 
@@ -14,15 +13,15 @@ using namespace std;
 class WorkArea {
 public:
     WorkArea(int length,
-            vector<GrayPair>& grayPairs,
-            vector<AggregatedGrayPair>& summedPairs,
-            vector<AggregatedGrayPair>& subtractedPairs,
-            vector<AggregatedGrayPair>& xMarginalPairs,
-            vector<AggregatedGrayPair>& yMarginalPairs,
-            vector<double>& out):
-            numberOfElements(length), grayPairs(grayPairs.data()), summedPairs(summedPairs.data()),
-            subtractedPairs(subtractedPairs.data()), xMarginalPairs(xMarginalPairs.data()),
-            yMarginalPairs(yMarginalPairs.data()), output(out.data()){};
+            GrayPair* grayPairs,
+            AggregatedGrayPair* summedPairs,
+            AggregatedGrayPair* subtractedPairs,
+            AggregatedGrayPair* xMarginalPairs,
+            AggregatedGrayPair* yMarginalPairs,
+            double* out):
+            numberOfElements(length), grayPairs(grayPairs), summedPairs(summedPairs),
+            subtractedPairs(subtractedPairs), xMarginalPairs(xMarginalPairs),
+            yMarginalPairs(yMarginalPairs), output(out){};
     void cleanup();
     // Where the GLCM will be assembled
     GrayPair* grayPairs;
