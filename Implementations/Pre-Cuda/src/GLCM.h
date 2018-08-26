@@ -5,7 +5,6 @@
 #ifndef FEATUREEXTRACTOR_GLCM_H
 #define FEATUREEXTRACTOR_GLCM_H
 
-#include <map>
 #include "GrayPair.h"
 #include "AggregatedGrayPair.h"
 #include "Window.h"
@@ -66,7 +65,7 @@ private:
     // Representations useful for aggregated features
     void codifyAggregatedPairs();
     // Representation useful for HXY
-    void codifyMarginalProbabilities() ;
+    void codifyMarginalPairs() ;
     // debug printing methods
     void printGLCMAggregatedElements(bool areSummed) const;
 

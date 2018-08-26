@@ -3,7 +3,6 @@
 //
 
 #include <iostream>
-#include <algorithm>
 #include <assert.h>
 #include "GLCM.h"
 #include "GrayPair.h"
@@ -51,30 +50,7 @@ int GLCM::getWindowColsBorder() const{
     return (windowData.side - (windowData.distance * abs(windowData.shiftColumns)));
 }
 
-void GLCM::printGLCMData() const{
-    cout << endl;
-    cout << "***\tGLCM Data\t***" << endl;
-    cout << "Shift rows : " << windowData.shiftRows << endl;
-    cout << "Shift columns: " << windowData.shiftColumns  << endl;
-    cout << "Father Window side: "<< windowData.side  << endl;
-    cout << "Border Rows: "<< getWindowRowsBorder()  << endl;
-    cout << "Border Columns: " << getWindowColsBorder()  << endl;
-    cout << "Simmetric: ";
-    if(windowData.symmetric){
-        cout << "Yes" << endl;
-    }
-    else{
-        cout << "No" << endl;
-    }
-    cout << endl;
-}
 
-void GLCM::printGLCMElements() const{
-    cout << "* GrayPairs *" << endl;
-    for (int i = 0; i < effectiveNumberOfGrayPairs; ++i) {
-        elements[i].printPair();;
-    }
-}
 
 /*
     columnOffset is a shift value used for reading the correct batch of elements
@@ -178,7 +154,7 @@ void GLCM::initializeGlcmElements() {
     }
     effectiveNumberOfGrayPairs = lastInsertionPosition;
     codifyAggregatedPairs();
-    codifyMarginalProbabilities();
+    codifyMarginalPairs();
 }
 
 inline void GLCM::insertElement(AggregatedGrayPair* elements, const AggregatedGrayPair actualPair, uint& lastInsertionPosition){
@@ -230,6 +206,60 @@ void GLCM::codifyAggregatedPairs() {
     numberOfSubtractedPairs = lastInsertPosition;
 }
 
+/*
+    This method, given the map<GrayPair, int freq> will produce 
+    map<int k, int freq> where k is the REFERENCE grayLevel of the GrayPair 
+    while freq is the "marginal" frequency of that level 
+    (ie. how many times k is present in all GrayPair<k, ?>)
+    This representation is used for computing features HX, HXY, HXY1, imoc
+*/
+void GLCM::codifyMarginalPairs() {
+    unsigned int lastInsertPosition = 0;
+    // xMarginalPairs first
+    for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
+        uint firstGrayLevel = elements[i].getGrayLevelI();
+        AggregatedGrayPair element(firstGrayLevel, elements[i].getFrequency());
+
+        insertElement(xMarginalPairs, element, lastInsertPosition);
+    }
+    numberOfxMarginalPairs = lastInsertPosition;
+
+    // yMarginalPairs second
+    lastInsertPosition = 0;
+    for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
+        uint secondGrayLevel = elements[i].getGrayLevelJ();
+        AggregatedGrayPair element(secondGrayLevel, elements[i].getFrequency());
+
+        insertElement(yMarginalPairs, element, lastInsertPosition);
+    }
+    numberOfyMarginalPairs = lastInsertPosition;
+}
+
+void GLCM::printGLCMData() const{
+    cout << endl;
+    cout << "***\tGLCM Data\t***" << endl;
+    cout << "Shift rows : " << windowData.shiftRows << endl;
+    cout << "Shift columns: " << windowData.shiftColumns  << endl;
+    cout << "Father Window side: "<< windowData.side  << endl;
+    cout << "Border Rows: "<< getWindowRowsBorder()  << endl;
+    cout << "Border Columns: " << getWindowColsBorder()  << endl;
+    cout << "Simmetric: ";
+    if(windowData.symmetric){
+        cout << "Yes" << endl;
+    }
+    else{
+        cout << "No" << endl;
+    }
+    cout << endl;
+}
+
+void GLCM::printGLCMElements() const{
+    cout << "* GrayPairs *" << endl;
+    for (int i = 0; i < effectiveNumberOfGrayPairs; ++i) {
+        elements[i].printPair();;
+    }
+}
+
 void GLCM::printAggregated() const{
     printGLCMAggregatedElements(true);
     printGLCMAggregatedElements(false);
@@ -251,34 +281,6 @@ void GLCM::printGLCMAggregatedElements(bool areSummed) const{
     }
 }
 
-/*
-    This method, given the map<GrayPair, int freq> will produce 
-    map<int k, int freq> where k is the REFERENCE grayLevel of the GrayPair 
-    while freq is the "marginal" frequency of that level 
-    (ie. how many times k is present in all GrayPair<k, ?>)
-    This representation is used for computing features HX, HXY, HXY1, imoc
-*/
-void GLCM::codifyMarginalProbabilities() {
-    unsigned int lastInsertPosition = 0;
-    // xMarginalPairs first
-    for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
-        uint firstGrayLevel = elements[i].getGrayLevelI();
-        AggregatedGrayPair element(firstGrayLevel, elements[i].getFrequency());
-
-        insertElement(xMarginalPairs, element, lastInsertPosition);
-    }
-    numberOfxMarginalPairs = lastInsertPosition;
-
-    // yMarginalPairs second
-    lastInsertPosition = 0;
-    for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
-        uint secondGrayLevel = elements[i].getGrayLevelJ();
-        AggregatedGrayPair element(secondGrayLevel, elements[i].getFrequency());
-
-        insertElement(yMarginalPairs, element, lastInsertPosition);
-    }
-    numberOfyMarginalPairs = lastInsertPosition;
-}
 
 
 void GLCM::printMarginalProbabilityElements() const{
