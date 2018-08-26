@@ -9,28 +9,10 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core.hpp>
 #include "ImageLoader.h"
+#include "ProgramArguments.h"
 #include "WindowFeatureComputer.h"
 
 using namespace cv;
-
-struct ProgramArguments{
-	// TODO document intensively
-	short int windowSize;
-	bool crop;
-	bool symmetric;
-	short int distance;
-	short int numberOfDirections;
-	bool createImages;
-	short int chosenDevice; // 0 = gpu, 1=cpu, 'a'= auto
-	string imagePath;
-
-	ProgramArguments(short int windowSize = 4, bool crop = false, bool symmetric = false,
-					 short int distance = 1, short int numberOfDirections = 4,
-					 bool createImages = false, short int chosenDevice = 0)
-			: windowSize(windowSize), crop(crop), symmetric(symmetric), distance(distance),
-			  numberOfDirections(numberOfDirections),
-			  createImages(createImages), chosenDevice(chosenDevice){}
-};
 
 class ImageFeatureComputer {
 public:

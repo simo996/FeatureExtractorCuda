@@ -57,7 +57,7 @@ add_executable(FeatureExtractor
         ${PROJECT_SOURCE_DIR}/Image.h
 
         ${PROJECT_SOURCE_DIR}/WorkArea.cpp
-        ${PROJECT_SOURCE_DIR}/WorkArea.h)
+        ${PROJECT_SOURCE_DIR}/WorkArea.h src/ProgramArguments.cpp src/ProgramArguments.h)
 
 # Add OpenCvTo the project
 find_package( OpenCV REQUIRED )

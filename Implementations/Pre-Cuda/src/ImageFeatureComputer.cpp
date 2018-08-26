@@ -116,7 +116,7 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
     // How many directions need to be allocated for each window
     short int numberOfDirs = progArg.numberOfDirections;
     // How many feature values need to be allocated for each direction
-    int featuresCount = Features::getAllSupportedFeatures().size();
+    int featuresCount = Features::getSupportedFeaturesCount();
 
     // Pre-Allocate the array that will contain features
     double* featuresList = (double*) malloc(numberOfWindows * numberOfDirs * featuresCount * sizeof(double));
