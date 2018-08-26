@@ -13,23 +13,27 @@ using namespace std;
 
 class WorkArea {
 public:
-    WorkArea(int length, vector<GrayPair>& grayPairs, vector<AggregatedGrayPair>& summedPairs,
-            vector<AggregatedGrayPair>& subtractedPairs, vector<AggregatedGrayPair>& xMarginalPairs,
-            vector<AggregatedGrayPair>& yMarginalPairs, vector<double>& out):
-            numberOfElements(length), grayPairs(grayPairs), summedPairs(summedPairs),
-            subtractedPairs(subtractedPairs), xMarginalPairs(xMarginalPairs),
-            yMarginalPairs(yMarginalPairs), output(out){};
+    WorkArea(int length,
+            vector<GrayPair>& grayPairs,
+            vector<AggregatedGrayPair>& summedPairs,
+            vector<AggregatedGrayPair>& subtractedPairs,
+            vector<AggregatedGrayPair>& xMarginalPairs,
+            vector<AggregatedGrayPair>& yMarginalPairs,
+            vector<double>& out):
+            numberOfElements(length), grayPairs(grayPairs.data()), summedPairs(summedPairs.data()),
+            subtractedPairs(subtractedPairs.data()), xMarginalPairs(xMarginalPairs.data()),
+            yMarginalPairs(yMarginalPairs.data()), output(out.data()){};
     void cleanup();
     // Where the GLCM will be assembled
-    vector<GrayPair>& grayPairs;
+    GrayPair* grayPairs;
     // Where the aggregated (sum or diff) representations will be assembled
-    vector<AggregatedGrayPair>& summedPairs;
-    vector<AggregatedGrayPair>& subtractedPairs;
+    AggregatedGrayPair* summedPairs;
+    AggregatedGrayPair* subtractedPairs;
     // Where the marginal (x or y) representations will be assembled
-    vector<AggregatedGrayPair>& xMarginalPairs;
-    vector<AggregatedGrayPair>& yMarginalPairs;
+    AggregatedGrayPair* xMarginalPairs;
+    AggregatedGrayPair* yMarginalPairs;
     // Where to put the feature computed
-    vector<double>& output;
+    double* output;
     int numberOfElements;
 
 };

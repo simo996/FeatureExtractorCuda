@@ -17,14 +17,16 @@ using namespace std;
 
 class GLCM {
 public:
-    vector<GrayPair>& elements;
-    vector<AggregatedGrayPair>& summedPairs;
-    vector<AggregatedGrayPair>& subtractedPairs;
-    vector<AggregatedGrayPair>& xMarginalPairs;
-    vector<AggregatedGrayPair>& yMarginalPairs;
-
-    unsigned int getNumberOfUniquePairs() const;
-    unsigned int getNumberOfUniqueAggregatedElements(const vector<AggregatedGrayPair>& src) const;
+    GrayPair* elements;
+    int effectiveNumberOfGrayPairs;
+    AggregatedGrayPair* summedPairs;
+    int numberOfSummedPairs;
+    AggregatedGrayPair* subtractedPairs;
+    int numberOfSubtractedPairs;
+    AggregatedGrayPair* xMarginalPairs;
+    int numberOfxMarginalPairs;
+    AggregatedGrayPair* yMarginalPairs;
+    int numberOfyMarginalPairs;
 
     // Standard initializer constructor
     GLCM(const unsigned int * pixels, const ImageData& image, Window& windowData, WorkArea& wa);
@@ -56,13 +58,15 @@ private:
     int getReferenceIndex(int i, int j, int initialRowOffset, int initialColumnOffset);
     int getNeighborIndex(int i, int j, int initialColumnOffset);
     // Methods to build the glcm from input pixel and directional data
+    void insertElement(GrayPair* elements, GrayPair actualPair,
+            uint& lastInsertionPosition);
+    void insertElement(AggregatedGrayPair* elements,
+            AggregatedGrayPair actualPair, uint& lastInsertionPosition);
     void initializeGlcmElements();
     // Representations useful for aggregated features
-    void codifySummedPairs();
-    void codifySubtractedPairs();
+    void codifyAggregatedPairs();
     // Representation useful for HXY
-    void codifyXMarginalProbabilities() ;
-    void codifyYMarginalProbabilities() ;
+    void codifyMarginalProbabilities() ;
     // debug printing methods
     void printGLCMAggregatedElements(bool areSummed) const;
 

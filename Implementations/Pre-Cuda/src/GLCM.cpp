@@ -71,8 +71,7 @@ void GLCM::printGLCMData() const{
 
 void GLCM::printGLCMElements() const{
     cout << "* GrayPairs *" << endl;
-    int lenght = getNumberOfUniquePairs();
-    for (int i = 0; i < lenght; ++i) {
+    for (int i = 0; i < effectiveNumberOfGrayPairs; ++i) {
         elements[i].printPair();;
     }
 }
@@ -121,20 +120,22 @@ inline int GLCM::getNeighborIndex(const int i, const int j,
     return index;
 }
 
-inline void insertElement(vector<GrayPair>& elements, const GrayPair actualPair, uint& lastInsertionPosition){
-    auto position = find(elements.begin(), elements.end(), actualPair);
+inline void GLCM::insertElement(GrayPair* elements, const GrayPair actualPair, uint& lastInsertionPosition){
+    int position = 0;
+    while((!elements[position].compareTo(actualPair)) && (position < numberOfPairs))
+        position++;
     // If found
     if((lastInsertionPosition > 0) // 0,0 as first element will increase insertion position
-        && (position != elements.end())){ // if the item was already inserted
-        position.operator*().operator++();
+        && (position != numberOfPairs)){ // if the item was already inserted
+        elements[position].operator++();
         if((actualPair.getGrayLevelI() == 0) && (actualPair.getGrayLevelJ() == 0)
-            && (position.operator*().getFrequency() == actualPair.getFrequency()))
+            && (elements[position].getFrequency() == actualPair.getFrequency()))
             // corner case, inserted pair 0,0 that matches with every empty field
             lastInsertionPosition++;
     }
     else
     {
-        elements.at(lastInsertionPosition) = actualPair;
+        elements[lastInsertionPosition] = actualPair;
         lastInsertionPosition++;
     }
 }
@@ -175,40 +176,27 @@ void GLCM::initializeGlcmElements() {
             
         }
     }
-    codifySummedPairs();
-    codifySubtractedPairs();
-    codifyXMarginalProbabilities();
-    codifyYMarginalProbabilities();
+    effectiveNumberOfGrayPairs = lastInsertionPosition;
+    codifyAggregatedPairs();
+    codifyMarginalProbabilities();
 }
 
-unsigned int GLCM::getNumberOfUniquePairs() const{
-    unsigned int i = 0;
-    while((elements[i].getFrequency() !=0 ) && (i < numberOfPairs))
-        i++;
-    return i;
-}
-
-unsigned int GLCM::getNumberOfUniqueAggregatedElements(const vector<AggregatedGrayPair>& src) const{
-    unsigned int i = 0;
-    while((src[i].getFrequency() !=0 ) && (i < numberOfPairs))
-        i++;
-    return i;
-}
-
-inline void insertElement(vector<AggregatedGrayPair>& elements, const AggregatedGrayPair actualPair, uint& lastInsertionPosition){
-    auto position = find(elements.begin(), elements.end(), actualPair);
+inline void GLCM::insertElement(AggregatedGrayPair* elements, const AggregatedGrayPair actualPair, uint& lastInsertionPosition){
+    int position = 0;
+    while((!elements[position].compareTo(actualPair)) && (position < numberOfPairs))
+        position++;
     // If found
     if((lastInsertionPosition > 0) && // corner case 0 as first elment
-        (position != elements.end())){ // if the item was already inserted
-            position.operator*().increaseFrequency(actualPair.getFrequency());
+        (position != numberOfPairs)){ // if the item was already inserted
+            elements[position].increaseFrequency(actualPair.getFrequency());
         if((actualPair.getAggregatedGrayLevel() == 0) && // corner case 0 as regular element
-        (position.operator*().getFrequency() == actualPair.getFrequency()))
+        (elements[position].getFrequency() == actualPair.getFrequency()))
             // corner case, inserted 0 that matches with every empty field
             lastInsertionPosition++;
     }
     else
     {
-        elements.at(lastInsertionPosition) = actualPair;
+        elements[lastInsertionPosition] = actualPair;
         lastInsertionPosition++;
     }
 }
@@ -218,33 +206,28 @@ inline void insertElement(vector<AggregatedGrayPair>& elements, const Aggregated
     map<int k, int freq> where k is the sum of both grayLevels of the GrayPair.
     This representation is used in computeSumXXX() features
 */
-void GLCM::codifySummedPairs() {
+void GLCM::codifyAggregatedPairs() {
     unsigned int lastInsertPosition = 0;
-
-    for(int i = 0 ; i < getNumberOfUniquePairs(); i++){
+    // summed pairs first
+    for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
+        // Create summed pairs first
         uint k= elements[i].getGrayLevelI() + elements[i].getGrayLevelJ();
-        AggregatedGrayPair element(k, elements[i].getFrequency());
+        AggregatedGrayPair summedElement(k, elements[i].getFrequency());
 
-        insertElement(summedPairs, element, lastInsertPosition);
+        insertElement(summedPairs, summedElement, lastInsertPosition);
     }
-}
+    numberOfSummedPairs = lastInsertPosition;
 
-/*
-    This method, given the map<GrayPair, int freq> will produce 
-    map<int k, int freq> where k is the absolute difference of both grayLevels
-    of the GrayPair.
-    This representation is used in computeDiffXXX() features
-*/
-void GLCM::codifySubtractedPairs() {
-    unsigned int lastInsertPosition = 0;
-
-    for(int i = 0 ; i < getNumberOfUniquePairs(); i++){
+    // diff pairs
+    lastInsertPosition = 0;
+    for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
         int diff = elements[i].getGrayLevelI() - elements[i].getGrayLevelJ();
         uint k= static_cast<uint>(abs(diff));
         AggregatedGrayPair element(k, elements[i].getFrequency());
 
         insertElement(subtractedPairs, element, lastInsertPosition);
     }
+    numberOfSubtractedPairs = lastInsertPosition;
 }
 
 void GLCM::printAggregated() const{
@@ -256,15 +239,13 @@ void GLCM::printGLCMAggregatedElements(bool areSummed) const{
     cout << endl;
     if(areSummed) {
         cout << "* Summed grayPairsMap *" << endl;
-        int length = getNumberOfUniqueAggregatedElements(summedPairs);
-        for (int i = 0; i < length; ++i) {
+        for (int i = 0; i < numberOfSummedPairs; ++i) {
             summedPairs[i].printPair();
         }
     }
     else {
         cout << "* Subtracted grayPairsMap *" << endl;
-        int length = getNumberOfUniqueAggregatedElements(subtractedPairs);
-        for (int i = 0; i < length; ++i) {
+        for (int i = 0; i < numberOfSubtractedPairs; ++i) {
             subtractedPairs[i].printPair();
         }
     }
@@ -277,44 +258,37 @@ void GLCM::printGLCMAggregatedElements(bool areSummed) const{
     (ie. how many times k is present in all GrayPair<k, ?>)
     This representation is used for computing features HX, HXY, HXY1, imoc
 */
-void GLCM::codifyXMarginalProbabilities() {
+void GLCM::codifyMarginalProbabilities() {
     unsigned int lastInsertPosition = 0;
-
-    for(int i = 0 ; i < getNumberOfUniquePairs(); i++){
+    // xMarginalPairs first
+    for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
         uint firstGrayLevel = elements[i].getGrayLevelI();
         AggregatedGrayPair element(firstGrayLevel, elements[i].getFrequency());
 
         insertElement(xMarginalPairs, element, lastInsertPosition);
     }
-}
+    numberOfxMarginalPairs = lastInsertPosition;
 
-/*
-    This method, given the map<GrayPair, int freq> will produce 
-    map<int k, int freq> where k is the NEIGHBOR grayLevel of the GrayPair 
-    while freq is the "marginal" frequency of that level 
-    (ie. how many times k is present in all GrayPair<?, k>)
-    This representation is used for computing features HX, HXY, HXY1, imoc
-*/
-void GLCM::codifyYMarginalProbabilities(){
-    unsigned int lastInsertPosition = 0;
-
-    for(int i = 0 ; i < getNumberOfUniquePairs(); i++){
+    // yMarginalPairs second
+    lastInsertPosition = 0;
+    for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
         uint secondGrayLevel = elements[i].getGrayLevelJ();
         AggregatedGrayPair element(secondGrayLevel, elements[i].getFrequency());
 
         insertElement(yMarginalPairs, element, lastInsertPosition);
     }
-
+    numberOfyMarginalPairs = lastInsertPosition;
 }
+
 
 void GLCM::printMarginalProbabilityElements() const{
     cout << endl << "* xMarginal Codifica" << endl;
-    for (int i = 0; i < getNumberOfUniqueAggregatedElements(xMarginalPairs); ++i) {
+    for (int i = 0; i < numberOfxMarginalPairs; ++i) {
         cout << "(" << xMarginalPairs[i].getAggregatedGrayLevel() <<
             ", X):\t" << xMarginalPairs[i].getFrequency() << endl;
     }
     cout << endl << "* yMarginal Codifica" << endl;
-    for (int i = 0; i < getNumberOfUniqueAggregatedElements(yMarginalPairs); ++i) {
+    for (int i = 0; i <numberOfyMarginalPairs; ++i) {
         cout << "(X, " << yMarginalPairs[i].getAggregatedGrayLevel() << ")" <<
             ":\t" << yMarginalPairs[i].getFrequency() << endl;
 

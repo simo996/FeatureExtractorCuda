@@ -23,7 +23,7 @@ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& i
     int actualWindowOffset = (outputWindowOffset *
                               (windowData.numberOfDirections * featuresCount));
     int intraWindowOffset = (directionOffset * featuresCount);
-    double * rightLocation = workArea.output.data() + actualWindowOffset + intraWindowOffset;
+    double * rightLocation = workArea.output + actualWindowOffset + intraWindowOffset;
     featureOutput = rightLocation;
     // Compute features
     computeDirectionalFeatures();
@@ -49,6 +49,7 @@ void FeatureComputer::printGLCM(const GLCM& glcm){
     glcm.printGLCMData();
     glcm.printGLCMElements();
     glcm.printAggregated();
+    glcm.printMarginalProbabilityElements();
 }
 
 // ASM
@@ -179,7 +180,6 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
     double sigmaY = 0;
 
     // Actual features
-    // TODO think about not retaining local variables and directly accessing the map
     double angularSecondMoment = 0;
     double autoCorrelation = 0;
     double entropy = 0;
@@ -190,7 +190,7 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
     double idm = 0;
 
     // First batch of computable features
-    int length = glcm.getNumberOfUniquePairs();
+    int length = glcm.effectiveNumberOfGrayPairs;
     for (int k = 0; k < length; ++k) {
         GrayPair actualPair = glcm.elements[k];
 
@@ -215,13 +215,13 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
     }
 
     features[ASM] = angularSecondMoment;
-    features[AUTOCORRELATION]= autoCorrelation;
-    features[ENTROPY]= (-1 * entropy);
-    features[MAXPROB]= maxprob;
-    features[HOMOGENEITY]= homogeneity;
-    features[CONTRAST]= contrast;
-    features[DISSIMILARITY]= dissimilarity;
-    features[IDM]= idm;
+    features[AUTOCORRELATION] = autoCorrelation;
+    features[ENTROPY] = (-1 * entropy);
+    features[MAXPROB] = maxprob;
+    features[HOMOGENEITY] = homogeneity;
+    features[CONTRAST] = contrast;
+    features[DISSIMILARITY] = dissimilarity;
+    features[IDM] = idm;
 
     // Second batch of computable features
     double clusterProm = 0;
@@ -245,9 +245,9 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
     sigmaX = sqrt(sigmaX);
     sigmaY = sqrt(sigmaY);
 
-    features[CLUSTERPROMINENCE]= clusterProm;
-    features[CLUSTERSHADE]= clusterShade;
-    features[SUMOFSQUARES]= sumOfSquares;
+    features[CLUSTERPROMINENCE] = clusterProm;
+    features[CLUSTERSHADE] = clusterShade;
+    features[SUMOFSQUARES] = sumOfSquares;
 
     // Only feature that needs the third scan of the glcm
     double correlation = 0;
@@ -262,7 +262,7 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
         correlation += computeCorrelationStep(i, j, actualPairProbability, 
             muX, muY, sigmaX, sigmaY);
     }
-    features[CORRELATION]= correlation;
+    features[CORRELATION] = correlation;
 
 }
 
@@ -272,13 +272,13 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
 */
 void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, double* features) {
     int numberOfPairs = glcm.getNumberOfPairs();
-    // TODO think about not retaining local variables and directly accessing the map
+
     double sumavg = 0;
     double sumentropy = 0;
     double sumvariance = 0;
 
     // First batch of computable features
-    int length = glcm.getNumberOfUniqueAggregatedElements(glcm.summedPairs);
+    int length = glcm.numberOfSummedPairs;
     for (int i = 0; i < length; ++i) {
         AggregatedGrayPair actualPair = glcm.summedPairs[i];
         uint k = actualPair.getAggregatedGrayLevel();
@@ -309,11 +309,11 @@ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, double* fea
 */
 void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, double* features) {
     int numberOfPairs= glcm.getNumberOfPairs();
-    // TODO think about not retaining local variables and directly accessing the map
+
     double diffentropy = 0;
     double diffvariance = 0;
 
-    int length = glcm.getNumberOfUniqueAggregatedElements(glcm.subtractedPairs);
+    int length = glcm.numberOfSubtractedPairs;
     for (int i = 0; i < length; ++i) {
         AggregatedGrayPair actualPair = glcm.subtractedPairs[i];
         uint k = actualPair.getAggregatedGrayLevel();
@@ -338,7 +338,7 @@ void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, double* features
     double hx = 0;
 
     // Compute first intermediate value
-    int xLength = glcm.getNumberOfUniqueAggregatedElements(glcm.xMarginalPairs);
+    int xLength = glcm.numberOfxMarginalPairs;
     for (int k = 0; k < xLength; ++k) {
         double probability = ((double) (glcm.xMarginalPairs[k].getFrequency())/numberOfPairs);
 
@@ -348,7 +348,7 @@ void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, double* features
 
     // Compute second intermediate value
     double hy = 0;
-    int yLength = glcm.getNumberOfUniqueAggregatedElements(glcm.yMarginalPairs);
+    int yLength = glcm.numberOfyMarginalPairs;
     for (int k = 0; k < yLength; ++k) {
         double probability = ((double) (glcm.yMarginalPairs[k].getFrequency())/numberOfPairs);
        
@@ -362,18 +362,24 @@ void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, double* features
     // Compute last intermediate value
     double hxy1 = 0;
 
-    int length = glcm.getNumberOfUniquePairs();
+    int length = glcm.effectiveNumberOfGrayPairs;
     for (int l = 0; l < length; ++l) {
         GrayPair actualPair = glcm.elements[l];
         double actualPairProbability = ((double) glcm.elements[l].getFrequency()) / numberOfPairs;
 
         AggregatedGrayPair i (actualPair.getGrayLevelI(), 0); // 0 frequency is placeholder
-        auto xposition = find(glcm.xMarginalPairs.begin(), glcm.xMarginalPairs.end(), i);
-        double xMarginalProbability = (double) xposition.operator*().getFrequency() / numberOfPairs;
+        int xposition = 0;
+        // it will be found, no need to check boundaries
+        while((!glcm.xMarginalPairs[xposition].compareTo(i)) && (xposition < glcm.numberOfxMarginalPairs))
+            xposition++;
+        double xMarginalProbability = (double) glcm.xMarginalPairs[xposition].getFrequency() / numberOfPairs;
 
         AggregatedGrayPair j (actualPair.getGrayLevelJ(), 0); // 0 frequency is placeholder
-        auto yposition = find(glcm.yMarginalPairs.begin(), glcm.yMarginalPairs.end(), j);
-        double yMarginalProbability = (double) yposition.operator*().getFrequency() / numberOfPairs;
+        int yposition = 0;
+        // it will be found, no need to check boundaries
+        while((!glcm.yMarginalPairs[yposition].compareTo(j)) && (yposition < glcm.numberOfyMarginalPairs))
+            yposition++;
+        double yMarginalProbability = (double) glcm.yMarginalPairs[yposition].getFrequency() / numberOfPairs;
 
         hxy1 += actualPairProbability * log(xMarginalProbability * yMarginalProbability);
     }

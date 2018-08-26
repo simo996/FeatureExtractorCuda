@@ -128,12 +128,14 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
     if(windowData.symmetric)
         numberOfPairsInWindow *= 2;
 
+    int numberOfThreads = 1;
     // Each 1 of these data structures allow 1 thread to work
-	vector<GrayPair> elements(numberOfPairsInWindow);
-	vector<AggregatedGrayPair> summedPairs(numberOfPairsInWindow);
-	vector<AggregatedGrayPair> subtractedPairs(numberOfPairsInWindow);
-	vector<AggregatedGrayPair> xMarginalPairs(numberOfPairsInWindow);
-	vector<AggregatedGrayPair> yMarginalPairs(numberOfPairsInWindow);
+    // TODO from vector to plain pointers
+	vector<GrayPair> elements(numberOfPairsInWindow * numberOfThreads);
+	vector<AggregatedGrayPair> summedPairs(numberOfPairsInWindow * numberOfThreads);
+	vector<AggregatedGrayPair> subtractedPairs(numberOfPairsInWindow * numberOfThreads);
+	vector<AggregatedGrayPair> xMarginalPairs(numberOfPairsInWindow * numberOfThreads);
+	vector<AggregatedGrayPair> yMarginalPairs(numberOfPairsInWindow * numberOfThreads);
 
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
@@ -157,7 +159,6 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
             formatOutputResults(featuresList.data(), numberOfWindows, numberOfDirs, featuresCount);
 	return output;
 }
-
 
 
 /*
