@@ -13,6 +13,7 @@ public:
     unsigned int getGrayLevelI() const;
     unsigned int getGrayLevelJ() const;
     unsigned int getFrequency() const;
+    bool compareTo(GrayPair other) const;
     void frequencyIncrease();
     void printPair() const;
 

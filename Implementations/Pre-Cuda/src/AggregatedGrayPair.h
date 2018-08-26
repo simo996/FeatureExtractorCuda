@@ -13,6 +13,7 @@ public:
     void printPair() const;
     int getAggregatedGrayLevel() const;
     unsigned int getFrequency() const;
+    bool compareTo(AggregatedGrayPair other) const;
     void increaseFrequency(unsigned int amount);
 
     bool operator==(const AggregatedGrayPair& other) const{
@@ -30,7 +31,7 @@ public:
     }
 private:
     unsigned int grayLevel;
-        unsigned int frequency;
+    unsigned int frequency;
 
 };
 

@@ -30,6 +30,10 @@ unsigned int AggregatedGrayPair::getFrequency() const {
     return frequency;
 }
 
+bool AggregatedGrayPair::compareTo(AggregatedGrayPair other) const{
+    return (grayLevel == other.getAggregatedGrayLevel());
+}
+
 void AggregatedGrayPair::increaseFrequency(unsigned int amount){
     frequency += amount;
 }

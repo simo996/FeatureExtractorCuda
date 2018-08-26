@@ -30,6 +30,14 @@ void GrayPair::frequencyIncrease(){
     frequency+=1;
 }
 
+bool GrayPair::compareTo(GrayPair other) const{
+    if((grayLevelI == other.getGrayLevelI())
+    && (grayLevelJ == other.getGrayLevelJ()))
+        return true;
+    else
+        return false;
+}
+
 /* Extracting pairs */
 uint GrayPair::getGrayLevelI() const{
     return grayLevelI;
