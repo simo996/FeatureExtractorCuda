@@ -3,16 +3,19 @@
 //
 
 #include "Features.h"
-
+#define FNUMBER 18
 // Support method
 
 vector<FeatureNames> Features::getAllSupportedFeatures() {
-    vector<FeatureNames> output(18);
+    vector<FeatureNames> output(FNUMBER);
     for (int i = 0; i <= IMOC; ++i) {
         output[i] = static_cast<FeatureNames>(i);
     }
     return output;
+}
 
+int Features::getSupportedFeaturesCount(){
+    return FNUMBER;
 }
 
 vector<string> Features::getAllFeaturesFileNames() {

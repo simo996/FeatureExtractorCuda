@@ -9,7 +9,6 @@
 #define FEATUREEXTRACTOR_FEATURES_H
 
 #include <vector>
-#include <map>
 #include <string>
 #include <iostream>
 
@@ -27,7 +26,8 @@ public:
     static vector<FeatureNames> getAllSupportedFeatures();
     // return a list of all the file names associated at features
     static vector<string> getAllFeaturesFileNames();
-    // print features labels and their values
+    static int getSupportedFeaturesCount();
+        // print features labels and their values
     static void printAllFeatures(const vector<double>& features);
     // print single feature label and its value
     static void printSingleFeature(const vector<double> &features,

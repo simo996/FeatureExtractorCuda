@@ -235,6 +235,13 @@ void GLCM::codifyMarginalPairs() {
     numberOfyMarginalPairs = lastInsertPosition;
 }
 
+void GLCM::printGLCM() const {
+    printGLCMData();
+    printGLCMElements();
+    printAggregated();
+    printMarginalProbabilityElements();
+}
+
 void GLCM::printGLCMData() const{
     cout << endl;
     cout << "***\tGLCM Data\t***" << endl;

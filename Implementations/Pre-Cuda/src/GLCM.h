@@ -31,15 +31,12 @@ public:
     GLCM(const unsigned int * pixels, const ImageData& image, Window& windowData, WorkArea& wa);
     ~GLCM();
 
-    // Utilities
-    void printGLCMData() const;
-    void printGLCMElements() const;
-    void printAggregated() const;
-    void printMarginalProbabilityElements() const;
-
     // Getters method exposed for feature computer class
     int getNumberOfPairs() const;
     int getMaxGrayLevel() const;
+
+    // Utilities
+    void printGLCM() const;
 
 private:
     const unsigned int * pixels;
@@ -66,7 +63,12 @@ private:
     void codifyAggregatedPairs();
     // Representation useful for HXY
     void codifyMarginalPairs() ;
+
     // debug printing methods
+    void printGLCMData() const;
+    void printGLCMElements() const;
+    void printAggregated() const;
+    void printMarginalProbabilityElements() const;
     void printGLCMAggregatedElements(bool areSummed) const;
 
 };

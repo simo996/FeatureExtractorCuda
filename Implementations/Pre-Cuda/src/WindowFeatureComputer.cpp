@@ -2,10 +2,7 @@
 // Created by simo on 16/07/18.
 //
 
-#include <iostream>
 #include "WindowFeatureComputer.h"
-
-
 
 WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
 		const ImageData& img, const Window& wd, WorkArea& wa): pixels(pxls),
@@ -19,12 +16,10 @@ WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
  	By default all 4 directions are evaluated
 */
 void WindowFeatureComputer::computeWindowFeatures() {
-	vector<Direction> allDirections = Direction::getAllDirections();
-
 	for(int i = 0; i < windowData.numberOfDirections; i++)
 	{
 		// Get shift vector for each direction of interest
-		Direction actualDir = allDirections[i];
+		Direction actualDir = Direction(i);
 		// create the autonomous thread of computation
 		FeatureComputer fc(pixels, image, actualDir.shiftRows, actualDir.shiftColumns,
 						   windowData, workArea, i);

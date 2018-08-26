@@ -6,8 +6,6 @@
 #ifndef FEATUREEXTRACTOR_DIRECTION_H
 #define FEATUREEXTRACTOR_DIRECTION_H
 
-using namespace std;
-
 class Direction {
 public:
     Direction(int directionNumber);

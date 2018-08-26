@@ -18,7 +18,7 @@ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& i
     // deduct what feature this thread is computing
     computeOutputWindowFeaturesIndex();
     // get the pointer to the memlocation where to put feature results
-    int featuresCount = Features::getAllSupportedFeatures().size();
+    int featuresCount = Features::getSupportedFeaturesCount();
     int actualWindowOffset = (outputWindowOffset *
                               (windowData.numberOfDirections * featuresCount));
     int intraWindowOffset = (directionOffset * featuresCount);
@@ -30,7 +30,7 @@ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& i
 
 void FeatureComputer::computeDirectionalFeatures() {
     GLCM glcm(pixels, image, windowData, workArea);
-    //printGLCM(glcm); // Print data and elements for debugging
+    //glcm.printGLCM(); // Print data and elements for debugging
 
     // Features computable from glcm Elements
     extractAutonomousFeatures(glcm, featureOutput);
@@ -43,13 +43,6 @@ void FeatureComputer::computeDirectionalFeatures() {
     extractMarginalFeatures(glcm, featureOutput);
 }
 
-/* TODO remove METHODS FOR DEBUG */
-void FeatureComputer::printGLCM(const GLCM& glcm){
-    glcm.printGLCMData();
-    glcm.printGLCMElements();
-    glcm.printAggregated();
-    glcm.printMarginalProbabilityElements();
-}
 
 // ASM
 inline double computeAsmStep(const double actualPairProbability){

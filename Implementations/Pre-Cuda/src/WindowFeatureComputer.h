@@ -5,15 +5,13 @@
 #ifndef FEATUREEXTRACTOR_WINDOWFEATURECOMPUTER_H
 #define FEATUREEXTRACTOR_WINDOWFEATURECOMPUTER_H
 
-#include <vector>
-#include <map>
 #include "FeatureComputer.h"
 #include "Direction.h"
 
-using namespace std;
-
-typedef vector<vector<double>> WindowFeatures; // will contain result for 4 directions
+typedef vector<vector<double>> WindowFeatures;
 typedef vector<double> FeatureValues;
+
+using namespace std;
 
 class WindowFeatureComputer {
     /*
