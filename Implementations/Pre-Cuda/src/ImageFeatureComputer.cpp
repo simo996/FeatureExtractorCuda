@@ -31,7 +31,7 @@ void ImageFeatureComputer::compute(){
 
 	// Image from imageLoader
 	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop);
-	ImageData imgData(image.getRows(), image.getColumns(), image.getMaxGrayLevel());
+	ImageData imgData(image);
     cout << "* Image loaded * " << endl;
     checkOptionCompatibility(progArg, image);
 	printExtimatedSizes(imgData);
@@ -131,12 +131,16 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 
     int numberOfThreads = 1;
     // Each 1 of these data structures allow 1 thread to work
-    // TODO from vector to plain pointers
-	GrayPair* elements = (GrayPair*) malloc(sizeof(GrayPair) * numberOfPairsInWindow * numberOfThreads);
-	AggregatedGrayPair* summedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
-    AggregatedGrayPair* subtractedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
-    AggregatedGrayPair* xMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
-    AggregatedGrayPair* yMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
+	GrayPair* elements = (GrayPair*) malloc(sizeof(GrayPair)
+	        * numberOfPairsInWindow * numberOfThreads);
+	AggregatedGrayPair* summedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
+	        * numberOfPairsInWindow * numberOfThreads);
+    AggregatedGrayPair* subtractedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
+            * numberOfPairsInWindow * numberOfThreads);
+    AggregatedGrayPair* xMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
+            * numberOfPairsInWindow * numberOfThreads);
+    AggregatedGrayPair* yMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
+            * numberOfPairsInWindow * numberOfThreads);
 
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);

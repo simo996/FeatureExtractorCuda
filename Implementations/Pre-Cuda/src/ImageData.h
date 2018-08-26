@@ -10,8 +10,10 @@
 using namespace std;
 class ImageData {
 public:
-    ImageData(unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
+    explicit ImageData(unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
             : rows(rows), columns(columns), maxGrayLevel(mxGrayLevel){};
+    explicit ImageData(const Image& img)
+            : rows(img.getRows()), columns(img.getColumns()), maxGrayLevel(img.getMaxGrayLevel()){};
     unsigned int getRows() const;
     unsigned int getColumns() const;
     unsigned int getMaxGrayLevel() const;
