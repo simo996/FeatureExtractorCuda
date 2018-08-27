@@ -1,7 +1,9 @@
-//
-// Created by simo on 05/08/18.
-//
-
+/*
+ * ImageLoader.cpp
+ *
+ *  Created on: 26/ago/2018
+ *      Author: simone
+ */
 
 #include "ImageLoader.h"
 

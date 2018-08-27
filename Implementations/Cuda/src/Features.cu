@@ -1,21 +1,27 @@
-//
-// Created by simo on 01/08/18.
-//
+/*
+ * Features.cpp
+ *
+ *  Created on: 26/ago/2018
+ *      Author: simone
+ */
 
 #include "Features.h"
+#include <vector>
+#define FNUMBER 18
 
-// Support method
-
-vector<FeatureNames> Features::getAllSupportedFeatures() {
-    vector<FeatureNames> output(18);
+__host__ vector<FeatureNames> Features::getAllSupportedFeatures() {
+    vector<FeatureNames> output(FNUMBER);
     for (int i = 0; i <= IMOC; ++i) {
         output[i] = static_cast<FeatureNames>(i);
     }
     return output;
-
 }
 
-vector<string> Features::getAllFeaturesFileNames() {
+__host__ __device__ int Features::getSupportedFeaturesCount(){
+    return FNUMBER;
+}
+
+__host__ vector<string> Features::getAllFeaturesFileNames() {
     // The right method will append the right extension to the filename
     vector<string> fileNames = {
             "ASM",
@@ -43,7 +49,7 @@ vector<string> Features::getAllFeaturesFileNames() {
 /*
     This method will print to screen just the entire list of features provided
 */
-void Features::printAllFeatures(const vector<double>& features){
+__host__ void Features::printAllFeatures(const vector<double>& features){
     cout << endl;
     // Autonomous
     cout << "ASM: \t" << features.at(ASM) << endl;
@@ -75,7 +81,7 @@ void Features::printAllFeatures(const vector<double>& features){
 /*
     This method will perform "a conversion ENUM->String"
 */
-string Features::getFeatureName(FeatureNames featureName){
+__host__ string Features::getFeatureName(FeatureNames featureName){
     switch(featureName){
         case (ASM):
             return "ASM: ";
@@ -123,15 +129,15 @@ string Features::getFeatureName(FeatureNames featureName){
 /*
     This method will print to screen the ENUM label
 */
-void Features::printFeatureName(FeatureNames featureName){
+__host__ void Features::printFeatureName(FeatureNames featureName){
     cout << getFeatureName(featureName);
 }
 
-string Features::printFeatureNameAndValue(const double value, FeatureNames fname){
+__host__ string Features::printFeatureNameAndValue(const double value, FeatureNames fname){
     return (getFeatureName(fname) + "\t" + to_string(value));
 }
 
-void Features::printSingleFeature(const vector<double>& features,
+__host__ void Features::printSingleFeature(const vector<double>& features,
                                          FeatureNames featureName){
 
     for (int i = 0; i < features.size(); ++i) {

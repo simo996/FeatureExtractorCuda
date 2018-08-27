@@ -1,6 +1,9 @@
-//
-// Created by simo on 25/07/18.
-//
+/*
+ * ImageFeatureComputer.cpp
+ *
+ *  Created on: 26/ago/2018
+ *      Author: simone
+ */
 
 #include <iostream>
 #include <fstream>
@@ -25,13 +28,12 @@ void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
 
 }
 
-
 void ImageFeatureComputer::compute(){
 	cout << "* LOADING image * " << endl;
 
 	// Image from imageLoader
 	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop);
-	ImageData imgData(image.getRows(), image.getColumns(), image.getMaxGrayLevel());
+	ImageData imgData(image);
     cout << "* Image loaded * " << endl;
     checkOptionCompatibility(progArg, image);
 	printExtimatedSizes(imgData);
@@ -71,6 +73,52 @@ void ImageFeatureComputer::printExtimatedSizes(const ImageData& img){
 }
 
 /*
+ * From linear to structured array of windowsFeature each containing
+ * an array of directional features each containing all the feature values
+*/
+vector<vector<vector<double>>> formatOutputResults(const double* featureValues,
+                                                   const int numberOfWindows, const int numberOfDirections, const int featuresCount){
+    vector<vector<vector<double>>> output(numberOfWindows,
+                                          vector<vector<double>>(numberOfDirections, vector<double> (featuresCount)));
+    // How many double values fit into a window
+    int windowResultsSize = numberOfDirections * featuresCount;
+    // How many double values fit into a direction
+    int directionResultSize = featuresCount;
+
+    for (int k = 0; k < numberOfWindows; ++k) {
+        int windowOffset = k * windowResultsSize;
+        const double* windowResultsStartingPoint = featureValues + windowOffset;
+
+        vector<vector<double>> singleWindowFeatures(numberOfDirections);
+
+        for (int i = 0; i < numberOfDirections; ++i) {
+            int directionOffset = i * directionResultSize;
+            const double* dirResultsStartingPoint = windowResultsStartingPoint + directionOffset;
+            // Copy each of the values
+            vector<double> singleDirectionFeatures(dirResultsStartingPoint, dirResultsStartingPoint + directionResultSize);
+            singleWindowFeatures[i] = singleDirectionFeatures;
+        }
+        output[k] = singleWindowFeatures;
+    }
+    return output;
+}
+
+__global__ void computeFeatures(unsigned int * pixels, ImageData img, Window windowData, WorkArea wa){
+	// Slide windows on the image
+	for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
+			for(int j = 0; (j + windowData.side) <= img.getColumns() ; j++){
+				// Create local window information
+				Window actualWindow {windowData.side, windowData.distance,
+	                                 windowData.numberOfDirections, windowData.symmetric};
+				// tell the window its relative offset (starting point) inside the image
+				actualWindow.setSpacialOffsets(i,j);
+				// Launch the computation of features on the window
+				WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
+			}
+		}
+}
+
+/*
      * This method will compute all the features for every window for the
      * number of directions provided, in a window
      * By default all 4 directions are considered; order is 0->45->90->135°
@@ -78,47 +126,72 @@ void ImageFeatureComputer::printExtimatedSizes(const ImageData& img){
 vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * pixels, const ImageData& img){
 	// Pre-Allocate working area
 	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.symmetric);
-	int extimatedWindowRows = windowData.side; // 0° has all rows
-	int extimateWindowCols = windowData.side - (windowData.distance * 1); // at least 1 column is lost
-	int numberOfPairsInWindow = extimatedWindowRows * extimateWindowCols;
-	if(windowData.symmetric)
-		numberOfPairsInWindow *= 2;
 
-	// Each 1 of these data structures allow 1 thread to work
-	vector<GrayPair> elements(numberOfPairsInWindow);
-	vector<AggregatedGrayPair> summedPairs(numberOfPairsInWindow);
-	vector<AggregatedGrayPair> subtractedPairs(numberOfPairsInWindow);
-	vector<AggregatedGrayPair> xMarginalPairs(numberOfPairsInWindow);
-	vector<AggregatedGrayPair> yMarginalPairs(numberOfPairsInWindow);
+	// How many windows need to be allocated
+    int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
+                          * (img.getColumns() - progArg.windowSize + 1);
+    // How many directions need to be allocated for each window
+    short int numberOfDirs = progArg.numberOfDirections;
+    // How many feature values need to be allocated for each direction
+    int featuresCount = Features::getSupportedFeaturesCount();
 
-	// Pre-Allocate the array that will contain features
-	int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
-			* (img.getColumns() - progArg.windowSize + 1);
-	vector<vector<vector<double>>> featuresList(numberOfWindows,
-	        vector<vector<double>>(progArg.numberOfDirections, vector<double> (18)));
+    // Pre-Allocate the array that will contain features
+    double* featuresList = (double*) malloc(numberOfWindows * numberOfDirs * featuresCount * sizeof(double));
+    // Allocate GPU space to contain results
+    double* d_featuresList;
+    cudaMalloc(&d_featuresList, numberOfWindows * numberOfDirs * featuresCount * sizeof(double));
 
-    WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
-                subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
+    // 	Pre-Allocate working area
+    int extimatedWindowRows = windowData.side; // 0° has all rows
+    int extimateWindowCols = windowData.side - (windowData.distance * 1); // at least 1 column is lost
+    int numberOfPairsInWindow = extimatedWindowRows * extimateWindowCols;
+    if(windowData.symmetric)
+        numberOfPairsInWindow *= 2;
+
+    // COPY the image pixels to the GPU
+    unsigned int * d_pixels;
+    cudaMalloc(&d_pixels, sizeof(unsigned int) * img.getRows() * img.getColumns());
+    cudaMemcpy(d_pixels, pixels,
+    		sizeof(unsigned int) * img.getRows() * img.getColumns(),
+    		cudaMemcpyHostToDevice);
+
+    int numberOfThreads = 1;
+    // Each 1 of these data structures allow 1 thread to work
+	GrayPair* d_elements;
+	AggregatedGrayPair* d_summedPairs;
+	AggregatedGrayPair* d_subtractedPairs;
+	AggregatedGrayPair* d_xMarginalPairs;
+	AggregatedGrayPair* d_yMarginalPairs;
+
+	cudaMalloc(&d_elements, sizeof(GrayPair) * numberOfPairsInWindow * numberOfThreads);
+	cudaMalloc(&d_summedPairs, sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
+	cudaMalloc(&d_subtractedPairs, sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
+	cudaMalloc(&d_xMarginalPairs, sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
+	cudaMalloc(&d_yMarginalPairs, sizeof(AggregatedGrayPair) * numberOfPairsInWindow * numberOfThreads);
+
+    WorkArea wa(numberOfPairsInWindow, d_elements, d_summedPairs,
+                d_subtractedPairs, d_xMarginalPairs, d_yMarginalPairs, d_featuresList);
 
 	// START GPU WORK
-	// Slide windows on the image
-	for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
-		for(int j = 0; (j + windowData.side) <= img.getColumns() ; j++){
-			// Create local window information
-			Window actualWindow {windowData.side, windowData.distance,
-								 progArg.numberOfDirections, windowData.symmetric};
-			// tell the window its relative offset (starting point) inside the image
-			actualWindow.setSpacialOffsets(i,j);
-			// Launch the computation of features on the window
-			WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
-		}
-	}
+    computeFeatures<<<1,1>>>(d_pixels, img, windowData, wa);
+	cudaDeviceSynchronize();
 
-	// Resumes CPU control copying back results
+	// Copy back results from GPU
+	cudaMemcpy(featuresList, d_featuresList,
+			numberOfWindows * numberOfDirs * featuresCount * sizeof(double),
+			cudaMemcpyDeviceToHost);
 
-	return featuresList;
+	// Give the data structure
+    vector<vector<vector<double>>> output =
+            formatOutputResults(featuresList, numberOfWindows, numberOfDirs, featuresCount);
+
+	free(featuresList);
+	cudaFree(d_summedPairs);
+	cudaFree(d_subtractedPairs);
+	cudaFree(d_xMarginalPairs);
+	cudaFree(d_yMarginalPairs);
+	return output;
 }
-
 
 
 /*
@@ -260,8 +333,5 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
     Mat convertedImage = ImageLoader::convertToGrayScale(imageFeature);
     ImageLoader::stretchAndSave(convertedImage, filePath);
 }
-
-
-
 
 

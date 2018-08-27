@@ -1,10 +1,13 @@
-//
-// Created by simone on 14/08/18.
-//
+/*
+ * WorkArea.cpp
+ *
+ *  Created on: 26/ago/2018
+ *      Author: simone
+ */
 
 #include "WorkArea.h"
 
-void WorkArea::cleanup() {
+__device__ void WorkArea::cleanup() {
     GrayPair voidElement; // 0 in each field
     AggregatedGrayPair voidAggregatedElement; // 0 in each field
     for (int i = 0; i < numberOfElements; ++i) {

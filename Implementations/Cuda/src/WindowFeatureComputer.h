@@ -1,19 +1,27 @@
-//
-// Created by simo on 16/07/18.
-//
+/*
+ * WindowFeatureComputer.h
+ *
+ *  Created on: 26/ago/2018
+ *      Author: simone
+ */
 
-#ifndef FEATUREEXTRACTOR_WINDOWFEATURECOMPUTER_H
-#define FEATUREEXTRACTOR_WINDOWFEATURECOMPUTER_H
+#ifndef WINDOWFEATURECOMPUTER_H_
+#define WINDOWFEATURECOMPUTER_H_
 
-#include <vector>
-#include <map>
+#ifdef __CUDACC__
+#define CUDA_HOSTDEV __host__ __device__
+#define CUDA_HOST __host__ 
+#define CUDA_DEV __device__
+#else
+#define CUDA_HOSTDEV
+#define CUDA_HOST
+#define CUDA_DEV
+#endif
+
 #include "FeatureComputer.h"
 #include "Direction.h"
 
 using namespace std;
-
-typedef vector<vector<double>> WindowFeatures; // will contain result for 4 directions
-typedef vector<double> FeatureValues;
 
 class WindowFeatureComputer {
     /*
@@ -22,18 +30,13 @@ class WindowFeatureComputer {
    */
 
 public:
-    WindowFeatureComputer(unsigned int * pixels, const ImageData& img, const Window& wd, WorkArea& wa);
+    CUDA_DEV WindowFeatureComputer(unsigned int * pixels, const ImageData& img, const Window& wd, WorkArea& wa);
     // Will be computed features in the directions specified
     // Default = 4 = all feautures ; oder 0->45->90->135°
-    void computeWindowFeatures();
+    CUDA_DEV void computeWindowFeatures();
     /* Oss. No sense in computing a single feature, simply select the one
       needed from the complete list
      */
-    // TODO return an ostream
-    static void printAllDirectionsAllFeatures(const WindowFeatures &featureList); // 4 directions with dir label
-    // Print the label of the direction and the features
-    static void printSingleDirectionAllFeatures(const vector<double>& featureList); // with dir
-
 private:
         // Initialization data to pass to each FeatureComputer
         WorkArea& workArea;
@@ -41,6 +44,4 @@ private:
         ImageData image;
         Window windowData;
 };
-
-
-#endif //FEATUREEXTRACTOR_WINDOWFEATURECOMPUTER_H
+#endif /* WINDOWFEATURECOMPUTER_H_ */

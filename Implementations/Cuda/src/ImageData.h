@@ -1,21 +1,37 @@
 /*
- * This class embeds pixels and image's metadata used by other components
-*/
+ * ImageData.h
+ *
+ *  Created on: 26/ago/2018
+ *      Author: simone
+ */
 
-#ifndef FEATUREEXTRACTOR_IMAGE_H
-#define FEATUREEXTRACTOR_IMAGE_H
+#ifndef IMAGEDATA_H_
+#define IMAGEDATA_H_
+
+#ifdef __CUDACC__
+#define CUDA_HOSTDEV __host__ __device__
+#define CUDA_HOST __host__ 
+#define CUDA_DEV __device__
+#else
+#define CUDA_HOSTDEV
+#define CUDA_HOST
+#define CUDA_DEV
+#endif
 
 #include "Image.h"
 
 using namespace std;
+
 class ImageData {
 public:
-    ImageData(unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
+    CUDA_HOSTDEV ImageData(unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
             : rows(rows), columns(columns), maxGrayLevel(mxGrayLevel){};
-    unsigned int getRows() const;
-    unsigned int getColumns() const;
-    unsigned int getMaxGrayLevel() const;
-    void printElements(unsigned int* pixels) const;
+    CUDA_HOSTDEV ImageData(Image& img)
+                : rows(img.getRows()), columns(img.getColumns()), maxGrayLevel(img.getMaxGrayLevel()){};
+    CUDA_HOSTDEV unsigned int getRows() const;
+    CUDA_HOSTDEV unsigned int getColumns() const;
+    CUDA_HOSTDEV unsigned int getMaxGrayLevel() const;
+    CUDA_HOSTDEV void printElements(unsigned int* pixels) const;
 
 private:
     const unsigned int rows;
@@ -24,4 +40,4 @@ private:
 };
 
 
-#endif //FEATUREEXTRACTOR_IMAGE_H
+#endif /* IMAGEDATA_H_ */

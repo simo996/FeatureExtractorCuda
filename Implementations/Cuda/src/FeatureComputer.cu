@@ -1,83 +1,92 @@
-//
-// Created by simo on 11/07/18.
-//
+/*
+ * FeatureComputer.cpp
+ *
+ *  Created on: 26/ago/2018
+ *      Author: simone
+ */
 
-#include <iostream>
-#include <algorithm>
-#include <cmath>
 #include "FeatureComputer.h"
 
-using namespace std;
-
-FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& img,
+__device__ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& img,
         const int shiftRows, const int shiftColumns,
         const Window& wd, WorkArea& wa, const short int directionNumber)
                                  : pixels(pixels), image(img),
                                  directionOffset(directionNumber),
                                  windowData(wd), workArea(wa) {
     windowData.setDirectionShifts(shiftRows, shiftColumns);
+    // deduct what feature this thread is computing
     computeOutputWindowFeaturesIndex();
+    // get the pointer to the memlocation where to put feature results
+    int featuresCount = Features::getSupportedFeaturesCount();
+    int actualWindowOffset = (outputWindowOffset *
+                              (windowData.numberOfDirections * featuresCount));
+    int intraWindowOffset = (directionOffset * featuresCount);
+    double * rightLocation = workArea.output + actualWindowOffset + intraWindowOffset;
+    featureOutput = rightLocation;
+    // Compute features
     computeDirectionalFeatures();
 }
 
-void FeatureComputer::computeDirectionalFeatures() {
+__device__ void FeatureComputer::computeDirectionalFeatures() {
     GLCM glcm(pixels, image, windowData, workArea);
-    //printGLCM(glcm); // Print data and elements for debugging
-    computeBatchFeatures(glcm);
+    glcm.printGLCM(); // Print data and elements for debugging
+
+    // Features computable from glcm Elements
+    extractAutonomousFeatures(glcm, featureOutput);
+
+    // Feature computable from aggregated glcm pairs
+    extractSumAggregatedFeatures(glcm, featureOutput);
+    extractDiffAggregatedFeatures(glcm, featureOutput);
+
+    // Imoc
+    extractMarginalFeatures(glcm, featureOutput);
 }
 
-/* TODO remove METHODS FOR DEBUG */
-void FeatureComputer::printGLCM(const GLCM& glcm){
-    glcm.printGLCMData();
-    glcm.printGLCMElements();
-    glcm.printAggregated();
-}
 
 // ASM
-inline double computeAsmStep(const double actualPairProbability){
+__device__ inline double computeAsmStep(const double actualPairProbability){
     return pow((actualPairProbability),2);
 }
 
 // AUTOCORRELATION
-inline double computeAutocorrelationStep(const uint i, const uint j, const double actualPairProbability){
+__device__ inline double computeAutocorrelationStep(const uint i, const uint j, const double actualPairProbability){
     return (i * j * actualPairProbability);
 }
 
 // ENTROPY
-inline double computeEntropyStep(const double actualPairProbability){
+__device__ inline double computeEntropyStep(const double actualPairProbability){
     return (actualPairProbability * log(actualPairProbability));
 }
 
 // HOMOGENEITY
-inline double computeHomogeneityStep(const uint i, const uint j, const double actualPairProbability){
-    int diff = i - j; // avoids casting value errors of uint(negative number)
+__device__ inline double computeHomogeneityStep(const uint i, const uint j, const double actualPairProbability){
+    double diff = i - j; // avoids casting value errors of uint(negative number)
     return (actualPairProbability / (1 + fabs(diff)));
 }
 
 // CONTRAST
-inline double computeContrastStep(const uint i, const uint j, const double actualPairProbability){
-    int diff = i - j; // avoids casting value errors of uint(negative number)
+__device__ inline double computeContrastStep(const uint i, const uint j, const double actualPairProbability){
+    double diff = i - j; // avoids casting value errors of uint(negative number)
     return (actualPairProbability * (pow(fabs(diff), 2)));
 }
 
 // DISSIMILARITY
-inline double computeDissimilarityStep(const uint i, const uint j, const double pairProbability){
-    int diff = i - j; // avoids casting value errors of uint(negative number)
+__device__ inline double computeDissimilarityStep(const uint i, const uint j, const double pairProbability){
+	double diff = i - j; // avoids casting value errors of uint(negative number)
     return (pairProbability * (fabs(diff)));
 }
 
 // IDM
-inline double computeInverceDifferenceMomentStep(const uint i, const uint j,
-    const double pairProbability, const uint maxGrayLevel)
-{
-    int diff = i - j; // avoids casting value errors of uint(negative number)
+__device__ inline double computeInverceDifferenceMomentStep(const uint i, const uint j,
+    const double pairProbability, const uint maxGrayLevel) {
+	double diff = i - j; // avoids casting value errors of uint(negative number)
     return (pairProbability / (1 + fabs(diff) / maxGrayLevel));
 }
 
 /* FEATURES WITH MEANS */
 // CORRELATION
-inline double computeCorrelationStep(const uint i, const uint j, 
-    const double pairProbability, const double muX, const double muY, 
+__device__ inline double computeCorrelationStep(const uint i, const uint j,
+    const double pairProbability, const double muX, const double muY,
     const double sigmaX, const double sigmaY)
 {
     // beware ! unsigned int - double
@@ -85,19 +94,19 @@ inline double computeCorrelationStep(const uint i, const uint j,
 }
 
 // CLUSTER PROMINENCE
-inline double computeClusterProminenceStep(const uint i, const uint j, 
+__device__ inline double computeClusterProminenceStep(const uint i, const uint j,
     const double pairProbability, const double muX, const double muY){
     return (pow((i + j - muX - muY), 4) * pairProbability);
 }
 
 // CLUSTER SHADE
-inline double computeClusterShadeStep(const uint i, const uint j,
+__device__ inline double computeClusterShadeStep(const uint i, const uint j,
     const double pairProbability, const double muX, const double muY){
     return (pow((i + j - muX - muY), 3) * pairProbability);
 }
 
 // SUM OF SQUARES
-inline double computeSumOfSquaresStep(const uint i,
+__device__ inline double computeSumOfSquaresStep(const uint i,
                                       const double pairProbability, const double mean){
     //cout << (pow((i - mean), 2) * pairProbability);
     return (pow((i - mean), 2) * pairProbability);
@@ -105,17 +114,17 @@ inline double computeSumOfSquaresStep(const uint i,
 
 // SUM Aggregated features
 // SUM AVERAGE
-inline double computeSumAverageStep(const double aggregatedGrayLevel, const double pairProbability){
+__device__ inline double computeSumAverageStep(const double aggregatedGrayLevel, const double pairProbability){
     return (aggregatedGrayLevel * pairProbability);
 }
 
 // SUM ENTROPY
-inline double computeSumEntropyStep(const double pairProbability){
+__device__ inline double computeSumEntropyStep(const double pairProbability){
     return (log(pairProbability) * pairProbability);
 }
 
 // SUM VARIANCE
-inline double computeSumVarianceStep(const uint aggregatedGrayLevel, 
+__device__ inline double computeSumVarianceStep(const uint aggregatedGrayLevel,
     const double pairProbability, const double sumEntropy){
     // beware ! unsigned int - double
     return (pow((aggregatedGrayLevel - sumEntropy),2) * pairProbability);
@@ -123,44 +132,26 @@ inline double computeSumVarianceStep(const uint aggregatedGrayLevel,
 
 // DIFF Aggregated features
 // DIFF ENTROPY
-inline double computeDiffEntropyStep(const double pairProbability){
+__device__ inline double computeDiffEntropyStep(const double pairProbability){
     return (log(pairProbability) * pairProbability);
 }
 
 // DIFF
-inline double computeDiffVarianceStep(const uint aggregatedGrayLevel, const double pairProbability){
-    return (pow(aggregatedGrayLevel, 2) * pairProbability);
+__device__ inline double computeDiffVarianceStep(const uint aggregatedGrayLevel, const double pairProbability){
+    return ((aggregatedGrayLevel * aggregatedGrayLevel) * pairProbability);
 }
 
 // Marginal Features
-inline double computeHxStep(const double grayLevelProbability){
+__device__ inline double computeHxStep(const double grayLevelProbability){
     return (grayLevelProbability * log(grayLevelProbability));
 }
 
-inline double computeHyStep(const double grayLevelProbability){
+__device__ inline double computeHyStep(const double grayLevelProbability){
     return (grayLevelProbability * log(grayLevelProbability));
 }
 
-/* 
-    This methods will call the cumulative methods that extract features based
-    on their type
-*/
-void FeatureComputer::computeBatchFeatures(const GLCM& glcm) {
-    // get reference to the memlocation where to put results
-    vector<double>& features = workArea.output[outputWindowOffset][directionOffset];
 
-    // Features computable from glcm Elements
-    extractAutonomousFeatures(glcm, features);
-
-    // Feature computable from aggregated glcm pairs
-    extractSumAggregatedFeatures(glcm, features);
-    extractDiffAggregatedFeatures(glcm, features);
-
-    // Imoc
-    extractMarginalFeatures(glcm, features);
-}
-
-void FeatureComputer::computeOutputWindowFeaturesIndex(){
+__device__ void FeatureComputer::computeOutputWindowFeaturesIndex(){
     // this will be thread idx e thread idy
     int rowOffset = windowData.imageRowsOffset;
     int colOffset = windowData.imageColumnsOffset;
@@ -170,7 +161,7 @@ void FeatureComputer::computeOutputWindowFeaturesIndex(){
 /*
     This method will compute all the features computable from glcm gray level pairs
 */
-void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>& features){
+__device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* features){
     // Intermediate values
     double mean = 0;
     double muX = 0;
@@ -179,8 +170,6 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>
     double sigmaY = 0;
 
     // Actual features
-    // TODO think about not retaining local variables and directly accessing the map
-
     double angularSecondMoment = 0;
     double autoCorrelation = 0;
     double entropy = 0;
@@ -191,7 +180,7 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>
     double idm = 0;
 
     // First batch of computable features
-    int length = glcm.getNumberOfUniquePairs();
+    int length = glcm.effectiveNumberOfGrayPairs;
     for (int k = 0; k < length; ++k) {
         GrayPair actualPair = glcm.elements[k];
 
@@ -216,14 +205,13 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>
     }
 
     features[ASM] = angularSecondMoment;
-    features[ASM]= angularSecondMoment;
-    features[AUTOCORRELATION]= autoCorrelation;
-    features[ENTROPY]= (-1 * entropy);
-    features[MAXPROB]= maxprob;
-    features[HOMOGENEITY]= homogeneity;
-    features[CONTRAST]= contrast;
-    features[DISSIMILARITY]= dissimilarity;
-    features[IDM]= idm;
+    features[AUTOCORRELATION] = autoCorrelation;
+    features[ENTROPY] = (-1 * entropy);
+    features[MAXPROB] = maxprob;
+    features[HOMOGENEITY] = homogeneity;
+    features[CONTRAST] = contrast;
+    features[DISSIMILARITY] = dissimilarity;
+    features[IDM] = idm;
 
     // Second batch of computable features
     double clusterProm = 0;
@@ -247,9 +235,9 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>
     sigmaX = sqrt(sigmaX);
     sigmaY = sqrt(sigmaY);
 
-    features[CLUSTERPROMINENCE]= clusterProm;
-    features[CLUSTERSHADE]= clusterShade;
-    features[SUMOFSQUARES]= sumOfSquares;
+    features[CLUSTERPROMINENCE] = clusterProm;
+    features[CLUSTERSHADE] = clusterShade;
+    features[SUMOFSQUARES] = sumOfSquares;
 
     // Only feature that needs the third scan of the glcm
     double correlation = 0;
@@ -261,10 +249,10 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>
         uint j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
 
-        correlation += computeCorrelationStep(i, j, actualPairProbability, 
+        correlation += computeCorrelationStep(i, j, actualPairProbability,
             muX, muY, sigmaX, sigmaY);
     }
-    features[CORRELATION]= correlation;
+    features[CORRELATION] = correlation;
 
 }
 
@@ -272,15 +260,15 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, vector<double>
     This method will compute the 3 features obtained from the pairs <k, int freq>
     where k is the sum of the 2 gray leveles <i,j> in a pixel pair of the glcm
 */
-void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, vector<double>& features) {
+__device__ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, double* features) {
     int numberOfPairs = glcm.getNumberOfPairs();
-    // TODO think about not retaining local variables and directly accessing the map
+
     double sumavg = 0;
     double sumentropy = 0;
     double sumvariance = 0;
 
     // First batch of computable features
-    int length = glcm.getNumberOfUniqueAggregatedElements(glcm.summedPairs);
+    int length = glcm.numberOfSummedPairs;
     for (int i = 0; i < length; ++i) {
         AggregatedGrayPair actualPair = glcm.summedPairs[i];
         uint k = actualPair.getAggregatedGrayLevel();
@@ -306,16 +294,16 @@ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, vector<doub
 
 /*
     This method will compute the 2 features obtained from the pairs <k, int freq>
-    where k is the absolute difference of the 2 gray leveles in a pixel pair 
+    where k is the absolute difference of the 2 gray leveles in a pixel pair
     <i,j> of the glcm
 */
-void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, vector<double>& features) {
+__device__ void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, double* features) {
     int numberOfPairs= glcm.getNumberOfPairs();
-    // TODO think about not retaining local variables and directly accessing the map
+
     double diffentropy = 0;
     double diffvariance = 0;
 
-    int length = glcm.getNumberOfUniqueAggregatedElements(glcm.subtractedPairs);
+    int length = glcm.numberOfSubtractedPairs;
     for (int i = 0; i < length; ++i) {
         AggregatedGrayPair actualPair = glcm.subtractedPairs[i];
         uint k = actualPair.getAggregatedGrayLevel();
@@ -331,16 +319,16 @@ void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, vector<dou
 }
 
 /*
-    This method will compute the only feature computable from the "marginal 
+    This method will compute the only feature computable from the "marginal
     representation" of the pairs <(X, ?), int frequency> and the pairs
     <(?, X), int frequency> of reference/neighbor pixel
 */
-void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, vector<double>& features){
+__device__ void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, double* features){
     int numberOfPairs = glcm.getNumberOfPairs();
     double hx = 0;
 
     // Compute first intermediate value
-    int xLength = glcm.getNumberOfUniqueAggregatedElements(glcm.xMarginalPairs);
+    int xLength = glcm.numberOfxMarginalPairs;
     for (int k = 0; k < xLength; ++k) {
         double probability = ((double) (glcm.xMarginalPairs[k].getFrequency())/numberOfPairs);
 
@@ -350,10 +338,10 @@ void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, vector<double>& 
 
     // Compute second intermediate value
     double hy = 0;
-    int yLength = glcm.getNumberOfUniqueAggregatedElements(glcm.yMarginalPairs);
+    int yLength = glcm.numberOfyMarginalPairs;
     for (int k = 0; k < yLength; ++k) {
         double probability = ((double) (glcm.yMarginalPairs[k].getFrequency())/numberOfPairs);
-       
+
         hy += computeHyStep(probability);
     }
     hy *= -1;
@@ -364,23 +352,28 @@ void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, vector<double>& 
     // Compute last intermediate value
     double hxy1 = 0;
 
-    int length = glcm.getNumberOfUniquePairs();
+    int length = glcm.effectiveNumberOfGrayPairs;
     for (int l = 0; l < length; ++l) {
         GrayPair actualPair = glcm.elements[l];
         double actualPairProbability = ((double) glcm.elements[l].getFrequency()) / numberOfPairs;
 
         AggregatedGrayPair i (actualPair.getGrayLevelI(), 0); // 0 frequency is placeholder
-        auto xposition = find(glcm.xMarginalPairs.begin(), glcm.xMarginalPairs.end(), i);
-        double xMarginalProbability = (double) xposition.operator*().getFrequency() / numberOfPairs;
+        int xposition = 0;
+        // it will be found, no need to check boundaries
+        while((!glcm.xMarginalPairs[xposition].compareTo(i)) && (xposition < glcm.numberOfxMarginalPairs))
+            xposition++;
+        double xMarginalProbability = (double) glcm.xMarginalPairs[xposition].getFrequency() / numberOfPairs;
 
         AggregatedGrayPair j (actualPair.getGrayLevelJ(), 0); // 0 frequency is placeholder
-        auto yposition = find(glcm.yMarginalPairs.begin(), glcm.yMarginalPairs.end(), j);
-        double yMarginalProbability = (double) yposition.operator*().getFrequency() / numberOfPairs;
+        int yposition = 0;
+        // it will be found, no need to check boundaries
+        while((!glcm.yMarginalPairs[yposition].compareTo(j)) && (yposition < glcm.numberOfyMarginalPairs))
+            yposition++;
+        double yMarginalProbability = (double) glcm.yMarginalPairs[yposition].getFrequency() / numberOfPairs;
 
         hxy1 += actualPairProbability * log(xMarginalProbability * yMarginalProbability);
     }
     hxy1 *= -1;
-    // TODO think about not retaining local variables and directly accessing the map
     features[IMOC] = (hxy - hxy1)/(max(hx, hy));
 
 }

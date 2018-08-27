@@ -1,36 +1,23 @@
 /*
-	Created by simo on 25/07/18.
-    * RESPONSABILITA CLASSE: Scorrere l'immagine creando tutte le possibili finestre sovrapposte
-*/
+ * ImageFeatureComputer.h
+ *
+ *  Created on: 26/ago/2018
+ *      Author: simone
+ */
 
-#ifndef FEATUREEXTRACTOR_IMAGEFEATURECOMPUTER_H
-#define FEATUREEXTRACTOR_IMAGEFEATURECOMPUTER_H
+#ifndef IMAGEFEATURECOMPUTER_H_
+#define IMAGEFEATURECOMPUTER_H_
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core.hpp>
 #include "ImageLoader.h"
+#include "ProgramArguments.h"
 #include "WindowFeatureComputer.h"
 
+typedef vector<vector<double>> WindowFeatures;
+typedef vector<double> FeatureValues;
+
 using namespace cv;
-
-struct ProgramArguments{
-	// TODO document intensively
-	short int windowSize;
-	bool crop;
-	bool symmetric;
-	short int distance;
-	short int numberOfDirections;
-	bool createImages;
-	short int chosenDevice; // 0 = gpu, 1=cpu, 'a'= auto
-	string imagePath;
-
-	ProgramArguments(short int windowSize = 4, bool crop = false, bool symmetric = false,
-					 short int distance = 1, short int numberOfDirections = 4,
-					 bool createImages = false, short int chosenDevice = 0)
-			: windowSize(windowSize), crop(crop), symmetric(symmetric), distance(distance),
-			  numberOfDirections(numberOfDirections),
-			  createImages(createImages), chosenDevice(chosenDevice){}
-};
 
 class ImageFeatureComputer {
 public:
@@ -76,4 +63,5 @@ private:
 };
 
 
-#endif //FEATUREEXTRACTOR_IMAGEFEATURECOMPUTER_H
+
+#endif /* IMAGEFEATURECOMPUTER_H_ */

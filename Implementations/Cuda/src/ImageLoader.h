@@ -1,9 +1,13 @@
-//
-// Created by simo on 05/08/18.
-//
+/*
+ * ImageLoader.h
+ *
+ *  Created on: 26/ago/2018
+ *      Author: simone
+ */
 
-#ifndef FEATUREEXTRACTOR_IMAGEREADER_H
-#define FEATUREEXTRACTOR_IMAGEREADER_H
+#ifndef IMAGELOADER_H_
+#define IMAGELOADER_H_
+
 
 #include <iostream>
 #include "ImageData.h"
@@ -31,4 +35,4 @@ public:
 };
 
 
-#endif //FEATUREEXTRACTOR_IMAGEREADER_H
+#endif /* IMAGELOADER_H_ */

@@ -1,15 +1,18 @@
-//
-// Created by simone on 12/08/18.
-//
-
+/*
+ * Image.cpp
+ *
+ *  Created on: 26/ago/2018
+ *      Author: simone
+ */
 
 #include "Image.h"
 
-unsigned int Image::getRows() const{
+
+__host__ __device__ unsigned int Image::getRows() const{
     return rows;
 }
 
-unsigned int Image::getColumns() const{
+__host__ __device__ unsigned int Image::getColumns() const{
     return columns;
 }
 
@@ -17,7 +20,7 @@ vector<unsigned int> Image::getPixels() const{
     return pixels;
 }
 
-unsigned int Image::getMaxGrayLevel() const{
+__host__ __device__ unsigned int Image::getMaxGrayLevel() const{
     return maxGrayLevel;
 }
 
