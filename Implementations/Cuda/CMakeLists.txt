@@ -57,6 +57,12 @@ add_executable(CuFeat
         ${PROJECT_SOURCE_DIR}/ImageFeatureComputer.cu
         ${PROJECT_SOURCE_DIR}/ImageFeatureComputer.h
 
+        ${PROJECT_SOURCE_DIR}/ImageLoader.h
+        ${PROJECT_SOURCE_DIR}/ImageLoader.cu
+
+        ${PROJECT_SOURCE_DIR}/ProgramArguments.h
+        ${PROJECT_SOURCE_DIR}/ProgramArguments.cpp
+
         )
 
 # Add OpenCvTo the project
@@ -70,4 +76,4 @@ target_compile_features(CuFeat PUBLIC cxx_std_11)
 set_target_properties(CuFeat PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # gcc 5.4 fix
-SET ( CMAKE_CXX_FLAGS "-D_MWAITXINTRIN_H_INCLUDED -D_STRICT_ANSI__ -D_FORCE_INLINES")
+SET ( CMAKE_CUDA_FLAGS "-D_MWAITXINTRIN_H_INCLUDED -D__STRICT_ANSI__ -D_FORCE_INLINES")
