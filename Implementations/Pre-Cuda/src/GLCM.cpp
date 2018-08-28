@@ -21,6 +21,7 @@ GLCM::GLCM(const unsigned int * pixels, const ImageData& image,
     if(this->windowData.symmetric)
         this->numberOfPairs *= 2;
 
+    workArea.cleanup();
     initializeGlcmElements();
 }
 
