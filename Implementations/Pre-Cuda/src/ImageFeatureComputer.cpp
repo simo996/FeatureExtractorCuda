@@ -56,6 +56,7 @@ void ImageFeatureComputer::compute(){
         saveAllFeatureImages(numberOfRows, numberOfColumns, formattedFeatures);
 
 	}
+	cout << "* DONE * " << endl;
 }
 
 void ImageFeatureComputer::printExtimatedSizes(const ImageData& img){
@@ -147,8 +148,8 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 
 	// START GPU WORK
 	// Slide windows on the image
-	for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
-		for(int j = 0; (j + windowData.side) <= img.getColumns() ; j++){
+    for(int j = 0; (j + windowData.side) <= img.getColumns() ; j++){
+        for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
 			// Create local window information
 			Window actualWindow {windowData.side, windowData.distance,
                                  numberOfDirs, windowData.symmetric};
