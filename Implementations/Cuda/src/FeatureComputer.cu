@@ -29,7 +29,7 @@ __device__ FeatureComputer::FeatureComputer(const unsigned int * pixels, const I
 
 __device__ void FeatureComputer::computeDirectionalFeatures() {
     GLCM glcm(pixels, image, windowData, workArea);
-    glcm.printGLCM(); // Print data and elements for debugging
+    //glcm.printGLCM(); // Print data and elements for debugging
 
     // Features computable from glcm Elements
     extractAutonomousFeatures(glcm, featureOutput);
@@ -60,20 +60,23 @@ __device__ inline double computeEntropyStep(const double actualPairProbability){
 
 // HOMOGENEITY
 __device__ inline double computeHomogeneityStep(const uint i, const uint j, const double actualPairProbability){
-    double diff = i - j; // avoids casting value errors of uint(negative number)
-    return (actualPairProbability / (1 + fabs(diff)));
+    int diff = i - j; // avoids casting value errors of uint(negative number)
+    diff = diff < 0 ? -diff : diff; // absolute value
+    return (actualPairProbability / (1 + diff));
 }
 
 // CONTRAST
 __device__ inline double computeContrastStep(const uint i, const uint j, const double actualPairProbability){
-    double diff = i - j; // avoids casting value errors of uint(negative number)
-    return (actualPairProbability * (pow(fabs(diff), 2)));
+    int diff = i - j; // avoids casting value errors of uint(negative number)
+    diff = diff < 0 ? -diff : diff; // absolute value
+    return (actualPairProbability * (pow(diff, 2)));
 }
 
 // DISSIMILARITY
 __device__ inline double computeDissimilarityStep(const uint i, const uint j, const double pairProbability){
-	double diff = i - j; // avoids casting value errors of uint(negative number)
-    return (pairProbability * (fabs(diff)));
+	int diff = i - j; // avoids casting value errors of uint(negative number)
+    diff = diff < 0 ? -diff : diff; // absolute value
+    return (pairProbability * diff);
 }
 
 // IDM
@@ -87,8 +90,7 @@ __device__ inline double computeInverceDifferenceMomentStep(const uint i, const 
 // CORRELATION
 __device__ inline double computeCorrelationStep(const uint i, const uint j,
     const double pairProbability, const double muX, const double muY,
-    const double sigmaX, const double sigmaY)
-{
+    const double sigmaX, const double sigmaY){
     // beware ! unsigned int - double
     return (((i - muX) * (j - muY) * pairProbability ) / (sigmaX * sigmaY));
 }
@@ -108,7 +110,6 @@ __device__ inline double computeClusterShadeStep(const uint i, const uint j,
 // SUM OF SQUARES
 __device__ inline double computeSumOfSquaresStep(const uint i,
                                       const double pairProbability, const double mean){
-    //cout << (pow((i - mean), 2) * pairProbability);
     return (pow((i - mean), 2) * pairProbability);
 }
 
