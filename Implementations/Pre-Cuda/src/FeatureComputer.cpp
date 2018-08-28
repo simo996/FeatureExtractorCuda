@@ -62,26 +62,29 @@ inline double computeEntropyStep(const double actualPairProbability){
 // HOMOGENEITY
 inline double computeHomogeneityStep(const uint i, const uint j, const double actualPairProbability){
     int diff = i - j; // avoids casting value errors of uint(negative number)
-    return (actualPairProbability / (1 + fabs(diff)));
+    diff = diff < 0 ? -diff : diff; // absolute value
+    return (actualPairProbability / (1 + diff));
 }
 
 // CONTRAST
 inline double computeContrastStep(const uint i, const uint j, const double actualPairProbability){
     int diff = i - j; // avoids casting value errors of uint(negative number)
-    return (actualPairProbability * (pow(fabs(diff), 2)));
+    diff = diff < 0 ? -diff : diff; // absolute value
+    return (actualPairProbability * (pow(diff, 2)));
 }
 
 // DISSIMILARITY
 inline double computeDissimilarityStep(const uint i, const uint j, const double pairProbability){
     int diff = i - j; // avoids casting value errors of uint(negative number)
-    return (pairProbability * (fabs(diff)));
+    diff = diff < 0 ? -diff : diff; // absolute value
+    return (pairProbability * diff);
 }
 
 // IDM
 inline double computeInverceDifferenceMomentStep(const uint i, const uint j,
-    const double pairProbability, const uint maxGrayLevel)
-{
+    const double pairProbability, const uint maxGrayLevel) {
     int diff = i - j; // avoids casting value errors of uint(negative number)
+    diff = diff < 0 ? -diff : diff; // absolute value
     return (pairProbability / (1 + fabs(diff) / maxGrayLevel));
 }
 
@@ -89,8 +92,7 @@ inline double computeInverceDifferenceMomentStep(const uint i, const uint j,
 // CORRELATION
 inline double computeCorrelationStep(const uint i, const uint j, 
     const double pairProbability, const double muX, const double muY, 
-    const double sigmaX, const double sigmaY)
-{
+    const double sigmaX, const double sigmaY) {
     // beware ! unsigned int - double
     return (((i - muX) * (j - muY) * pairProbability ) / (sigmaX * sigmaY));
 }
@@ -110,7 +112,6 @@ inline double computeClusterShadeStep(const uint i, const uint j,
 // SUM OF SQUARES
 inline double computeSumOfSquaresStep(const uint i,
                                       const double pairProbability, const double mean){
-    //cout << (pow((i - mean), 2) * pairProbability);
     return (pow((i - mean), 2) * pairProbability);
 }
 
