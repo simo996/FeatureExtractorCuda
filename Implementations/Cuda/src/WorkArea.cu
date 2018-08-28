@@ -18,3 +18,11 @@ __device__ void WorkArea::cleanup() {
         yMarginalPairs[i] = voidAggregatedElement;
     }
 }
+
+__device__ void WorkArea::increasePointers(int threadId){
+	grayPairs += threadId;
+    summedPairs += threadId;
+    subtractedPairs += threadId;
+    xMarginalPairs += threadId;
+    yMarginalPairs += threadId;
+}
