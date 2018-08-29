@@ -35,8 +35,8 @@ public:
             numberOfElements(length), grayPairs(grayPairs), summedPairs(summedPairs),
             subtractedPairs(subtractedPairs), xMarginalPairs(xMarginalPairs),
             yMarginalPairs(yMarginalPairs), output(out){};
-    CUDA_DEV void increasePointers(int threadId);
     CUDA_DEV void cleanup();
+    CUDA_DEV void release();
     // Where the GLCM will be assembled
     GrayPair* grayPairs;
     // Where the aggregated (sum or diff) representations will be assembled

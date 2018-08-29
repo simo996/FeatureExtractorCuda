@@ -19,10 +19,10 @@ __device__ void WorkArea::cleanup() {
     }
 }
 
-__device__ void WorkArea::increasePointers(int threadId){
-	grayPairs += threadId;
-    summedPairs += threadId;
-    subtractedPairs += threadId;
-    xMarginalPairs += threadId;
-    yMarginalPairs += threadId;
+__device__ void WorkArea::release(){
+	free(grayPairs);
+    free(summedPairs);
+    free(subtractedPairs);
+    free(xMarginalPairs);
+    free(yMarginalPairs);
 }

@@ -120,7 +120,7 @@ vector<vector<vector<double>>> formatOutputResults(const double* featureValues,
 }
 
 int getCudaBlockSideX(){
-	return 32;
+	return 64;
 }
 
 int getCudaBlockSideY(){
@@ -157,6 +157,21 @@ void cudaCheckError(cudaError_t err){
 	}
 }  
 
+void checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
+ size_t featuresSize)
+{
+	cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, 0);
+    size_t gpuMemory = prop.totalGlobalMem;
+    int numberOfWorkingAreas = 5;
+    size_t workAreaSpace = numberOfWorkingAreas * numberOfPairs;
+    size_t totalWorkAreas = workAreaSpace * numberOfThreads;
+    if((featuresSize + totalWorkAreas)> gpuMemory){
+    	cerr << "FAILURE ! Gpu doesn't have enough memory \
+    to hold the results and the space needed to threads" << endl;
+    exit(-1);
+    }
+}
 
 void queryGPUData(){
 	cudaDeviceProp prop;
@@ -169,9 +184,36 @@ void queryGPUData(){
     printf("\tTotalGlobalMemory: %lu MB\n", prop.totalGlobalMem/1024/2014);
 }
 
+__device__ WorkArea generateThreadWorkArea(int numberOfPairs, 
+	double* d_featuresList){
+	// Each 1 of these data structures allow 1 thread to work
+	GrayPair* d_elements;
+	AggregatedGrayPair* d_summedPairs;
+	AggregatedGrayPair* d_subtractedPairs;
+	AggregatedGrayPair* d_xMarginalPairs;
+	AggregatedGrayPair* d_yMarginalPairs;
+
+	d_elements = (GrayPair*) malloc(sizeof(GrayPair) 
+        * numberOfPairs );
+    d_summedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) 
+        * numberOfPairs );
+    d_subtractedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) 
+        * numberOfPairs );
+    d_xMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) 
+        * numberOfPairs);
+    d_yMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) 
+        * numberOfPairs);
+    // check if allocated correctly
+    WorkArea wa(numberOfPairs, d_elements, d_summedPairs,
+                d_subtractedPairs, d_xMarginalPairs, d_yMarginalPairs, d_featuresList);
+    return wa;
+}
 
 __global__ void computeFeatures(unsigned int * pixels, 
-	ImageData img, Window windowData, WorkArea wa){
+	ImageData img, Window windowData, int numberOfPairsInWindow, 
+	double* d_featuresList){
+	// Memory location on which the thread will work
+	WorkArea wa = generateThreadWorkArea(numberOfPairsInWindow, d_featuresList);
 	// gridDim x is always 1
 	int x = threadIdx.x; // 1 block per image row
 	int y = blockIdx.y; // 1 row in each block
@@ -180,22 +222,44 @@ __global__ void computeFeatures(unsigned int * pixels,
 	// How many shift down for reaching the next window to compute
 	// gridDimY reflects the number of active blocks
 	int rowsStride =  gridDim.y;
-	int threadUniqueName = x + blockDim.x * y;
+	
+	// Create local window information
+	Window actualWindow {windowData.side, windowData.distance,
+                                 windowData.numberOfDirections, windowData.symmetric};
 	for(int i = y; (i + windowData.side) <= img.getRows(); i+= rowsStride){
 		for(int j = x; (j + windowData.side) <= img.getColumns() ; j+= colsStride){
-			// TODO point the windowThread to the right memLocation in workArea
-			// Create local window information
-			Window actualWindow {windowData.side, windowData.distance,
-                                 windowData.numberOfDirections, windowData.symmetric};
 			// tell the window its relative offset (starting point) inside the image
 			actualWindow.setSpacialOffsets(i, j);
-			// tell the thread where its working area starts
-			wa.increasePointers(threadUniqueName);
 			// Launch the computation of features on the window
 			WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
 		}
 	}
+	wa.release();
 }
+
+// 1 thread, 1 window
+__global__ void computeFeaturesEfficient(unsigned int * pixels, 
+	ImageData img, Window windowData, int numberOfPairsInWindow, 
+	double* d_featuresList){
+	// Memory location on which the thread will work
+	WorkArea wa = generateThreadWorkArea(numberOfPairsInWindow, d_featuresList);
+	int x = blockIdx.x * blockDim.x + threadIdx.x; 
+	int y = blockIdx.y * blockDim.y + threadIdx.y; 
+	
+	// Create local window information
+	Window actualWindow {windowData.side, windowData.distance,
+                                 windowData.numberOfDirections, windowData.symmetric};
+	if((x + windowData.side) <= img.getRows()){
+		if((y + windowData.side) <= img.getColumns()){
+			// tell the window its relative offset (starting point) inside the image
+			actualWindow.setSpacialOffsets(x, y);
+			// Launch the computation of features on the window
+			WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
+		}
+	}
+	wa.release();
+}
+
 
 /*
      * This method will compute all the features for every window for the
@@ -217,10 +281,11 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
     int featuresCount = Features::getSupportedFeaturesCount();
 
     // Pre-Allocate the array that will contain features
-    double* featuresList = (double*) malloc(numberOfWindows * numberOfDirs * featuresCount * sizeof(double));
+    size_t featureSize = numberOfWindows * numberOfDirs * featuresCount * sizeof(double);
+    double* featuresList = (double*) malloc(featureSize);
     // Allocate GPU space to contain results
     double* d_featuresList;
-    cudaCheckError(cudaMalloc(&d_featuresList, numberOfWindows * numberOfDirs * featuresCount * sizeof(double)));
+    cudaCheckError(cudaMalloc(&d_featuresList, featureSize));
 
     // 	Pre-Allocate working area
     int extimatedWindowRows = windowData.side; // 0° has all rows
@@ -240,34 +305,22 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
     cout << "nthreadsperblock: " << numberOfThreadsPerBlock << endl;
     int numberOfBlocks = getGridSide();
     cout << "nblocks: " << numberOfBlocks << endl;
-
+    // check if there is enough space on the GPU to allocate working areas
     int numberOfThreads = numberOfThreadsPerBlock * numberOfBlocks;
-    // Each 1 of these data structures allow 1 thread to work
-	GrayPair* d_elements;
-	AggregatedGrayPair* d_summedPairs;
-	AggregatedGrayPair* d_subtractedPairs;
-	AggregatedGrayPair* d_xMarginalPairs;
-	AggregatedGrayPair* d_yMarginalPairs;
-
-	cudaCheckError(cudaMalloc(&d_elements, numberOfThreads * 
-		sizeof(GrayPair) * numberOfPairsInWindow ));
-	cudaCheckError(cudaMalloc(&d_summedPairs, numberOfThreads *
-		sizeof(AggregatedGrayPair) * numberOfPairsInWindow));
-	cudaCheckError(cudaMalloc(&d_subtractedPairs, numberOfThreads *
-		sizeof(AggregatedGrayPair) * numberOfPairsInWindow));
-	cudaCheckError(cudaMalloc(&d_xMarginalPairs, numberOfThreads *
-		sizeof(AggregatedGrayPair) * numberOfPairsInWindow));
-	cudaCheckError(cudaMalloc(&d_yMarginalPairs, numberOfThreads *
-		sizeof(AggregatedGrayPair) * numberOfPairsInWindow));
-
-    WorkArea wa(numberOfPairsInWindow, d_elements, d_summedPairs,
-                d_subtractedPairs, d_xMarginalPairs, d_yMarginalPairs, d_featuresList);
+    checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, numberOfThreads, featureSize);
 
 	// START GPU WORK
 	// ALways monodimensional Grids
 	dim3 NBlocs = getBlockConfiguration();
 	dim3 NThreadPerBlock = getGridConfiguration();
-    computeFeatures<<<NBlocs, NThreadPerBlock>>>(d_pixels, img, windowData, wa);
+	/*    
+    computeFeatures<<<NBlocs, NThreadPerBlock>>>(d_pixels, img, windowData, 
+    	numberOfPairsInWindow, d_featuresList);
+    */
+    dim3 testGridConf(32, 32);
+    dim3 testBlockConf(8, 8);
+    computeFeaturesEfficient<<<testGridConf, testBlockConf>>>(d_pixels, img, windowData, 
+    	numberOfPairsInWindow, d_featuresList);
     cudaError_t errSync  = cudaGetLastError();
 	cudaError_t errAsync = cudaDeviceSynchronize();
 	if (errSync != cudaSuccess) // Detect configuration launch errors
@@ -285,10 +338,7 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
             formatOutputResults(featuresList, numberOfWindows, numberOfDirs, featuresCount);
 
 	free(featuresList);
-	cudaCheckError(cudaFree(d_summedPairs));
-	cudaCheckError(cudaFree(d_subtractedPairs));
-	cudaCheckError(cudaFree(d_xMarginalPairs));
-	cudaCheckError(cudaFree(d_yMarginalPairs));
+	
 	return output;
 }
 

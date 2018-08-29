@@ -19,6 +19,15 @@
 
 using namespace std;
 
+__host__ __device__ void checkAllocationError(GrayPair* grayPairs, AggregatedGrayPair * summed, 
+    AggregatedGrayPair* subtracted, AggregatedGrayPair* xMarginal, 
+    AggregatedGrayPair* yMarginal){
+    if((grayPairs == NULL) || (summed == NULL) || (subtracted == NULL) ||
+    (xMarginal == NULL) || (yMarginal == NULL))
+        printf("ERROR: Device doesn't have enough memory");
+}  
+
+
 // Constructors
 __device__ GLCM::GLCM(const unsigned int * pixels, const ImageData& image,
         Window& windowData, WorkArea& wa): pixels(pixels), img(image),
@@ -30,12 +39,15 @@ __device__ GLCM::GLCM(const unsigned int * pixels, const ImageData& image,
     if(this->windowData.symmetric)
         this->numberOfPairs *= 2;
 
+ 
+    wa.cleanup();
     initializeGlcmElements();
 }
 
+
 // Set the working area to initial condition
 __device__ GLCM::~GLCM(){
-    workArea.cleanup();
+
 }
 
 // Warning, se simmetrica lo spazio deve raddoppiare
