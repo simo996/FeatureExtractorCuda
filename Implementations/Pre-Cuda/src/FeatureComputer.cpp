@@ -30,7 +30,7 @@ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& i
 
 void FeatureComputer::computeDirectionalFeatures() {
     GLCM glcm(pixels, image, windowData, workArea);
-    //glcm.printGLCM(); // Print data and elements for debugging
+    //glcm.printGLCM(); // Print data and grayPairs for debugging
 
     // Features computable from glcm Elements
     extractAutonomousFeatures(glcm, featureOutput);
@@ -185,7 +185,7 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
     // First batch of computable features
     int length = glcm.effectiveNumberOfGrayPairs;
     for (int k = 0; k < length; ++k) {
-        GrayPair actualPair = glcm.elements[k];
+        GrayPair actualPair = glcm.grayPairs[k];
 
         uint i = actualPair.getGrayLevelI();
         uint j = actualPair.getGrayLevelJ();
@@ -223,7 +223,7 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
 
     for (int k = 0; k < length; ++k)
     {
-        GrayPair actualPair = glcm.elements[k];
+        GrayPair actualPair = glcm.grayPairs[k];
         uint i = actualPair.getGrayLevelI();
         uint j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
@@ -247,7 +247,7 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
 
     for (int k = 0; k < length; ++k)
     {
-        GrayPair actualPair = glcm.elements[k];
+        GrayPair actualPair = glcm.grayPairs[k];
         uint i = actualPair.getGrayLevelI();
         uint j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
@@ -357,8 +357,8 @@ void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, double* features
 
     int length = glcm.effectiveNumberOfGrayPairs;
     for (int l = 0; l < length; ++l) {
-        GrayPair actualPair = glcm.elements[l];
-        double actualPairProbability = ((double) glcm.elements[l].getFrequency()) / numberOfPairs;
+        GrayPair actualPair = glcm.grayPairs[l];
+        double actualPairProbability = ((double) glcm.grayPairs[l].getFrequency()) / numberOfPairs;
 
         AggregatedGrayPair i (actualPair.getGrayLevelI(), 0); // 0 frequency is placeholder
         int xposition = 0;
