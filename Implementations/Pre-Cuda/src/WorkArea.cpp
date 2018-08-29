@@ -2,6 +2,7 @@
 // Created by simone on 14/08/18.
 //
 
+#include <cstdlib>
 #include "WorkArea.h"
 
 void WorkArea::cleanup() {
@@ -14,4 +15,11 @@ void WorkArea::cleanup() {
         xMarginalPairs[i] = voidAggregatedElement;
         yMarginalPairs[i] = voidAggregatedElement;
     }
+}
+void WorkArea::release(){
+    free(grayPairs);
+    free(summedPairs);
+    free(subtractedPairs);
+    free(xMarginalPairs);
+    free(yMarginalPairs);
 }

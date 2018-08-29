@@ -23,6 +23,7 @@ public:
             subtractedPairs(subtractedPairs), xMarginalPairs(xMarginalPairs),
             yMarginalPairs(yMarginalPairs), output(out){};
     void cleanup();
+    void release();
     // Where the GLCM will be assembled
     GrayPair* grayPairs;
     // Where the aggregated (sum or diff) representations will be assembled
