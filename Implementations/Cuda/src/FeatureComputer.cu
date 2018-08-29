@@ -9,19 +9,16 @@
 
 __device__ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& img,
         const int shiftRows, const int shiftColumns,
-        const Window& wd, WorkArea& wa, const short int directionNumber)
+        const Window& wd, WorkArea& wa)
                                  : pixels(pixels), image(img),
-                                 directionOffset(directionNumber),
-                                 windowData(wd), workArea(wa) {
+                                   windowData(wd), workArea(wa) {
     windowData.setDirectionShifts(shiftRows, shiftColumns);
     // deduct what feature this thread is computing
     computeOutputWindowFeaturesIndex();
     // get the pointer to the memlocation where to put feature results
     int featuresCount = Features::getSupportedFeaturesCount();
-    int actualWindowOffset = (outputWindowOffset *
-                              (windowData.numberOfDirections * featuresCount));
-    int intraWindowOffset = (directionOffset * featuresCount);
-    double * rightLocation = workArea.output + actualWindowOffset + intraWindowOffset;
+    int actualWindowOffset = outputWindowOffset * featuresCount;
+    double * rightLocation = workArea.output + actualWindowOffset;
     featureOutput = rightLocation;
     // Compute features
     computeDirectionalFeatures();

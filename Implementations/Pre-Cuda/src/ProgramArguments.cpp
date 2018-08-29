@@ -6,7 +6,7 @@
 #include <getopt.h> // For options check
 
 void ProgramArguments::printProgramUsage(){
-    cout << endl << "Usage: FeatureExtractor [<-s>] [<-i>] [<-d distance>] [<-w windowSize>] [<-n numberOfDirections>] "
+    cout << endl << "Usage: FeatureExtractor [<-s>] [<-i>] [<-d distance>] [<-w windowSize>] [<-n directionType>] "
                     "imagePath" << endl;
     exit(2);
 }
@@ -32,20 +32,20 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
                 break;
             }
             case 'd': {
-                // Choose the distance between
-                short int windowSize = atoi(optarg);
-                if ((windowSize < 3) || (windowSize > 100)) {
+                int distance = atoi(optarg);
+                if (distance < 1) {
+                    cout << "ERROR ! The distance between every pixel pair must be >= 1 ";
                     printProgramUsage();
                 }
-                progArg.windowSize = windowSize;
+                progArg.distance = distance;
                 break;
             }
             case 'w': {
                 // Decide what the size of each sub-window of the image will be
                 short int windowSize = atoi(optarg);
-                if ((windowSize < 3) || (windowSize > 10000)) {
+                if ((windowSize < 2) || (windowSize > 10000)) {
                     cout << "ERROR ! The size of the sub-windows to be extracted option (-w) "
-                            "must have a value between 4 and 10000";
+                            "must have a value between 2 and 10000";
                     printProgramUsage();
                 }
                 progArg.windowSize = windowSize;
@@ -53,13 +53,13 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
             }
             case 'n':{
                 // Decide how many of the 4 directions will be copmuted
-                short int dirNumber = atoi(optarg);
-                if(dirNumber > 4 || dirNumber <1){
-                    cout << "ERROR ! The number of directions to be computed "
+                short int dirType = atoi(optarg);
+                if(dirType > 4 || dirType <1){
+                    cout << "ERROR ! The type of directions to be computed "
                             "option (-n) must be a value between 1 and 4" << endl;
                     printProgramUsage();
                 }
-                progArg.numberOfDirections = dirNumber;
+                progArg.directionType = dirType;
                 break;
             }
             case '?':

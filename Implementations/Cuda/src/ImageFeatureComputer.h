@@ -14,7 +14,7 @@
 #include "ProgramArguments.h"
 #include "WindowFeatureComputer.h"
 
-typedef vector<vector<double>> WindowFeatures;
+typedef vector<double> WindowFeatures;
 typedef vector<double> FeatureValues;
 
 using namespace cv;
@@ -24,15 +24,15 @@ public:
 	ImageFeatureComputer(const ProgramArguments& progArg);
 
 	void compute();
-    vector<WindowFeatures> computeAllFeatures(unsigned int * pixels, const ImageData& img);
+    vector<vector<WindowFeatures>> computeAllFeatures(unsigned int * pixels, const ImageData& img);
 
     // EXTRAPOLATING RESULTS
 	// This method will get all the feature names and all their values computed in the image
-	vector<vector<FeatureValues>> getAllDirectionsAllFeatureValues(const vector<WindowFeatures>& imageFeatures);
+	vector<vector<vector<double>>> getAllDirectionsAllFeatureValues(const vector<vector<WindowFeatures>>& imageFeatures);
 
 	// SAVING RESULTS ON FILES
 	/* This method will save on different folders, the features computed for the distinct directions */
-	void saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures);
+	void saveFeaturesToFiles(const vector<vector<vector<double>>>& imageFeatures);
 
     // IMAGING
     // This methow will produce and save all the images associated with each feature for each direction

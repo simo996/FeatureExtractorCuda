@@ -12,7 +12,7 @@ __host__ __device__ Window::Window(const short int dimension, const short int di
 	this->side = dimension;
 	this->distance = distance;
 	this->symmetric = symmetric;
-	this->numberOfDirections = dirNumber;
+	this->directionType = dirNumber;
 }
 
 __host__ __device__ void Window::setDirectionShifts(const int shiftRows, const int shiftColumns){

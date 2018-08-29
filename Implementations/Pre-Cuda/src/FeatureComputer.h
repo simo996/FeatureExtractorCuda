@@ -18,7 +18,7 @@ class FeatureComputer {
 public:
     FeatureComputer(const unsigned int * pixels, const ImageData& img,
             int shiftRows, int shiftColumns, const Window& windowData,
-            WorkArea& wa, short int directionNumber);
+            WorkArea& wa);
     void computeDirectionalFeatures();
 private:
     // given data to initialize related GLCM
@@ -27,7 +27,6 @@ private:
     Window windowData;
     WorkArea& workArea;
     // offset to indentify where to put results
-    short int directionOffset;
     int outputWindowOffset;
     double * featureOutput;
 

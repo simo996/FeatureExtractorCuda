@@ -9,7 +9,7 @@ Window::Window(const short int dimension, const short int distance,
 	this->side = dimension;
 	this->distance = distance;
 	this->symmetric = symmetric;
-	this->numberOfDirections = dirNumber;
+	this->directionType = dirNumber;
 }
 
 void Window::setDirectionShifts(const int shiftRows, const int shiftColumns){
