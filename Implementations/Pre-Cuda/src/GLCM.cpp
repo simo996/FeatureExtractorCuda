@@ -13,7 +13,7 @@ using namespace std;
 // Constructors
 GLCM::GLCM(const unsigned int * pixels, const ImageData& image,
         Window& windowData, WorkArea& wa): pixels(pixels), img(image),
-        windowData(windowData),  workArea(wa) ,elements(wa.grayPairs),
+        windowData(windowData),  workArea(wa) ,grayPairs(wa.grayPairs),
         summedPairs(wa.summedPairs), subtractedPairs(wa.subtractedPairs),
         xMarginalPairs(wa.xMarginalPairs), yMarginalPairs(wa.yMarginalPairs)
         {
@@ -21,13 +21,15 @@ GLCM::GLCM(const unsigned int * pixels, const ImageData& image,
     if(this->windowData.symmetric)
         this->numberOfPairs *= 2;
 
+
     workArea.cleanup();
     initializeGlcmElements();
 }
 
+
 // Set the working area to initial condition
 GLCM::~GLCM(){
-    workArea.cleanup();
+
 }
 
 // Warning, se simmetrica lo spazio deve raddoppiare
@@ -54,8 +56,8 @@ int GLCM::getWindowColsBorder() const{
 
 
 /*
-    columnOffset is a shift value used for reading the correct batch of elements
-    from given linearized input pixels; for 135° the first d (distance) elements 
+    columnOffset is a shift value used for reading the correct batch of grayPairs
+    from given linearized input pixels; for 135° the first d (distance) grayPairs
     need to be ignored
 */
 inline int GLCM::computeWindowColumnOffset()
@@ -67,7 +69,7 @@ inline int GLCM::computeWindowColumnOffset()
 }
 
 /*
-    rowOffset is a shift value used for reading the correct batch of elements
+    rowOffset is a shift value used for reading the correct batch of grayPairs
     from given linearized input pixels according to the direction in use; 
     45/90/135° must skip d (distance) "rows"
 */
@@ -118,7 +120,7 @@ inline void GLCM::insertElement(GrayPair* elements, const GrayPair actualPair, u
 }
 
 /*
-    This method puts inside the map of elements map<GrayPair, int> each
+    This method puts inside the map of grayPairs map<GrayPair, int> each
     frequency associated with each pair of grayLevels
 */
 void GLCM::initializeGlcmElements() {
@@ -143,12 +145,12 @@ void GLCM::initializeGlcmElements() {
             neighborGrayLevel = pixels[neighborIndex];
 
             GrayPair actualPair(referenceGrayLevel, neighborGrayLevel);
-            insertElement(elements, actualPair, lastInsertionPosition);
+            insertElement(grayPairs, actualPair, lastInsertionPosition);
 
             if(windowData.symmetric) // Create the symmetric counterpart
             {
                 GrayPair simmetricPair(neighborGrayLevel, referenceGrayLevel);
-                insertElement(elements, simmetricPair, lastInsertionPosition);
+                insertElement(grayPairs, simmetricPair, lastInsertionPosition);
             }
             
         }
@@ -188,8 +190,8 @@ void GLCM::codifyAggregatedPairs() {
     // summed pairs first
     for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
         // Create summed pairs first
-        uint k= elements[i].getGrayLevelI() + elements[i].getGrayLevelJ();
-        AggregatedGrayPair summedElement(k, elements[i].getFrequency());
+        uint k= grayPairs[i].getGrayLevelI() + grayPairs[i].getGrayLevelJ();
+        AggregatedGrayPair summedElement(k, grayPairs[i].getFrequency());
 
         insertElement(summedPairs, summedElement, lastInsertPosition);
     }
@@ -198,9 +200,9 @@ void GLCM::codifyAggregatedPairs() {
     // diff pairs
     lastInsertPosition = 0;
     for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
-        int diff = elements[i].getGrayLevelI() - elements[i].getGrayLevelJ();
+        int diff = grayPairs[i].getGrayLevelI() - grayPairs[i].getGrayLevelJ();
         uint k= static_cast<uint>(abs(diff));
-        AggregatedGrayPair element(k, elements[i].getFrequency());
+        AggregatedGrayPair element(k, grayPairs[i].getFrequency());
 
         insertElement(subtractedPairs, element, lastInsertPosition);
     }
@@ -218,8 +220,8 @@ void GLCM::codifyMarginalPairs() {
     unsigned int lastInsertPosition = 0;
     // xMarginalPairs first
     for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
-        uint firstGrayLevel = elements[i].getGrayLevelI();
-        AggregatedGrayPair element(firstGrayLevel, elements[i].getFrequency());
+        uint firstGrayLevel = grayPairs[i].getGrayLevelI();
+        AggregatedGrayPair element(firstGrayLevel, grayPairs[i].getFrequency());
 
         insertElement(xMarginalPairs, element, lastInsertPosition);
     }
@@ -228,8 +230,8 @@ void GLCM::codifyMarginalPairs() {
     // yMarginalPairs second
     lastInsertPosition = 0;
     for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
-        uint secondGrayLevel = elements[i].getGrayLevelJ();
-        AggregatedGrayPair element(secondGrayLevel, elements[i].getFrequency());
+        uint secondGrayLevel = grayPairs[i].getGrayLevelJ();
+        AggregatedGrayPair element(secondGrayLevel, grayPairs[i].getFrequency());
 
         insertElement(yMarginalPairs, element, lastInsertPosition);
     }
@@ -264,7 +266,7 @@ void GLCM::printGLCMData() const{
 void GLCM::printGLCMElements() const{
     cout << "* GrayPairs *" << endl;
     for (int i = 0; i < effectiveNumberOfGrayPairs; ++i) {
-        elements[i].printPair();;
+        grayPairs[i].printPair();;
     }
 }
 

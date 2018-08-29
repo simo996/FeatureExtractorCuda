@@ -16,7 +16,7 @@ using namespace std;
 
 class GLCM {
 public:
-    GrayPair* elements;
+    GrayPair* grayPairs;
     int effectiveNumberOfGrayPairs;
     AggregatedGrayPair* summedPairs;
     int numberOfSummedPairs;
@@ -64,7 +64,7 @@ private:
     // Representation useful for HXY
     void codifyMarginalPairs() ;
 
-    // debug printing methods
+        // debug printing methods
     void printGLCMData() const;
     void printGLCMElements() const;
     void printAggregated() const;
