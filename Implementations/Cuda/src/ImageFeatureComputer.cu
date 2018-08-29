@@ -120,34 +120,43 @@ vector<vector<vector<double>>> formatOutputResults(const double* featureValues,
 }
 
 int getCudaBlockSideX(){
-	return 64;
+	return 10;
 }
 
+// Square
 int getCudaBlockSideY(){
-	return 1;
+	return getCudaBlockSideX();
 }
 
-// 1 line of threads
 dim3 getBlockConfiguration()
 {
 	// TODO implement GPU architecture specific dimensioning 
 	int ROWS = getCudaBlockSideY();
 	int COLS = getCudaBlockSideX(); 
-	assert(ROWS * COLS <= 1024);
+	assert(ROWS * COLS <= 256);
 	dim3 configuration(ROWS, COLS);
 	return configuration;
 }
 
-int getGridSide(){
-	cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, 0);
-    return prop.multiProcessorCount;
+int getGridSide(int imageRows, int imageCols){
+	int imageSmallestSide = imageRows;
+    if(imageCols < imageSmallestSide)
+        imageSmallestSide = imageCols;
+   
+    int blockSide = getCudaBlockSideX();
+    int gridSide = imageSmallestSide / blockSide;
+    // Cant' exceed 65536 blocks in grid
+    if(gridSide > 256){
+    	gridSide = 256;
+    }
+    return gridSide;
 }
 
-// 1 line of blocks
-dim3 getGridConfiguration()
+// 1 square of blocks
+dim3 getGridConfiguration(int imageRows, int imageCols)
 {
-    return dim3(1, getGridSide());
+    return dim3(getGridSide(imageRows, imageCols), 
+    	getGridSide(imageRows, imageCols));
 }
 
 void cudaCheckError(cudaError_t err){
@@ -173,14 +182,18 @@ void checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
     }
 }
 
+void printGPULaunchConfiguration(dim3 Grid, dim3 Blocks){
+	cout << "\t- GPU Launch Configuration -" << endl;
+	cout << "\t GRID\t rows: " << Grid.y << " x cols: " << Grid.x << endl;
+	cout << "\t BLOCK\t rows: " << Blocks.y << " x cols: " << Blocks.x << endl;
+}
+
 void queryGPUData(){
 	cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, 0);
-    printf("\t * GPU DATA *\n");
+    printf("\t- GPU DATA -\n");
     printf("\tDevice name: %s\n", prop.name);
     printf("\tNumber of multiprocessors: %d\n", prop.multiProcessorCount);
-    int nCores = prop.multiProcessorCount * 32;
-    printf("\tMinimum total cores count: %d\n", nCores);
     printf("\tTotalGlobalMemory: %lu MB\n", prop.totalGlobalMem/1024/2014);
 }
 
@@ -301,25 +314,30 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
     		sizeof(unsigned int) * img.getRows() * img.getColumns(),
     		cudaMemcpyHostToDevice));
 
-    int numberOfThreadsPerBlock = getCudaBlockSideX() * getCudaBlockSideY();
-    cout << "nthreadsperblock: " << numberOfThreadsPerBlock << endl;
-    int numberOfBlocks = getGridSide();
-    cout << "nblocks: " << numberOfBlocks << endl;
-    // check if there is enough space on the GPU to allocate working areas
-    int numberOfThreads = numberOfThreadsPerBlock * numberOfBlocks;
-    checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, numberOfThreads, featureSize);
+    
 
+	// Get Grid and block configuration
+	dim3 Blocks = getBlockConfiguration();
+	dim3 Grid = getGridConfiguration(img.getRows(), img.getColumns());
+	printGPULaunchConfiguration(Grid, Blocks);
+
+    // check if there is enough space on the GPU to allocate working areas
+    int numberOfBlocks = Grid.x * Grid.y;
+	int numberOfThreadsPerBlock = Blocks.x * Blocks.y;
+    int numberOfThreads = numberOfThreadsPerBlock * numberOfBlocks;
+	checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, numberOfThreads, featureSize);
+
+	if(Grid.x == 256){
+		cout << "WARNING: maximum grid side reached.\nStriding algorithm requested" << endl; 
+	}
 	// START GPU WORK
-	// ALways monodimensional Grids
-	dim3 NBlocs = getBlockConfiguration();
-	dim3 NThreadPerBlock = getGridConfiguration();
 	/*    
-    computeFeatures<<<NBlocs, NThreadPerBlock>>>(d_pixels, img, windowData, 
+    computeFeatures<<<Grid, Blocks>>>(d_pixels, img, windowData, 
     	numberOfPairsInWindow, d_featuresList);
     */
-    dim3 testGridConf(32, 32);
-    dim3 testBlockConf(8, 8);
-    computeFeaturesEfficient<<<testGridConf, testBlockConf>>>(d_pixels, img, windowData, 
+    dim3 testGridConf(8, 8);
+    dim3 testBlockConf(12, 12);
+    computeFeaturesEfficient<<<Grid, Blocks>>>(d_pixels, img, windowData, 
     	numberOfPairsInWindow, d_featuresList);
     cudaError_t errSync  = cudaGetLastError();
 	cudaError_t errAsync = cudaDeviceSynchronize();
