@@ -7,6 +7,12 @@ A MRI Haralick's feature extractor accelerated by Cuda
 
 You must have an Nvidia Gpu on your system before being able to install & run the Sw. That's the only requirement since the CUDA Framework can be installed on many platforms.
 
+### Cmake 3.8
+
+If you want to build this project, you need to have `Cmake 3.8` or higher that introduced native CUDA support.
+Download the files and follow the installation instructions at https://cmake.org/download/
+
+
 ### OS
 
 On the Nvidia CUDA Installation reference you can see the list of supported Os for each Cuda version.
@@ -62,7 +68,7 @@ I had to download:
 * Install Cuda8 Framework
 	* Open a shell with `ctrl+alt+f1`
 	* Stop the graphic server `sudo service lightdm stop`
-	* Make the Cuda9 Runfile executable `chmod +x cuda_8_..._.run`
+	* Make the Cuda8 Runfile executable `chmod +x cuda_8_..._.run`
 	* Launch the runfile `./cuda_8_....run --override`
 	* Accept the contract
 	* Refuse installation of the Driver
@@ -93,9 +99,25 @@ On my machine running Ubuntu 16.04 I just needed to execute:
 
 At this moment, only Haralick's Textural Feature extraction is supported
 
+## Compilation
 
-## Usage
+If you want to use or modify the code provided you must: 
+* Navigate to the implementation folder of interest
+* `cmake CMakeList.txt`
+* `make`
+* If all the toolkits are present on your machine, an executable file will be put into the `bin` sub-folder
 
-### Command
+## Command Usage
 
-### Options
+You must invoke the serial tool with the following syntax:  ./FeatureExtractor [<-s>] [<-i>] [<-d distance>] [<-w windowSize>] [<-n numberOfDirections>] imagePath"
+
+You must invoke the parallel tool with the following syntax:  ./CuFeat [<-s>] [<-i>] [<-d distance>] [<-w windowSize>] [<-n numberOfDirections>] imagePath"
+
+
+### Command Options
+
+* `-s`
+* `-i`
+* `-d distance`
+* `-w windowSize`
+* `-n numberOfDirections`
