@@ -60,11 +60,11 @@ void ImageFeatureComputer::compute(){
 	}
 }
 
-void checkMinimumMemoryOccupation(size_t featuresSize){
+void checkMinimumMemoryOccupation(size_t featureSize){
 	cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, 0);
     size_t gpuMemory = prop.totalGlobalMem;
-    if(featuresSize > gpuMemory){
+    if(featureSize > gpuMemory){
     	cerr << "FAILURE ! Gpu doesn't have enough memory \
     to hold the results" << endl;
     exit(-1);
@@ -144,7 +144,8 @@ int getGridSide(int imageRows, int imageCols){
         imageSmallestSide = imageCols;
    
     int blockSide = getCudaBlockSideX();
-    int gridSide = imageSmallestSide / blockSide;
+    // round up division 
+    int gridSide = (imageSmallestSide + blockSide -1) / blockSide;
     // Cant' exceed 65536 blocks in grid
     if(gridSide > 256){
     	gridSide = 256;
@@ -167,15 +168,14 @@ void cudaCheckError(cudaError_t err){
 }  
 
 void checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
- size_t featuresSize)
-{
+ size_t featureSize){
 	cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, 0);
     size_t gpuMemory = prop.totalGlobalMem;
     int numberOfWorkingAreas = 5;
     size_t workAreaSpace = numberOfWorkingAreas * numberOfPairs;
     size_t totalWorkAreas = workAreaSpace * numberOfThreads;
-    if((featuresSize + totalWorkAreas)> gpuMemory){
+    if((featureSize + totalWorkAreas)> gpuMemory){
     	cerr << "FAILURE ! Gpu doesn't have enough memory \
     to hold the results and the space needed to threads" << endl;
     exit(-1);
@@ -227,14 +227,14 @@ __global__ void computeFeatures(unsigned int * pixels,
 	double* d_featuresList){
 	// Memory location on which the thread will work
 	WorkArea wa = generateThreadWorkArea(numberOfPairsInWindow, d_featuresList);
-	// gridDim x is always 1
-	int x = threadIdx.x; // 1 block per image row
-	int y = blockIdx.y; // 1 row in each block
+
+	int x = blockIdx.x * blockDim.x + threadIdx.x; 
+	int y = blockIdx.y * blockDim.y + threadIdx.y;
 	// How many shift right for reaching the next window to compute
-	int colsStride =  blockDim.x; 
+	int colsStride =  gridDim.x * blockDim.x; 
 	// How many shift down for reaching the next window to compute
 	// gridDimY reflects the number of active blocks
-	int rowsStride =  gridDim.y;
+	int rowsStride =  gridDim.y * blockDim.y;
 	
 	// Create local window information
 	Window actualWindow {windowData.side, windowData.distance,
@@ -296,6 +296,7 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
     // Pre-Allocate the array that will contain features
     size_t featureSize = numberOfWindows * numberOfDirs * featuresCount * sizeof(double);
     double* featuresList = (double*) malloc(featureSize);
+
     // Allocate GPU space to contain results
     double* d_featuresList;
     cudaCheckError(cudaMalloc(&d_featuresList, featureSize));
@@ -331,14 +332,15 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 		cout << "WARNING: maximum grid side reached.\nStriding algorithm requested" << endl; 
 	}
 	// START GPU WORK
-	/*    
-    computeFeatures<<<Grid, Blocks>>>(d_pixels, img, windowData, 
+	dim3 testGrid(5, 5);
+	dim3 testBlock(10, 10);
+	
+    computeFeatures<<<testGrid, testBlock>>>(d_pixels, img, windowData, 
     	numberOfPairsInWindow, d_featuresList);
-    */
-    dim3 testGridConf(8, 8);
-    dim3 testBlockConf(12, 12);
+   	/* 
     computeFeaturesEfficient<<<Grid, Blocks>>>(d_pixels, img, windowData, 
     	numberOfPairsInWindow, d_featuresList);
+    */
     cudaError_t errSync  = cudaGetLastError();
 	cudaError_t errAsync = cudaDeviceSynchronize();
 	if (errSync != cudaSuccess) // Detect configuration launch errors
@@ -348,7 +350,7 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 
 	// Copy back results from GPU
 	cudaCheckError(cudaMemcpy(featuresList, d_featuresList,
-			numberOfWindows * numberOfDirs * featuresCount * sizeof(double),
+			featureSize,
 			cudaMemcpyDeviceToHost));
 
 	// Give the data structure
