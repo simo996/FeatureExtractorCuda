@@ -130,18 +130,17 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
     if(windowData.symmetric)
         numberOfPairsInWindow *= 2;
 
-    int numberOfThreads = 1;
     // Each 1 of these data structures allow 1 thread to work
 	GrayPair* elements = (GrayPair*) malloc(sizeof(GrayPair)
-	        * numberOfPairsInWindow * numberOfThreads);
+	        * numberOfPairsInWindow);
 	AggregatedGrayPair* summedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-	        * numberOfPairsInWindow * numberOfThreads);
+	        * numberOfPairsInWindow);
     AggregatedGrayPair* subtractedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-            * numberOfPairsInWindow * numberOfThreads);
+            * numberOfPairsInWindow);
     AggregatedGrayPair* xMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-            * numberOfPairsInWindow * numberOfThreads);
+            * numberOfPairsInWindow);
     AggregatedGrayPair* yMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-            * numberOfPairsInWindow * numberOfThreads);
+            * numberOfPairsInWindow);
 
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
@@ -165,10 +164,7 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
             formatOutputResults(featuresList, numberOfWindows, numberOfDirs, featuresCount);
 
 	free(featuresList);
-	free(summedPairs);
-	free(subtractedPairs);
-	free(xMarginalPairs);
-	free(yMarginalPairs);
+	wa.release();
 	return output;
 }
 
@@ -306,7 +302,7 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
 		exit(-2);
 	}
 
-	// Create a 2d matrix of double elements
+	// Create a 2d matrix of double grayPairs
 	Mat_<double> imageFeature = ImageLoader::createDoubleMat(rowNumber, colNumber, featureValues);
 	// Transform to a format printable to file
     Mat convertedImage = ImageLoader::convertToGrayScale(imageFeature);
