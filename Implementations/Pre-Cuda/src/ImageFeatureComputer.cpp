@@ -105,7 +105,7 @@ vector<vector<vector<double>>> formatOutputResults(const double* featureValues,
      */
 vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned int * pixels, const ImageData& img){
 	// Pre-Allocate working area
-	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.symmetric);
+	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.directionType, progArg.symmetric);
 
 	// How many windows need to be allocated
     int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
