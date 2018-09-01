@@ -460,10 +460,10 @@ vector<vector<vector<double>>> ImageFeatureComputer::getAllDirectionsAllFeatureV
 
 void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<vector<double>>>& imageFeatures){
 	string foldersPath[] ={ "Values0/", "Values45/", "Values90/", "Values135/"};
-	int dirNumber = progArg.directionType - 1;
+	int dirType = progArg.directionType;
 
 	// First create the the folder
-	if (mkdir(foldersPath[dirNumber].c_str(), 0777) == -1) {
+	if (mkdir(foldersPath[dirType -1].c_str(), 0777) == -1) {
 		if (errno == EEXIST) {
 			// alredy exists
 		} else {
@@ -471,7 +471,7 @@ void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<vector<double
 			cout << "cannot create save folder;  error:" << strerror(errno) << endl;
 		}
 	}
-	saveDirectedFeaturesToFiles(imageFeatures[0], foldersPath[dirNumber]);
+	saveDirectedFeaturesToFiles(imageFeatures[0], foldersPath[dirType -1]);
 }
 
 void ImageFeatureComputer::saveDirectedFeaturesToFiles(const vector<vector<double>>& imageDirectedFeatures,
@@ -509,10 +509,10 @@ void ImageFeatureComputer::saveFeatureToFile(const pair<FeatureNames, vector<dou
 void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 		const int colNumber, const vector<vector<vector<double>>>& imageFeatures){
 	string foldersPath[] ={ "Images0/", "Images45/", "Images90/", "Images135/"};
-	int dirNumber = progArg.directionType - 1;
+	int dirType = progArg.directionType;
 
 	// Create the folder
-	if (mkdir(foldersPath[dirNumber].c_str(), 0777) == -1) {
+	if (mkdir(foldersPath[dirType -1].c_str(), 0777) == -1) {
 		if (errno == EEXIST) {
 			// alredy exists
 		} else {
@@ -520,7 +520,7 @@ void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 			cout << "cannot create save folder;  error:" << strerror(errno) << endl;
 		}
 	}
-	saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[0], foldersPath[dirNumber]);
+	saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[0], foldersPath[dirType -1]);
 }
 
 /*

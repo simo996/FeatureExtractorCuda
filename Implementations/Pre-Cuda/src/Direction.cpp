@@ -8,7 +8,7 @@
 
 Direction::Direction(int directionNumber) {
     switch (directionNumber){
-        case 0:{
+        case 1:{
             char templabel[20] = "Direction 0°";
             memcpy(this->label, templabel, 20);
             this->label[20] = 0;
@@ -16,7 +16,7 @@ Direction::Direction(int directionNumber) {
             shiftColumns = 1;
             break;
         }
-        case 1:{
+        case 2:{
             char templabel[20] = "Direction 45°";
             memcpy(this->label, templabel, 20);
             this->label[20] = 0;
@@ -24,7 +24,7 @@ Direction::Direction(int directionNumber) {
             shiftColumns = 1;
             break;
         }
-        case 2:{
+        case 3:{
             char templabel[20] = "Direction 90°";
             memcpy(this->label, templabel, 20);
             this->label[20] = 0;
@@ -32,7 +32,7 @@ Direction::Direction(int directionNumber) {
             shiftColumns = 0;
             break;
         }
-        case 3:{
+        case 4:{
             char templabel[20] = "Direction 135°";
             memcpy(this->label, templabel, 20);
             this->label[20] = 0;
@@ -48,13 +48,13 @@ Direction::Direction(int directionNumber) {
 
 void Direction::printDirectionLabel(const int direction){
     switch(direction){
-        case 0:
-            printf(" * Direction 0° *\n");
         case 1:
-            printf(" * Direction 45° *\n");
+            printf(" * Direction 0° *\n");
         case 2:
-            printf(" * Direction 90° *\n");
+            printf(" * Direction 45° *\n");
         case 3:
+            printf(" * Direction 90° *\n");
+        case 4:
             printf(" * Direction 135° *\n");
         default:
             fprintf(stderr, "Fatal Error! Unrecognized direction");

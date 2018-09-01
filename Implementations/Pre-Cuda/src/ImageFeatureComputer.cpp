@@ -147,7 +147,7 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
         for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
 			// Create local window information
 			Window actualWindow {windowData.side, windowData.distance,
-                                 numberOfDirs, windowData.symmetric};
+                                 progArg.directionType, windowData.symmetric};
 			// tell the window its relative offset (starting point) inside the image
 			actualWindow.setSpacialOffsets(i,j);
 			// Launch the computation of features on the window
@@ -197,10 +197,10 @@ vector<vector<FeatureValues>> ImageFeatureComputer::getAllDirectionsAllFeatureVa
 
 void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures){
 	string foldersPath[] ={ "Values0/", "Values45/", "Values90/", "Values135/"};
-	int dirNumber = progArg.directionType - 1;
+	int dirType = progArg.directionType;
 
 	// First create the the folder
-	if (mkdir(foldersPath[dirNumber].c_str(), 0777) == -1) {
+	if (mkdir(foldersPath[dirType -1].c_str(), 0777) == -1) {
 		if (errno == EEXIST) {
 			// alredy exists
 		} else {
@@ -208,7 +208,7 @@ void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<FeatureValues
 			cout << "cannot create save folder;  error:" << strerror(errno) << endl;
 		}
 	}
-	saveDirectedFeaturesToFiles(imageFeatures[0], foldersPath[dirNumber]);
+	saveDirectedFeaturesToFiles(imageFeatures[0], foldersPath[dirType -1]);
 }
 
 void ImageFeatureComputer::saveDirectedFeaturesToFiles(const vector<FeatureValues>& imageDirectedFeatures,
@@ -246,10 +246,10 @@ void ImageFeatureComputer::saveFeatureToFile(const pair<FeatureNames, vector<dou
 void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 		const int colNumber, const vector<vector<FeatureValues>>& imageFeatures){
 	string foldersPath[] ={ "Images0/", "Images45/", "Images90/", "Images135/"};
-	int dirNumber = progArg.directionType - 1;
+	int dirType = progArg.directionType;
 
 	// Create the folder
-	if (mkdir(foldersPath[dirNumber].c_str(), 0777) == -1) {
+	if (mkdir(foldersPath[dirType -1].c_str(), 0777) == -1) {
 		if (errno == EEXIST) {
 			// alredy exists
 		} else {
@@ -257,7 +257,7 @@ void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 			cout << "cannot create save folder;  error:" << strerror(errno) << endl;
 		}
 	}
-	saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[0], foldersPath[dirNumber]);
+	saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[0], foldersPath[dirType -1]);
 }
 
 /*

@@ -18,7 +18,7 @@ void ProgramArguments::printProgramUsage(){
 ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
     ProgramArguments progArg;
     int opt;
-    while((opt = getopt(argc, argv, "sw:d:in:hc")) != -1){
+    while((opt = getopt(argc, argv, "sw:d:in:hct:")) != -1){
         switch (opt){
             case 'c':{
                 // Crop original dynamic resolution
@@ -36,7 +36,6 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
                 break;
             }
             case 'd': {
-                // Choose the distance between pixels
                 int distance = atoi(optarg);
                 if (distance < 1) {
                     cout << "ERROR ! The distance between every pixel pair must be >= 1 ";
@@ -56,12 +55,23 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
                 progArg.windowSize = windowSize;
                 break;
             }
-            case 'n':{
+            case 't':{
                 // Decide how many of the 4 directions will be copmuted
-                short int dirNumber = atoi(optarg);
-                if(dirNumber > 4 || dirNumber <1){
+                short int dirType = atoi(optarg);
+                if(dirType > 4 || dirType <1){
                     cout << "ERROR ! The type of directions to be computed "
-                            "option (-n) must be a value between 1 and 4" << endl;
+                            "option (-t) must be a value between 1 and 4" << endl;
+                    printProgramUsage();
+                }
+                progArg.directionType = dirType;
+
+                break;
+            }
+            case 'n':{
+                short int dirNumber = atoi(optarg);
+               if(dirNumber != 1){
+                    cout << "Warning! At this moment just 1 direction "
+                            "can be be computed at each time" << endl;
                     printProgramUsage();
                 }
                 progArg.directionType = dirNumber;
@@ -73,11 +83,11 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
             case 'h':
                 // Help
                 printProgramUsage();
-
                 break;
             default:
                 printProgramUsage();
         }
+
 
     }
     if(progArg.distance > progArg.windowSize){
