@@ -458,20 +458,28 @@ vector<vector<vector<double>>> ImageFeatureComputer::getAllDirectionsAllFeatureV
 	return output;
 }
 
+void createFolder(string folderPath){
+    if (mkdir(folderPath.c_str(), 0777) == -1) {
+        if (errno == EEXIST) {
+            // alredy exists
+        } else {
+            // something else
+            cerr << "cannot create save folder: " << folderPath << endl
+            << "error:" << strerror(errno) << endl;
+        }
+    }
+}
+
 void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<vector<double>>>& imageFeatures){
 	string foldersPath[] ={ "Values0/", "Values45/", "Values90/", "Values135/"};
 	int dirType = progArg.directionType;
+    int numberOfDirs = progArg.directionsNumber; // just 1 at the moment
 
-	// First create the the folder
-	if (mkdir(foldersPath[dirType -1].c_str(), 0777) == -1) {
-		if (errno == EEXIST) {
-			// alredy exists
-		} else {
-			// something else
-			cout << "cannot create save folder;  error:" << strerror(errno) << endl;
-		}
-	}
-	saveDirectedFeaturesToFiles(imageFeatures[0], foldersPath[dirType -1]);
+    for (int i = 0; i < numberOfDirs; ++i) {
+        // First create the the folder
+        createFolder(foldersPath[i]);
+        saveDirectedFeaturesToFiles(imageFeatures[i], foldersPath[dirType -1]);
+    }
 }
 
 void ImageFeatureComputer::saveDirectedFeaturesToFiles(const vector<vector<double>>& imageDirectedFeatures,
@@ -511,17 +519,12 @@ void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 	string foldersPath[] ={ "Images0/", "Images45/", "Images90/", "Images135/"};
 	int dirType = progArg.directionType;
 
-	// Create the folder
-	if (mkdir(foldersPath[dirType -1].c_str(), 0777) == -1) {
-		if (errno == EEXIST) {
-			// alredy exists
-		} else {
-			// something else
-			cout << "cannot create save folder;  error:" << strerror(errno) << endl;
-		}
-	}
-	saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[0], foldersPath[dirType -1]);
-}
+	 // For each direction computed
+    for(int i=0; i < imageFeatures.size(); i++){
+        // Create the folder
+        createFolder(foldersPath[i]);
+        saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[i], foldersPath[dirType -1]);
+    }}
 
 /*
  * This method will create ALL the images associated with each feature,

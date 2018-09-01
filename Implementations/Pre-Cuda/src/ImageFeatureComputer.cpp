@@ -165,6 +165,8 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
 }
 
 
+
+
 /*
  * This method will generate a vector of vectors (1 for each direction) of features names and all their values found in the image
  * Es. <Entropy , (0.1, 0.2, 3, 4 , ...)>
@@ -195,20 +197,28 @@ vector<vector<FeatureValues>> ImageFeatureComputer::getAllDirectionsAllFeatureVa
 	return output;
 }
 
+void createFolder(string folderPath){
+    if (mkdir(folderPath.c_str(), 0777) == -1) {
+        if (errno == EEXIST) {
+            // alredy exists
+        } else {
+            // something else
+            cerr << "cannot create save folder: " << folderPath << endl
+                 << "error:" << strerror(errno) << endl;
+        }
+    }
+}
+
 void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures){
 	string foldersPath[] ={ "Values0/", "Values45/", "Values90/", "Values135/"};
 	int dirType = progArg.directionType;
+    int numberOfDirs = progArg.directionsNumber; // only 1 for now
 
-	// First create the the folder
-	if (mkdir(foldersPath[dirType -1].c_str(), 0777) == -1) {
-		if (errno == EEXIST) {
-			// alredy exists
-		} else {
-			// something else
-			cout << "cannot create save folder;  error:" << strerror(errno) << endl;
-		}
-	}
-	saveDirectedFeaturesToFiles(imageFeatures[0], foldersPath[dirType -1]);
+    for (int i = 0; i < numberOfDirs; ++i) {
+        // First create the the folder
+        createFolder(foldersPath[i]);
+        saveDirectedFeaturesToFiles(imageFeatures[i], foldersPath[dirType -1]);
+    }
 }
 
 void ImageFeatureComputer::saveDirectedFeaturesToFiles(const vector<FeatureValues>& imageDirectedFeatures,
@@ -248,16 +258,12 @@ void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 	string foldersPath[] ={ "Images0/", "Images45/", "Images90/", "Images135/"};
 	int dirType = progArg.directionType;
 
-	// Create the folder
-	if (mkdir(foldersPath[dirType -1].c_str(), 0777) == -1) {
-		if (errno == EEXIST) {
-			// alredy exists
-		} else {
-			// something else
-			cout << "cannot create save folder;  error:" << strerror(errno) << endl;
-		}
-	}
-	saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[0], foldersPath[dirType -1]);
+    // For each direction computed
+    for(int i=0; i < imageFeatures.size(); i++){
+        // Create the folder
+        createFolder(foldersPath[i]);
+        saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[i], foldersPath[dirType -1]);
+    }
 }
 
 /*
