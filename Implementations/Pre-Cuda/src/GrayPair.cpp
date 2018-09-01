@@ -13,7 +13,7 @@ GrayPair::GrayPair()
     frequency = 0;
 }
 
-GrayPair::GrayPair (unsigned int i, unsigned int j) {
+GrayPair::GrayPair (grayLevelType i, grayLevelType j) {
    grayLevelI = i;
    grayLevelJ = j;
    frequency = 1;
@@ -27,7 +27,7 @@ void GrayPair::printPair()const {
 }
 
 void GrayPair::frequencyIncrease(){
-    frequency+=1;
+    frequency += 1;
 }
 
 bool GrayPair::compareTo(GrayPair other) const{
@@ -39,14 +39,14 @@ bool GrayPair::compareTo(GrayPair other) const{
 }
 
 /* Extracting pairs */
-uint GrayPair::getGrayLevelI() const{
+grayLevelType GrayPair::getGrayLevelI() const{
     return grayLevelI;
 }
 
-uint GrayPair::getGrayLevelJ() const{
+grayLevelType GrayPair::getGrayLevelJ() const{
     return grayLevelJ;
 }
 
-uint GrayPair::getFrequency() const {
+frequencyType GrayPair::getFrequency() const {
     return frequency;
 }

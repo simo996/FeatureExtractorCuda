@@ -428,7 +428,8 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
 
 
 /*
- * This method will generate a vector of vectors (1 for each direction) of features names and all their values found in the image
+ * This method will generate a vector of vectors (1 for each direction)
+  of features names and all their values found in the image
  * Es. <Entropy , (0.1, 0.2, 3, 4 , ...)>
  * Es. <IMOC, (-1,-2,0)>
  */

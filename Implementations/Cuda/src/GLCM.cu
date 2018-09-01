@@ -7,10 +7,6 @@
 
 #include "GLCM.h"
 
-//
-// Created by simo on 11/07/18.
-//
-
 #include <iostream>
 #include <assert.h>
 #include "GLCM.h"
@@ -39,7 +35,6 @@ __device__ GLCM::GLCM(const unsigned int * pixels, const ImageData& image,
     if(this->windowData.symmetric)
         this->numberOfPairs *= 2;
 
- 
     wa.cleanup();
     initializeGlcmElements();
 }
@@ -147,8 +142,8 @@ __device__ void GLCM::initializeGlcmElements() {
     int initialWindowRowOffset = computeWindowRowOffset();
     // Offset to locate the starting point of the window inside the sliding image
 
-    uint referenceGrayLevel;
-    uint neighborGrayLevel;
+    grayLevelType referenceGrayLevel;
+    grayLevelType neighborGrayLevel;
     unsigned int lastInsertionPosition = 0;
     for (int i = 0; i < getWindowRowsBorder() ; i++)
     {
@@ -157,10 +152,12 @@ __device__ void GLCM::initializeGlcmElements() {
             // Extract the two pixels in the pair
             int referenceIndex = getReferenceIndex(i, j,
                     initialWindowRowOffset, initialWindowColumnOffset);
-            referenceGrayLevel = pixels[referenceIndex];
+            // Application limit: only up to 2^16 gray levels
+            referenceGrayLevel = pixels[referenceIndex]; // should be safe
             int neighborIndex = getNeighborIndex(i, j,
                     initialWindowColumnOffset);
-            neighborGrayLevel = pixels[neighborIndex];
+            // Application limit: only up to 2^16 gray levels
+            neighborGrayLevel = pixels[neighborIndex];  // should be safe
 
             GrayPair actualPair(referenceGrayLevel, neighborGrayLevel);
             insertElement(elements, actualPair, lastInsertionPosition);
@@ -170,7 +167,7 @@ __device__ void GLCM::initializeGlcmElements() {
                 GrayPair simmetricPair(neighborGrayLevel, referenceGrayLevel);
                 insertElement(elements, simmetricPair, lastInsertionPosition);
             }
-
+            
         }
     }
     effectiveNumberOfGrayPairs = lastInsertionPosition;
@@ -208,7 +205,7 @@ __device__ void GLCM::codifyAggregatedPairs() {
     // summed pairs first
     for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
         // Create summed pairs first
-        uint k= elements[i].getGrayLevelI() + elements[i].getGrayLevelJ();
+        grayLevelType k= elements[i].getGrayLevelI() + elements[i].getGrayLevelJ();
         AggregatedGrayPair summedElement(k, elements[i].getFrequency());
 
         insertElement(summedPairs, summedElement, lastInsertPosition);
@@ -219,7 +216,7 @@ __device__ void GLCM::codifyAggregatedPairs() {
     lastInsertPosition = 0;
     for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
         int diff = elements[i].getGrayLevelI() - elements[i].getGrayLevelJ();
-        uint k= static_cast<uint>(abs(diff));
+        grayLevelType k= static_cast<uint>(abs(diff));
         AggregatedGrayPair element(k, elements[i].getFrequency());
 
         insertElement(subtractedPairs, element, lastInsertPosition);
@@ -238,7 +235,7 @@ __device__ void GLCM::codifyMarginalPairs() {
     unsigned int lastInsertPosition = 0;
     // xMarginalPairs first
     for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
-        uint firstGrayLevel = elements[i].getGrayLevelI();
+        grayLevelType firstGrayLevel = elements[i].getGrayLevelI();
         AggregatedGrayPair element(firstGrayLevel, elements[i].getFrequency());
 
         insertElement(xMarginalPairs, element, lastInsertPosition);
@@ -248,7 +245,7 @@ __device__ void GLCM::codifyMarginalPairs() {
     // yMarginalPairs second
     lastInsertPosition = 0;
     for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
-        uint secondGrayLevel = elements[i].getGrayLevelJ();
+        grayLevelType secondGrayLevel = elements[i].getGrayLevelJ();
         AggregatedGrayPair element(secondGrayLevel, elements[i].getFrequency());
 
         insertElement(yMarginalPairs, element, lastInsertPosition);

@@ -5,14 +5,18 @@
 #ifndef FEATUREEXTRACTOR_GRAYPAIR_H
 #define FEATUREEXTRACTOR_GRAYPAIR_H
 
+// Custom types for easy future correction
+// Unsigned shorts half the memory footprint of the application
+typedef unsigned short grayLevelType;
+typedef unsigned short frequencyType;
 
 class GrayPair {
 public:
     GrayPair();
-    GrayPair(unsigned int i, unsigned int j);
-    unsigned int getGrayLevelI() const;
-    unsigned int getGrayLevelJ() const;
-    unsigned int getFrequency() const;
+    GrayPair(grayLevelType i, grayLevelType j);
+    grayLevelType getGrayLevelI() const;
+    grayLevelType getGrayLevelJ() const;
+    frequencyType getFrequency() const;
     bool compareTo(GrayPair other) const;
     void frequencyIncrease();
     void printPair() const;
@@ -38,9 +42,9 @@ public:
             return (grayLevelJ < other.getGrayLevelJ());
     }
 private:
-        unsigned int grayLevelI;
-        unsigned int grayLevelJ;
-        unsigned int frequency;
+    grayLevelType grayLevelI;
+    grayLevelType grayLevelJ;
+    frequencyType frequency;
 
 };
 

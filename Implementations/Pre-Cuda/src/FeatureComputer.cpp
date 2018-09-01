@@ -80,9 +80,10 @@ inline double computeDissimilarityStep(const uint i, const uint j, const double 
 // IDM
 inline double computeInverceDifferenceMomentStep(const uint i, const uint j,
     const double pairProbability, const uint maxGrayLevel) {
-    int diff = i - j; // avoids casting value errors of uint(negative number)
+    double diff = i - j; // avoids casting value errors of uint(negative number)
     diff = diff < 0 ? -diff : diff; // absolute value
-    return (pairProbability / (1 + fabs(diff) / maxGrayLevel));
+    double temp = diff;
+    return (pairProbability / (1 + fabs(temp) / maxGrayLevel));
 }
 
 /* FEATURES WITH MEANS */
@@ -184,8 +185,8 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
     for (int k = 0; k < length; ++k) {
         GrayPair actualPair = glcm.grayPairs[k];
 
-        uint i = actualPair.getGrayLevelI();
-        uint j = actualPair.getGrayLevelJ();
+        grayLevelType i = actualPair.getGrayLevelI();
+        grayLevelType j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
 
         angularSecondMoment += computeAsmStep(actualPairProbability);
@@ -221,8 +222,8 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
     for (int k = 0; k < length; ++k)
     {
         GrayPair actualPair = glcm.grayPairs[k];
-        uint i = actualPair.getGrayLevelI();
-        uint j = actualPair.getGrayLevelJ();
+        grayLevelType i = actualPair.getGrayLevelI();
+        grayLevelType j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
 
         clusterProm += computeClusterProminenceStep(i, j, actualPairProbability, muX, muY);
@@ -245,8 +246,8 @@ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, double* featur
     for (int k = 0; k < length; ++k)
     {
         GrayPair actualPair = glcm.grayPairs[k];
-        uint i = actualPair.getGrayLevelI();
-        uint j = actualPair.getGrayLevelJ();
+        grayLevelType i = actualPair.getGrayLevelI();
+        grayLevelType j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
 
         correlation += computeCorrelationStep(i, j, actualPairProbability, 
@@ -271,7 +272,7 @@ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, double* fea
     int length = glcm.numberOfSummedPairs;
     for (int i = 0; i < length; ++i) {
         AggregatedGrayPair actualPair = glcm.summedPairs[i];
-        uint k = actualPair.getAggregatedGrayLevel();
+        grayLevelType k = actualPair.getAggregatedGrayLevel();
         double actualPairProbability = ((double) actualPair.getFrequency()) / numberOfPairs;
 
         sumavg += computeSumAverageStep(k, actualPairProbability);
@@ -283,7 +284,7 @@ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, double* fea
 
     for (int i = 0; i < length; ++i) {
         AggregatedGrayPair actualPair = glcm.summedPairs[i];
-        uint k = actualPair.getAggregatedGrayLevel();
+        grayLevelType k = actualPair.getAggregatedGrayLevel();
         double actualPairProbability = ((double) actualPair.getFrequency()) / numberOfPairs;
 
         sumvariance += computeSumVarianceStep(k, actualPairProbability, sumentropy);
@@ -306,7 +307,7 @@ void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, double* fe
     int length = glcm.numberOfSubtractedPairs;
     for (int i = 0; i < length; ++i) {
         AggregatedGrayPair actualPair = glcm.subtractedPairs[i];
-        uint k = actualPair.getAggregatedGrayLevel();
+        grayLevelType k = actualPair.getAggregatedGrayLevel();
         double actualPairProbability = ((double) actualPair.getFrequency()) / numberOfPairs;
 
         diffentropy += computeDiffEntropyStep(actualPairProbability);
