@@ -197,6 +197,7 @@ vector<vector<FeatureValues>> ImageFeatureComputer::getAllDirectionsAllFeatureVa
 	return output;
 }
 
+/* Support code for putting the results in the right output folder */
 void createFolder(string folderPath){
     if (mkdir(folderPath.c_str(), 0777) == -1) {
         if (errno == EEXIST) {
@@ -209,16 +210,46 @@ void createFolder(string folderPath){
     }
 }
 
-void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures){
-	string foldersPath[] ={ "Values0/", "Values45/", "Values90/", "Values135/"};
-	int dirType = progArg.directionType;
-    int numberOfDirs = progArg.directionsNumber; // only 1 for now
-
-    for (int i = 0; i < numberOfDirs; ++i) {
-        // First create the the folder
-        createFolder(foldersPath[i]);
-        saveDirectedFeaturesToFiles(imageFeatures[i], foldersPath[dirType -1]);
+// UNIX
+struct MatchPathSeparator
+{
+    bool operator()( char ch ) const
+    {
+        return ch == '/';
     }
+};
+
+// remove the path and keep filename+extension
+string basename( std::string const& pathname )
+{
+    return string(
+            find_if( pathname.rbegin(), pathname.rend(),
+                     MatchPathSeparator() ).base(),
+            pathname.end() );
+}
+
+// remove extension from filename
+string removeExtension( std::string const& filename )
+{
+    string::const_reverse_iterator
+            pivot
+            = find( filename.rbegin(), filename.rend(), '.' );
+    return pivot == filename.rend()
+           ? filename
+           : std::string( filename.begin(), pivot.base() - 1 );
+}
+
+void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures){
+    int dirType = progArg.directionType;
+
+    string fileName = removeExtension(basename(progArg.imagePath));
+    createFolder(fileName);
+    string foldersPath[] ={ "/Values0/", "/Values45/", "/Values90/", "/Values135/"};
+
+    // First create the the folder
+    string outputDirectionPath = fileName + foldersPath[dirType -1];
+    createFolder(outputDirectionPath);
+    saveDirectedFeaturesToFiles(imageFeatures[0], outputDirectionPath);
 }
 
 void ImageFeatureComputer::saveDirectedFeaturesToFiles(const vector<FeatureValues>& imageDirectedFeatures,
@@ -248,22 +279,21 @@ void ImageFeatureComputer::saveFeatureToFile(const pair<FeatureNames, vector<dou
 
 }
 
-
 /*
  * This method will create ALL the images associated with each feature,
  * for ALL the directions evaluated.
 */
 void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 		const int colNumber, const vector<vector<FeatureValues>>& imageFeatures){
-	string foldersPath[] ={ "Images0/", "Images45/", "Images90/", "Images135/"};
-	int dirType = progArg.directionType;
+    int dirType = progArg.directionType;
 
+    string fileName = removeExtension(basename(progArg.imagePath));
+    string foldersPath[] ={ "/Images0/", "/Images45/", "/Images90/", "/Images135/"};
+    string outputDirectionPath = fileName + foldersPath[dirType -1];
+    createFolder(outputDirectionPath);
     // For each direction computed
-    for(int i=0; i < imageFeatures.size(); i++){
-        // Create the folder
-        createFolder(foldersPath[i]);
-        saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[i], foldersPath[dirType -1]);
-    }
+    saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[0],
+                outputDirectionPath);
 }
 
 /*
