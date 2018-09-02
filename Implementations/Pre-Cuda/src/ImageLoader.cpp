@@ -74,14 +74,13 @@ inline void readUint(vector<uint>& output, Mat& img){
     }
 }
 
-Image ImageLoader::readImage(const string fileName, bool cropResolution){
+Image ImageLoader::readImage(const string fileName, bool cropResolution, int borderSize){
     // Open image from file system
     Mat imgRead = readMriImage(fileName, cropResolution);
     printMatImageData(imgRead);
+    // Create borders to the image
+    copyMakeBorder(imgRead, imgRead, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
     // COPY THE IMAGE DATA TO SMALL array
-    // This array need to be moved to gpu shared memory
-    // Where the data will be put
-
     vector<uint> pixels(imgRead.total());
 
     int maxGrayLevel;
