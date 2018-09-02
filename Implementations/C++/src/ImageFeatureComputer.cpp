@@ -28,7 +28,7 @@ void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
 
 void ImageFeatureComputer::compute(){
 	cout << "* LOADING image * " << endl;
-	Image img = ImageLoader::readImage(progArg.imagePath, progArg.crop);
+	Image img = ImageLoader::readImage(progArg.imagePath, progArg.crop, progArg.distance);
 	cout << "* Image loaded * " << endl;
 	checkOptionCompatibility(progArg, img);
 	printExtimatedSizes(img);

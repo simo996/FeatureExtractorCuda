@@ -81,12 +81,12 @@ inline void readUint(vector<uint>& output, Mat& img){
     }
 }
 
-Image ImageLoader::readImage(const string fileName, bool cropResolution){
+Image ImageLoader::readImage(const string fileName, bool cropResolution, int borderSize){
     // Open image from file system
     Mat imgRead = readMriImage(fileName, cropResolution);
     printMatImageData(imgRead);
     // Create borders to the image
-    //copyMakeBorder(imgRead, imgRead, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
+    copyMakeBorder(imgRead, imgRead, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
     // COPY THE IMAGE DATA TO SMALL array
     vector<uint> pixels(imgRead.total());
 

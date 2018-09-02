@@ -95,7 +95,7 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
         cout << "imagepath: " << argv[optind];
         progArg.imagePath = argv[optind];
     } else{
-        progArg.imagePath= "../../../SampleImages/brain1.tiff";
+        progArg.imagePath= "../../../SampleImages/brainAltered.tiff";
         /*
         cout << "Missing image path!" << endl;
         printProgramUsage();
