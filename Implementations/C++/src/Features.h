@@ -27,6 +27,7 @@ public:
     static vector<FeatureNames> getAllSupportedFeatures();
     // return a list of all the file names associated at features
     static vector<string> getAllFeaturesFileNames();
+    static int getSupportedFeaturesCount();
     // print features labels and their values
     static void printAllFeatures(const vector<double>& features);
     // print single feature label and its value
@@ -34,7 +35,7 @@ public:
                                    FeatureNames featureName);
     static string printFeatureNameAndValue(double value, FeatureNames fname);
 
-        // print the label associated with the enum
+    // print the label associated with the enum
     static void printFeatureName(FeatureNames featureName);
     static string getFeatureName(FeatureNames featureName);
 };

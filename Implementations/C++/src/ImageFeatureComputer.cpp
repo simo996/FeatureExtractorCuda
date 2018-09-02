@@ -76,8 +76,13 @@ void ImageFeatureComputer::printExtimatedSizes(const Image& img){
      */
 vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(const Image& img){
 	// TODO use this dimension in a static addressing way
-	int numberOfWindows = (img.rows - progArg.windowSize + 1)
-			* (img.columns - progArg.windowSize + 1);
+    // How many windows need to be allocated
+    int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
+                          * (img.getColumns() - progArg.windowSize + 1);
+    // How many directions need to be allocated for each window
+    short int numberOfDirs = 1;
+    // How many feature values need to be allocated for each direction
+    int featuresCount = Features::getSupportedFeaturesCount();
 	vector<WindowFeatures> featuresList;
 
 	// Create data structure that incapsulate window parameters
@@ -88,7 +93,8 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(const Image& img
 		for(int j = 0; (j + windowData.side) <= img.getColumns() ; j++){
 			// Create local window information
             Window actualWindow {windowData.side, windowData.distance,
-                                 progArg.directionType, windowData.symmetric};			// tell the window its relative offset (starting point) inside the image
+                                 progArg.directionType, windowData.symmetric};
+            // tell the window its relative offset (starting point) inside the image
 			actualWindow.setSpacialOffsets(i,j);
 			// Launch the computation of features on the window
 			WindowFeatureComputer wfc(img, actualWindow);
