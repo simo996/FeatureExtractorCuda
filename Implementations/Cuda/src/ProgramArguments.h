@@ -19,15 +19,16 @@ public:
     bool crop;
     bool symmetric;
     short int distance;
-    short int numberOfDirections;
+    short int directionType;
+    short int directionsNumber;
     bool createImages;
     string imagePath;
 
     ProgramArguments(short int windowSize = 4, bool crop = false, bool symmetric = false,
-                     short int distance = 1, short int numberOfDirections = 4,
+                     short int distance = 1, short int dirType = 1, short int dirNumber = 1,
                      bool createImages = false)
             : windowSize(windowSize), crop(crop), symmetric(symmetric), distance(distance),
-              numberOfDirections(numberOfDirections),
+              directionType(dirType), directionsNumber(dirNumber),
               createImages(createImages){};
     static void printProgramUsage();
     static ProgramArguments checkOptions(int argc, char* argv[]);

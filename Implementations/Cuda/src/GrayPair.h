@@ -18,13 +18,18 @@
 #define CUDA_DEV
 #endif
 
+// Custom types for easy future correction
+// Unsigned shorts half the memory footprint of the application
+typedef short unsigned grayLevelType;
+typedef short unsigned frequencyType;
+
 class GrayPair{
 public:
 	CUDA_DEV GrayPair();
-	CUDA_DEV GrayPair(unsigned int i, unsigned int j);
-	CUDA_DEV unsigned int getGrayLevelI() const;
-	CUDA_DEV unsigned int getGrayLevelJ() const;
-	CUDA_DEV unsigned int getFrequency() const;
+	CUDA_DEV GrayPair(grayLevelType i, grayLevelType j);
+	CUDA_DEV grayLevelType getGrayLevelI() const;
+	CUDA_DEV grayLevelType getGrayLevelJ() const;
+	CUDA_DEV frequencyType getFrequency() const;
 	CUDA_DEV void frequencyIncrease();
 	CUDA_DEV bool compareTo(GrayPair other) const;
 	CUDA_DEV void printPair() const;
@@ -50,9 +55,9 @@ public:
             return (grayLevelJ < other.getGrayLevelJ());
     }
 private:
-        unsigned int grayLevelI;
-        unsigned int grayLevelJ;
-        unsigned int frequency;
+        grayLevelType grayLevelI;
+        grayLevelType grayLevelJ;
+        frequencyType frequency;
 };
 #endif /* GRAYPAIR_H_ */
 

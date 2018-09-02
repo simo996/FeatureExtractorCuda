@@ -8,7 +8,7 @@
 #include "FeatureComputer.h"
 #include "Direction.h"
 
-typedef vector<vector<double>> WindowFeatures;
+typedef vector<double> WindowFeatures;
 typedef vector<double> FeatureValues;
 
 using namespace std;

@@ -6,7 +6,7 @@ __device__  AggregatedGrayPair::AggregatedGrayPair() {
     frequency = 0;
 }
 
-__device__ AggregatedGrayPair::AggregatedGrayPair(unsigned int i, unsigned int freq){
+__device__ AggregatedGrayPair::AggregatedGrayPair(grayLevelType i, frequencyType freq){
     grayLevel = i;
     frequency = freq;
 }
@@ -22,14 +22,14 @@ __device__ bool AggregatedGrayPair::compareTo(AggregatedGrayPair other) const{
 }
 
 /* Extracting pairs */
-__device__ int AggregatedGrayPair::getAggregatedGrayLevel() const{
+__device__ grayLevelType AggregatedGrayPair::getAggregatedGrayLevel() const{
     return grayLevel;
 }
 
-__device__ unsigned int AggregatedGrayPair::getFrequency() const {
+__device__ frequencyType AggregatedGrayPair::getFrequency() const {
     return frequency;
 }
 
-__device__ void AggregatedGrayPair::increaseFrequency(unsigned int amount){
+__device__ void AggregatedGrayPair::increaseFrequency(frequencyType amount){
     frequency += amount;
 }

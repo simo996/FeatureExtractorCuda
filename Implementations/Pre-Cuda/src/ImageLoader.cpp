@@ -23,9 +23,11 @@ Mat ImageLoader::readMriImage(const string fileName, bool cropResolution){
     // If not a grayscale 256/6536 depth, it must be a color image
     if((inputImage.depth() != CV_8UC1) && (inputImage.depth() != CV_16UC1)){
         // reduce color channel from 3 to 1
+        // TODO fixes artifact generated
         cvtColor(inputImage, inputImage, CV_RGB2GRAY);
         inputImage.convertTo(inputImage, CV_8UC1);
     }
+    // TODO something wrong with png images
     if((cropResolution) && (inputImage.depth() != CV_8UC1))
         inputImage.convertTo(inputImage, CV_8UC1);
 

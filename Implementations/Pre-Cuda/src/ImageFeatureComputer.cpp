@@ -39,7 +39,7 @@ void ImageFeatureComputer::compute(){
 
 	// Compute every feature
 	cout << "* COMPUTING features * " << endl;
-	vector<WindowFeatures> fs= computeAllFeatures(image.getPixels().data(), imgData);
+	vector<vector<WindowFeatures>> fs= computeAllFeatures(image.getPixels().data(), imgData);
 	vector<vector<FeatureValues>> formattedFeatures = getAllDirectionsAllFeatureValues(fs);
 	cout << "* Features computed * " << endl;
 
@@ -62,12 +62,14 @@ void ImageFeatureComputer::compute(){
 void ImageFeatureComputer::printExtimatedSizes(const ImageData& img){
     int numberOfRows = img.getRows() - progArg.windowSize + 1;
     int numberOfColumns = img.getColumns() - progArg.windowSize + 1;
-
     int numberOfWindows = numberOfRows * numberOfColumns;
-    int featureNumber = numberOfWindows * 18 * progArg.numberOfDirections;
+    int supportedFeatures = Features::getSupportedFeaturesCount();
+
+    int featureNumber = numberOfWindows * supportedFeatures;
 	cout << "\t- Size estimation - " << endl;
     cout << "\tTotal features number: " << featureNumber << endl;
-    int featureSize = (((featureNumber*8)/1024)/1024);
+    int featureSize = (((featureNumber * sizeof(double))
+                        /1024)/1024);
     cout << "\tTotal features weight: " <<  featureSize << " MB" << endl;
 }
 
@@ -76,29 +78,23 @@ void ImageFeatureComputer::printExtimatedSizes(const ImageData& img){
  * an array of directional features each containing all the feature values
 */
 vector<vector<vector<double>>> formatOutputResults(const double* featureValues,
-                                                   const int numberOfWindows, const int numberOfDirections, const int featuresCount){
+                                                   const int numberOfWindows, const int featuresCount){
+    // For each window, an array of directions, of features
     vector<vector<vector<double>>> output(numberOfWindows,
-                                          vector<vector<double>>(numberOfDirections, vector<double> (featuresCount)));
+                                          vector<vector<double>>(1, vector<double> (featuresCount)));
     // How many double values fit into a window
-    int windowResultsSize = numberOfDirections * featuresCount;
-    // How many double values fit into a direction
-    int directionResultSize = featuresCount;
+    int windowResultsSize = featuresCount;
 
     for (int k = 0; k < numberOfWindows; ++k) {
         int windowOffset = k * windowResultsSize;
         const double* windowResultsStartingPoint = featureValues + windowOffset;
 
-        vector<vector<double>> singleWindowFeatures(numberOfDirections);
+        // Copy each of the values
+        vector<double> singleDirectionFeatures(windowResultsStartingPoint,
+        		windowResultsStartingPoint + windowResultsSize);
+		output[k][0] = singleDirectionFeatures;
+	}
 
-        for (int i = 0; i < numberOfDirections; ++i) {
-            int directionOffset = i * directionResultSize;
-            const double* dirResultsStartingPoint = windowResultsStartingPoint + directionOffset;
-            // Copy each of the values
-            vector<double> singleDirectionFeatures(dirResultsStartingPoint, dirResultsStartingPoint + directionResultSize);
-            singleWindowFeatures[i] = singleDirectionFeatures;
-        }
-        output[k] = singleWindowFeatures;
-    }
     return output;
 }
 
@@ -107,15 +103,15 @@ vector<vector<vector<double>>> formatOutputResults(const double* featureValues,
      * number of directions provided, in a window
      * By default all 4 directions are considered; order is 0->45->90->135°
      */
-vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * pixels, const ImageData& img){
+vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned int * pixels, const ImageData& img){
 	// Pre-Allocate working area
-	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.symmetric);
+	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.directionType, progArg.symmetric);
 
 	// How many windows need to be allocated
     int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
                           * (img.getColumns() - progArg.windowSize + 1);
     // How many directions need to be allocated for each window
-    short int numberOfDirs = progArg.numberOfDirections;
+    short int numberOfDirs = 1;
     // How many feature values need to be allocated for each direction
     int featuresCount = Features::getSupportedFeaturesCount();
 
@@ -151,7 +147,7 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
         for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
 			// Create local window information
 			Window actualWindow {windowData.side, windowData.distance,
-                                 numberOfDirs, windowData.symmetric};
+                                 progArg.directionType, windowData.symmetric};
 			// tell the window its relative offset (starting point) inside the image
 			actualWindow.setSpacialOffsets(i,j);
 			// Launch the computation of features on the window
@@ -161,7 +157,7 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 
 	// Give the data structure
     vector<vector<vector<double>>> output =
-            formatOutputResults(featuresList, numberOfWindows, numberOfDirs, featuresCount);
+            formatOutputResults(featuresList, numberOfWindows, featuresCount);
 
 	free(featuresList);
 	wa.release();
@@ -169,54 +165,91 @@ vector<WindowFeatures> ImageFeatureComputer::computeAllFeatures(unsigned int * p
 }
 
 
+
+
 /*
  * This method will generate a vector of vectors (1 for each direction) of features names and all their values found in the image
  * Es. <Entropy , (0.1, 0.2, 3, 4 , ...)>
  * Es. <IMOC, (-1,-2,0)>
  */
-vector<vector<FeatureValues>> ImageFeatureComputer::getAllDirectionsAllFeatureValues(const vector<WindowFeatures>& imageFeatures){
+vector<vector<FeatureValues>> ImageFeatureComputer::getAllDirectionsAllFeatureValues(const vector<vector<WindowFeatures>>& imageFeatures){
 	vector<FeatureNames> supportedFeatures = Features::getAllSupportedFeatures();
-	int numberOfDirs = progArg.numberOfDirections;
 	// Direzioni[] aventi Features[] aventi double[]
-	vector<vector<FeatureValues>> output(numberOfDirs);
+	vector<vector<FeatureValues>> output(1);
 
 	// for each computed direction
-	for (int j = 0; j < numberOfDirs; ++j) {
-		// 1 external vector cell for each of the 18 features
-		// each cell has all the values of that feature
-		vector<FeatureValues> featuresInDirection(supportedFeatures.size());
+	// 1 external vector cell for each of the 18 features
+	// each cell has all the values of that feature
+	vector<FeatureValues> featuresInDirection(supportedFeatures.size());
 
-		// for each computed window
-		for (int i = 0; i < imageFeatures.size() ; ++i) {
-			// for each supported feature
-			for (int k = 0; k < supportedFeatures.size(); ++k) {
-				FeatureNames actualFeature = supportedFeatures[k];
-				// Push the value found in the output list for that direction
-				featuresInDirection[actualFeature].push_back(imageFeatures.at(i).at(j).at(actualFeature));
-			}
+	// for each computed window
+	for (int i = 0; i < imageFeatures.size() ; ++i) {
+		// for each supported feature
+		for (int k = 0; k < supportedFeatures.size(); ++k) {
+			FeatureNames actualFeature = supportedFeatures[k];
+			// Push the value found in the output list for that direction
+			featuresInDirection[actualFeature].push_back(imageFeatures.at(i).at(0).at(actualFeature));
 		}
-		output[j] = featuresInDirection;
+
 	}
+	output[0] = featuresInDirection;
 
 	return output;
 }
 
-void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures){
-	string foldersPath[] ={ "Values0/", "Values45/", "Values90/", "Values135/"};
-	int numberOfDirs = progArg.numberOfDirections;
+/* Support code for putting the results in the right output folder */
+void createFolder(string folderPath){
+    if (mkdir(folderPath.c_str(), 0777) == -1) {
+        if (errno == EEXIST) {
+            // alredy exists
+        } else {
+            // something else
+            cerr << "cannot create save folder: " << folderPath << endl
+                 << "error:" << strerror(errno) << endl;
+        }
+    }
+}
 
-	for (int i = 0; i < numberOfDirs; ++i) {
-		// First create the the folder
-		if (mkdir(foldersPath[i].c_str(), 0777) == -1) {
-			if (errno == EEXIST) {
-				// alredy exists
-			} else {
-				// something else
-				cout << "cannot create save folder;  error:" << strerror(errno) << endl;
-			}
-		}
-		saveDirectedFeaturesToFiles(imageFeatures[i], foldersPath[i]);
-	}
+// UNIX
+struct MatchPathSeparator
+{
+    bool operator()( char ch ) const
+    {
+        return ch == '/';
+    }
+};
+
+// remove the path and keep filename+extension
+string basename( std::string const& pathname )
+{
+    return string(
+            find_if( pathname.rbegin(), pathname.rend(),
+                     MatchPathSeparator() ).base(),
+            pathname.end() );
+}
+
+// remove extension from filename
+string removeExtension( std::string const& filename )
+{
+    string::const_reverse_iterator
+            pivot
+            = find( filename.rbegin(), filename.rend(), '.' );
+    return pivot == filename.rend()
+           ? filename
+           : std::string( filename.begin(), pivot.base() - 1 );
+}
+
+void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures){
+    int dirType = progArg.directionType;
+
+    string fileName = removeExtension(basename(progArg.imagePath));
+    createFolder(fileName);
+    string foldersPath[] ={ "/Values0/", "/Values45/", "/Values90/", "/Values135/"};
+
+    // First create the the folder
+    string outputDirectionPath = fileName + foldersPath[dirType -1];
+    createFolder(outputDirectionPath);
+    saveDirectedFeaturesToFiles(imageFeatures[0], outputDirectionPath);
 }
 
 void ImageFeatureComputer::saveDirectedFeaturesToFiles(const vector<FeatureValues>& imageDirectedFeatures,
@@ -246,28 +279,21 @@ void ImageFeatureComputer::saveFeatureToFile(const pair<FeatureNames, vector<dou
 
 }
 
-
 /*
  * This method will create ALL the images associated with each feature,
  * for ALL the directions evaluated.
 */
 void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 		const int colNumber, const vector<vector<FeatureValues>>& imageFeatures){
-	string foldersPath[] ={ "Images0/", "Images45/", "Images90/", "Images135/"};
+    int dirType = progArg.directionType;
 
-	// For each direction
-	for(int i=0; i < imageFeatures.size(); i++){
-		// Create the folder
-		if (mkdir(foldersPath[i].c_str(), 0777) == -1) {
-			if (errno == EEXIST) {
-				// alredy exists
-			} else {
-				// something else
-				cout << "cannot create save folder;  error:" << strerror(errno) << endl;
-			}
-		}
-		saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[i], foldersPath[i]);
-	}
+    string fileName = removeExtension(basename(progArg.imagePath));
+    string foldersPath[] ={ "/Images0/", "/Images45/", "/Images90/", "/Images135/"};
+    string outputDirectionPath = fileName + foldersPath[dirType -1];
+    createFolder(outputDirectionPath);
+    // For each direction computed
+    saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[0],
+                outputDirectionPath);
 }
 
 /*

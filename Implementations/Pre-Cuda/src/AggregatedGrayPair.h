@@ -5,16 +5,20 @@
 #ifndef FEATUREEXTRACTOR_AGGREGATEDGRAYPAIR_H
 #define FEATUREEXTRACTOR_AGGREGATEDGRAYPAIR_H
 
+// Custom types for easy future correction
+// Unsigned shorts half the memory footprint of the application
+typedef unsigned short grayLevelType;
+typedef unsigned short frequencyType;
 
 class AggregatedGrayPair {
 public:
     AggregatedGrayPair();
-    AggregatedGrayPair(unsigned int i, unsigned int frequency);
+    AggregatedGrayPair(grayLevelType i, frequencyType frequency);
     void printPair() const;
-    int getAggregatedGrayLevel() const;
-    unsigned int getFrequency() const;
+    grayLevelType getAggregatedGrayLevel() const;
+    frequencyType getFrequency() const;
     bool compareTo(AggregatedGrayPair other) const;
-    void increaseFrequency(unsigned int amount);
+    void increaseFrequency(frequencyType amount);
 
     bool operator==(const AggregatedGrayPair& other) const{
         return (grayLevel == other.getAggregatedGrayLevel());
@@ -26,12 +30,12 @@ public:
     }
 
     AggregatedGrayPair& operator++(){
-        this->frequency +=1;
+        this->frequency += 1;
         return *this;
     }
 private:
-    unsigned int grayLevel;
-    unsigned int frequency;
+    grayLevelType grayLevel;
+    frequencyType frequency;
 
 };
 

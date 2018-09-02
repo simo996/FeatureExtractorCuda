@@ -15,7 +15,7 @@ __device__ GrayPair::GrayPair()
     frequency = 0;
 }
 
-__device__ GrayPair::GrayPair (unsigned int i, unsigned int j) {
+__device__ GrayPair::GrayPair (grayLevelType i, grayLevelType j) {
    grayLevelI = i;
    grayLevelJ = j;
    frequency = 1;
@@ -41,14 +41,14 @@ __device__ void GrayPair::printPair()const {
 }
 
 /* Extracting pairs */
-__device__ unsigned int GrayPair::getGrayLevelI() const{
+__device__ grayLevelType GrayPair::getGrayLevelI() const{
     return grayLevelI;
 }
 
-__device__ unsigned int GrayPair::getGrayLevelJ() const{
+__device__ grayLevelType GrayPair::getGrayLevelJ() const{
     return grayLevelJ;
 }
 
-__device__ unsigned int GrayPair::getFrequency() const {
+__device__ frequencyType GrayPair::getFrequency() const {
     return frequency;
 }

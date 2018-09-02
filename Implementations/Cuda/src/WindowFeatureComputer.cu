@@ -20,13 +20,9 @@ __device__ WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
  	By default all 4 directions are evaluated
 */
 __device__ void WindowFeatureComputer::computeWindowFeatures() {
-
-	for(int i = 0; i < windowData.numberOfDirections; i++)
-	{
-		// Get shift vector for each direction of interest
-		Direction actualDir = Direction(i);
-		// create the autonomous thread of computation
-		FeatureComputer fc(pixels, image, actualDir.shiftRows, actualDir.shiftColumns,
-						   windowData, workArea, i);
-	}
+  	// Get shift vector for each direction of interest
+    Direction actualDir = Direction(windowData.directionType);
+    // create the autonomous thread of computation
+    FeatureComputer fc(pixels, image, actualDir.shiftRows, actualDir.shiftColumns,
+						   windowData, workArea);
 }

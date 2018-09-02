@@ -10,7 +10,7 @@ AggregatedGrayPair::AggregatedGrayPair() {
     frequency = 0;
 }
 
-AggregatedGrayPair::AggregatedGrayPair(unsigned int i, unsigned int freq){
+AggregatedGrayPair::AggregatedGrayPair(grayLevelType i, frequencyType freq){
     grayLevel = i;
     frequency = freq;
 }
@@ -22,11 +22,11 @@ void AggregatedGrayPair::printPair() const {
 }
 
 /* Extracting pairs */
-int AggregatedGrayPair::getAggregatedGrayLevel() const{
+grayLevelType AggregatedGrayPair::getAggregatedGrayLevel() const{
     return grayLevel;
 }
 
-unsigned int AggregatedGrayPair::getFrequency() const {
+frequencyType AggregatedGrayPair::getFrequency() const {
     return frequency;
 }
 
@@ -34,7 +34,7 @@ bool AggregatedGrayPair::compareTo(AggregatedGrayPair other) const{
     return (grayLevel == other.getAggregatedGrayLevel());
 }
 
-void AggregatedGrayPair::increaseFrequency(unsigned int amount){
+void AggregatedGrayPair::increaseFrequency(frequencyType amount){
     frequency += amount;
 }
 
