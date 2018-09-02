@@ -47,10 +47,6 @@ __device__ GLCM::~GLCM(){
 
 // Warning, se simmetrica lo spazio deve raddoppiare
 __device__ int GLCM::getNumberOfPairs() const {
-    if(windowData.symmetric)
-        // Each element was counted twice
-        return (2 * numberOfPairs);
-    else
         return numberOfPairs;
 }
 

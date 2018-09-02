@@ -24,6 +24,14 @@ __device__ FeatureComputer::FeatureComputer(const unsigned int * pixels, const I
     computeDirectionalFeatures();
 }
 
+__device__ void FeatureComputer::computeOutputWindowFeaturesIndex(){
+    // this will be thread idx e thread idy
+    int rowOffset = windowData.imageRowsOffset;
+    int colOffset = windowData.imageColumnsOffset;
+    // this value identifies the window part of the result in the global array
+    outputWindowOffset = (rowOffset * (image.getColumns() - windowData.side + 1)) + colOffset;
+}
+
 __device__ void FeatureComputer::computeDirectionalFeatures() {
     GLCM glcm(pixels, image, windowData, workArea);
     //glcm.printGLCM(); // Print data and elements for debugging
@@ -149,13 +157,7 @@ __device__ inline double computeHyStep(const double grayLevelProbability){
 }
 
 
-__device__ void FeatureComputer::computeOutputWindowFeaturesIndex(){
-    // this will be thread idx e thread idy
-    int rowOffset = windowData.imageRowsOffset;
-    int colOffset = windowData.imageColumnsOffset;
-    // this value identifies the window part of the result in the global array
-    outputWindowOffset = (rowOffset * (image.getRows() - windowData.side + 1)) + colOffset;
-}
+
 /*
     This method will compute all the features computable from glcm gray level pairs
 */
