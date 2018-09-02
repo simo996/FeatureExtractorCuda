@@ -38,6 +38,7 @@ void FeatureComputer::computeDirectionalFeatures() {
 
     // Imoc
     extractMarginalFeatures(glcm, featureOutput);
+    double * temp = featureOutput;
 }
 
 
@@ -157,7 +158,10 @@ void FeatureComputer::computeOutputWindowFeaturesIndex(){
     int rowOffset = windowData.imageRowsOffset;
     int colOffset = windowData.imageColumnsOffset;
     // this value identifies the window part of the result in the global array
-    outputWindowOffset = (rowOffset * (image.getRows() - windowData.side + 1)) + colOffset;
+    int smallestWidt = image.getRows();
+    if(image.getColumns() < smallestWidt)
+        smallestWidt = image.getColumns();
+    outputWindowOffset = (rowOffset * (smallestWidt - windowData.side + 1)) + colOffset;
 }
 /*
     This method will compute all the features computable from glcm gray level pairs

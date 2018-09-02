@@ -97,8 +97,11 @@ __device__ inline int GLCM::computeWindowRowOffset()
 // addressing method for reference pixel; see documentation
 __device__ inline int GLCM::getReferenceIndex(const int i, const int j,
                                    const int initialWindowRowOffset, const int initialWindowColumnOffset){
-    int index = (((i + windowData.imageRowsOffset) + (initialWindowRowOffset * windowData.distance)) * img.getRows())
-            + ((j + windowData.imageColumnsOffset) + (initialWindowColumnOffset * windowData.distance));
+    int row = (i + windowData.imageRowsOffset) // starting point in the image
+            + (initialWindowRowOffset * windowData.distance); // add direction eventual down-shift (45°, 90°, 135°)
+    int col = (j + windowData.imageColumnsOffset) + // starting point in the image
+            (initialWindowColumnOffset * windowData.distance); // add direction shift
+    int index = ( row * img.getColumns()) + col;
     assert(index >= 0);
     return index;
 }
@@ -106,8 +109,11 @@ __device__ inline int GLCM::getReferenceIndex(const int i, const int j,
 // addressing method for neighbor pixel; see documentation
 __device__ inline int GLCM::getNeighborIndex(const int i, const int j,
                                   const int initialWindowColumnOffset){
-    int index = ((i + windowData.imageRowsOffset) * img.getColumns()) +
-            ((j + windowData.imageColumnsOffset) + (initialWindowColumnOffset * windowData.distance) + (windowData.shiftColumns * windowData.distance));
+    int row = (i + windowData.imageRowsOffset); // starting point in the image
+    int col = (j + windowData.imageColumnsOffset) + // starting point in the image
+              (initialWindowColumnOffset * windowData.distance) +  // add 135* right-shift
+              (windowData.shiftColumns * windowData.distance); // add direction shift
+    int index = (row * img.getColumns()) + col;
     assert(index >= 0);
     return index;
 }
