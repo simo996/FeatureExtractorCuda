@@ -79,7 +79,7 @@ Image ImageLoader::readImage(const string fileName, bool cropResolution, int bor
     Mat imgRead = readMriImage(fileName, cropResolution);
     printMatImageData(imgRead);
     // Create borders to the image
-    //copyMakeBorder(imgRead, imgRead, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
+    copyMakeBorder(imgRead, imgRead, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
     // COPY THE IMAGE DATA TO SMALL array
     vector<uint> pixels(imgRead.total());
 

@@ -122,19 +122,17 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
     if(windowData.symmetric)
         numberOfPairsInWindow *= 2;
 
-    int numberOfThreads = 1;
-
     // Each 1 of these data structures allow 1 thread to work
 	GrayPair* elements = (GrayPair*) malloc(sizeof(GrayPair)
-	        * numberOfPairsInWindow * numberOfThreads);
+	        * numberOfPairsInWindow);
 	AggregatedGrayPair* summedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-	        * numberOfPairsInWindow * numberOfThreads);
+	        * numberOfPairsInWindow );
     AggregatedGrayPair* subtractedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-            * numberOfPairsInWindow * numberOfThreads);
+            * numberOfPairsInWindow);
     AggregatedGrayPair* xMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-            * numberOfPairsInWindow * numberOfThreads);
+            * numberOfPairsInWindow);
     AggregatedGrayPair* yMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-            * numberOfPairsInWindow * numberOfThreads);
+            * numberOfPairsInWindow);
 
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);

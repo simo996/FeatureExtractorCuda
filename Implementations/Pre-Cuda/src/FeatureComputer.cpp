@@ -14,7 +14,7 @@ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& i
                                  : pixels(pixels), image(img),
                                  windowData(wd), workArea(wa) {
     windowData.setDirectionShifts(shiftRows, shiftColumns);
-    // deduct what feature this thread is computing
+    // deduct what window this thread is computing
     computeOutputWindowFeaturesIndex();
     // get the pointer to the memlocation where to put feature results
     int featuresCount = Features::getSupportedFeaturesCount();
@@ -23,6 +23,15 @@ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& i
     featureOutput = rightLocation;
     // Compute features
     computeDirectionalFeatures();
+}
+
+
+void FeatureComputer::computeOutputWindowFeaturesIndex(){
+    // this will be thread idx e thread idy
+    int rowOffset = windowData.imageRowsOffset;
+    int colOffset = windowData.imageColumnsOffset;
+    // this value identifies the window part of the result in the global array
+    outputWindowOffset = (rowOffset * (image.getColumns() - windowData.side + 1)) + colOffset;
 }
 
 void FeatureComputer::computeDirectionalFeatures() {
@@ -153,16 +162,6 @@ inline double computeHyStep(const double grayLevelProbability){
 }
 
 
-void FeatureComputer::computeOutputWindowFeaturesIndex(){
-    // this will be thread idx e thread idy
-    int rowOffset = windowData.imageRowsOffset;
-    int colOffset = windowData.imageColumnsOffset;
-    // this value identifies the window part of the result in the global array
-    int smallestWidt = image.getRows();
-    if(image.getColumns() < smallestWidt)
-        smallestWidt = image.getColumns();
-    outputWindowOffset = (rowOffset * (smallestWidt - windowData.side + 1)) + colOffset;
-}
 /*
     This method will compute all the features computable from glcm gray level pairs
 */
