@@ -115,7 +115,6 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
     // Pre-Allocate the array that will contain features
     double* featuresList = (double*) malloc(numberOfWindows * numberOfDirs * featuresCount * sizeof(double));
 
-
     // 	Pre-Allocate working area
     int extimatedWindowRows = windowData.side; // 0° has all rows
     int extimateWindowCols = windowData.side - (windowData.distance * 1); // at least 1 column is lost
@@ -123,31 +122,32 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
     if(windowData.symmetric)
         numberOfPairsInWindow *= 2;
 
+    int numberOfThreads = 1;
+
     // Each 1 of these data structures allow 1 thread to work
 	GrayPair* elements = (GrayPair*) malloc(sizeof(GrayPair)
-	        * numberOfPairsInWindow);
+	        * numberOfPairsInWindow * numberOfThreads);
 	AggregatedGrayPair* summedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-	        * numberOfPairsInWindow);
+	        * numberOfPairsInWindow * numberOfThreads);
     AggregatedGrayPair* subtractedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-            * numberOfPairsInWindow);
+            * numberOfPairsInWindow * numberOfThreads);
     AggregatedGrayPair* xMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-            * numberOfPairsInWindow);
+            * numberOfPairsInWindow * numberOfThreads);
     AggregatedGrayPair* yMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair)
-            * numberOfPairsInWindow);
+            * numberOfPairsInWindow * numberOfThreads);
 
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
 
-	// START GPU WORK
 	// Slide windows on the image
-    for(int j = 0; (j + windowData.side) <= img.getColumns() ; j++){
-        for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
+    for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
+        for(int j = 0; (j + windowData.side) <= img.getColumns(); j++){
 			// Create local window information
 			Window actualWindow {windowData.side, windowData.distance,
                                  progArg.directionType, windowData.symmetric};
 			// tell the window its relative offset (starting point) inside the image
 			actualWindow.setSpacialOffsets(i,j);
-			// Launch the computation of features on the window
+            // Launch the computation of features on the window
 			WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
 		}
 	}
