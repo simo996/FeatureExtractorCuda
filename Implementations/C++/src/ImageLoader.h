@@ -18,6 +18,7 @@ class ImageLoader {
 public:
     static Mat readMriImage(string fileName, bool cropResolution);
     static Image readImage(string fileName, bool cropResolution);
+    static Mat createDoubleMat(int rows, int cols, const vector<double>& input);
     static void writeToDouble(int rows, int cols, const vector<double>& input, Mat& output);
     static Mat convertToGrayScale(const Mat& inputImage);
     static Mat stretchImage(const Mat& inputImage);

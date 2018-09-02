@@ -25,15 +25,10 @@ public:
     WindowFeatureComputer(const Image& img, const Window& wd);
     // Will be computed features in the directions specified
     // Default = 4 = all feautures ; oder 0->45->90->135°
-    WindowFeatures computeWindowFeatures(int numberOfDirections = 4);
+    WindowFeatures computeWindowFeatures();
     /* Oss. No sense in computing a single feature, simply select the one
       needed from the complete list
      */
-    // TODO return an ostream
-    static void printAllDirectionsAllFeatures(const WindowFeatures &featureList); // 4 directions with dir label
-    // Print the label of the direction and the features
-    static void printSingleDirectionAllFeatures(const vector<double>& featureList); // with dir
-
 private:
         // Initialization data to pass to each FeatureComputer
         Image image;

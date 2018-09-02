@@ -52,6 +52,14 @@ void ImageLoader::writeToDouble(const int rows, const int cols,
     }
 }
 
+Mat ImageLoader::createDoubleMat(const int rows, const int cols,
+                                 const vector<double>& input){
+    Mat_<double> output = Mat(rows, cols, CV_64F);
+    // Copy the values into the image
+    memcpy(output.data, input.data(), rows * cols * sizeof(double));
+    return output;
+}
+
 
 inline void readUchars(vector<uint>& output, Mat& img){
     typedef MatConstIterator_<uchar> MI;
@@ -77,9 +85,9 @@ Image ImageLoader::readImage(const string fileName, bool cropResolution){
     // Open image from file system
     Mat imgRead = readMriImage(fileName, cropResolution);
     printMatImageData(imgRead);
+    // Create borders to the image
+    //copyMakeBorder(imgRead, imgRead, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
     // COPY THE IMAGE DATA TO SMALL array
-    // This array need to be moved to gpu shared memory
-    // Where the data will be put
     vector<uint> pixels(imgRead.total());
 
     int maxGrayLevel;
