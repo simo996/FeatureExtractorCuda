@@ -115,7 +115,37 @@ vector<vector<vector<double>>> formatOutputResults(const double* featureValues,
 	return output;
 }
 
+/* CUDA METHODS */
 
+void cudaCheckError(cudaError_t err){
+	if( err != cudaSuccess ) {
+		cerr << "ERROR: " << cudaGetErrorString(err) << endl;
+		exit(-1);
+	}
+}
+
+// Print data about kernel launch configuration
+void printGPULaunchConfiguration(dim3 Grid, dim3 Blocks){
+	cout << "\t- GPU Launch Configuration -" << endl;
+	cout << "\t GRID\t rows: " << Grid.y << " x cols: " << Grid.x << endl;
+	cout << "\t BLOCK\t rows: " << Blocks.y << " x cols: " << Blocks.x << endl;
+}
+
+// 	Print data about the GPU
+void queryGPUData(){
+	cudaDeviceProp prop;
+	cudaGetDeviceProperties(&prop, 0);
+	cout << "\t- GPU DATA -" << endl;
+	cout << "\tDevice name: " << prop.name << endl;
+	cout << "\tNumber of multiprocessors: " << prop.multiProcessorCount << endl;
+	size_t gpuMemory = prop.totalGlobalMem;
+	cout << "\tTotalGlobalMemory: " << (gpuMemory / 1024 / 1024) << " MB" << endl;
+}
+
+ /* 
+	Default Cuda Block Dimensioning 
+	Square with side of 12
+*/
 int getCudaBlockSideX(){
 	return 12;
 }
@@ -125,6 +155,10 @@ int getCudaBlockSideY(){
 	return getCudaBlockSideX();
 }
 
+/* 
+	The block is always fixed, only the grid changes 
+	according to memory/image size 
+*/
 dim3 getBlockConfiguration()
 {
 	// TODO implement GPU architecture specific dimensioning 
@@ -135,12 +169,15 @@ dim3 getBlockConfiguration()
 	return configuration;
 }
 
+// create a grid from image size
 int getGridSide(int imageRows, int imageCols){
+	// Smallest side of a rectangular image will determine grid dimension
 	int imageSmallestSide = imageRows;
 	if(imageCols < imageSmallestSide)
 		imageSmallestSide = imageCols;
    
 	int blockSide = getCudaBlockSideX();
+	// Check if image size is low enough to fit in maximum grid
 	// round up division 
 	int gridSide = (imageSmallestSide + blockSide -1) / blockSide;
 	// Cant' exceed 65536 blocks in grid
@@ -150,36 +187,24 @@ int getGridSide(int imageRows, int imageCols){
 	return gridSide;
 }
 
-// 1 square of blocks
-dim3 getGridConfiguration(int imageRows, int imageCols)
+// 1 square of blocks from physical image dimensions
+dim3 getGridFromImage(int imageRows, int imageCols)
 {
 	return dim3(getGridSide(imageRows, imageCols), 
 		getGridSide(imageRows, imageCols));
 }
 
-// Fallback Grid dimensioning when memory is not enough
-dim3 getDefaultBlock(){
-	return dim3(12, 12);
-}
-
-dim3 getDefaultGrid(){
-	return dim3(8, 8);
-}
-
-void cudaCheckError(cudaError_t err){
-	if( err != cudaSuccess ) {
-		cerr << "ERROR: " << cudaGetErrorString(err) << endl;
-		exit(-1);
-	}
-}
-
-void incrementGPUHeap(size_t newHeapSize){
+/* 
+	Allow threads to malloc the memory needed for their computation 
+	If this can't be done program will crash
+*/
+void incrementGPUHeap(size_t newHeapSize, size_t featureSize){
 	cudaCheckError(cudaDeviceSetLimit(cudaLimitMallocHeapSize,  newHeapSize));
 	cudaDeviceGetLimit(&newHeapSize, cudaLimitMallocHeapSize);
-	cout << "\tWorkAreas size: (MB) " << newHeapSize/1024/1024 << endl;
+	cout << "\tGPU threads space: (MB) " << newHeapSize / 1024 / 1024 << endl;
 	size_t free, total;
 	cudaMemGetInfo(&free,&total);
-	cout << "\tGPU free memory: (MB) " << free / 1024/1024 << endl;
+	cout << "\tGPU free memory: (MB) " << (free - newHeapSize - featureSize) / 1024/1024 << endl;
 }
 
 /* 
@@ -214,33 +239,71 @@ bool checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
 		return false;
 	}
 	else{
-		// Allow the GPU to allocate the necessary space
-		incrementGPUHeap(totalWorkAreas);
+		// Allow the GPU threads to allocate the necessary space
+		incrementGPUHeap(totalWorkAreas, featureSize);
 		return true;
 	}
 }
 
-/*	
-	Print data about kernel launch configuration
-*/
-void printGPULaunchConfiguration(dim3 Grid, dim3 Blocks){
-	cout << "\t- GPU Launch Configuration -" << endl;
-	cout << "\t GRID\t rows: " << Grid.y << " x cols: " << Grid.x << endl;
-	cout << "\t BLOCK\t rows: " << Blocks.y << " x cols: " << Blocks.x << endl;
+// will return the smallest grid that can fit into the GPU memory
+dim3 getGridFromAvailableMemory(int numberOfPairs,
+ size_t featureSize){
+
+	// Get GPU mem size
+	size_t freeGpuMemory, total;
+	cudaMemGetInfo(&freeGpuMemory,&total);
+
+	// Compute the memory needed for a single thread
+	size_t workAreaSpace = numberOfPairs * 
+		( 4 * sizeof(AggregatedGrayPair) + 1 * sizeof(GrayPair));
+	// add some space needed for local variables
+	int FACTOR = 2; 
+	workAreaSpace *= FACTOR;
+
+	// how many thread fit into a single block
+	int threadInBlock = getCudaBlockSideX() * getCudaBlockSideX();
+
+	size_t singleBlockMemoryOccupation = workAreaSpace * threadInBlock;
+	// Even 1 block can be launched
+	if(freeGpuMemory <= singleBlockMemoryOccupation){
+		handleInsufficientMemory(); // exit
+	}
+
+	cout << "WARNING! Maximum available gpu memory consumed" << endl;
+	// how many blocks can be launched
+	int numberOfBlocks = freeGpuMemory / singleBlockMemoryOccupation;
+	
+	// Create 2d grid of blocks
+	int gridSide = sqrt(numberOfBlocks);
+	return dim3(gridSide, gridSide);
 }
 
-/*
-	Print data about the GPU
+
+/* 
+	Method that will generate the computing grid 
+	Gpu allocable heap will be changed according to the grid individuated
+	If not even 1 block can be launched the program will abort
 */
-void queryGPUData(){
-	cudaDeviceProp prop;
-	cudaGetDeviceProperties(&prop, 0);
-	cout << "\t- GPU DATA -" << endl;
-	cout << "\tDevice name: " << prop.name << endl;
-	cout << "\tNumber of multiprocessors: " << prop.multiProcessorCount << endl;
-	size_t gpuMemory = prop.totalGlobalMem;
-	cout << "\tTotalGlobalMemory: " << (gpuMemory/1024/2014) << " MB" << endl;
+dim3 getGrid(int numberOfPairsInWindow, size_t featureSize, int imgRows, int imgCols){
+ 	dim3 Blocks = getBlockConfiguration();
+	// Generate grid from image dimensions
+	dim3 Grid = getGridFromImage(imgRows, imgCols);
+	// check if there is enough space on the GPU to allocate working areas
+	int numberOfBlocks = Grid.x * Grid.y;
+	int numberOfThreadsPerBlock = Blocks.x * Blocks.y;
+	int numberOfThreads = numberOfThreadsPerBlock * numberOfBlocks;
+	if(! checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, numberOfThreads, featureSize))
+	{
+		Grid = getGridFromAvailableMemory(numberOfPairsInWindow, featureSize);
+		// Get the total number of threads and see if the gpu memory is sufficient
+		numberOfBlocks = Grid.x * Grid.y;
+		numberOfThreads = numberOfThreadsPerBlock * numberOfBlocks;
+		checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, numberOfThreads, featureSize);
+	}
+	printGPULaunchConfiguration(Grid, Blocks);
+	return Grid;
 }
+
 
 /* 
 	Each threads will get the memory needed for its computation 
@@ -271,17 +334,20 @@ __device__ WorkArea generateThreadWorkArea(int numberOfPairs,
 }
 
 /*
-	This kernel will be called when the GPU doesn't have enough memory for 
-	allowing 1 thread to compute only 1 window 
+	This kernel will iterate only when the GPU doesn't have enough memory for 
+	allowing 1 thread to compute only 1 window or when 
+	the image has recatungar shape
 */
-__global__ void computeFeaturesMemoryEfficient(unsigned int * pixels, 
+__global__ void computeFeatures(unsigned int * pixels, 
 	ImageData img, Window windowData, int numberOfPairsInWindow, 
 	double* d_featuresList){
 	// Memory location on which the thread will work
 	WorkArea wa = generateThreadWorkArea(numberOfPairsInWindow, d_featuresList);
-
+	// Get X and Y starting coordinates
 	int x = blockIdx.x * blockDim.x + threadIdx.x; 
 	int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+	// If 1 thread need to compute more than 1 window 
 	// How many shift right for reaching the next window to compute
 	int colsStride =  gridDim.x * blockDim.x; 
 	// How many shift down for reaching the next window to compute
@@ -301,28 +367,6 @@ __global__ void computeFeaturesMemoryEfficient(unsigned int * pixels,
 	wa.release();
 }
 
-/* 1 thread will compute the features for 1 window */
-__global__ void computeFeatures(unsigned int * pixels, 
-	ImageData img, Window windowData, int numberOfPairsInWindow, 
-	double* d_featuresList){
-	// Memory location on which the thread will work
-	WorkArea wa = generateThreadWorkArea(numberOfPairsInWindow, d_featuresList);
-	int x = blockIdx.x * blockDim.x + threadIdx.x; 
-	int y = blockIdx.y * blockDim.y + threadIdx.y; 
-	
-	// Create local window information
-	Window actualWindow {windowData.side, windowData.distance,
-								 windowData.directionType, windowData.symmetric};
-	if((x + windowData.side) <= img.getRows()){
-		if((y + windowData.side) <= img.getColumns()){
-			// tell the window its relative offset (starting point) inside the image
-			actualWindow.setSpacialOffsets(x, y);
-			// Launch the computation of features on the window
-			WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
-		}
-	}
-	wa.release();
-}
 
 /* Need to call after kernel invocation */
 void checkKernelLaunchError(){
@@ -379,33 +423,14 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
 	// try to squiize more performance
 	cudaDeviceSetCacheConfig(cudaFuncCachePreferL1);
 
-	// Get Grid and block configuration from physical image
+	// Get Grid and block configuration
 	dim3 Blocks = getBlockConfiguration(); 
-	dim3 Grid = getGridConfiguration(img.getRows(), img.getColumns());
+	dim3 Grid = getGrid(numberOfPairsInWindow, featureSize, 
+		img.getRows(), img.getColumns());
 
-	// check if there is enough space on the GPU to allocate working areas
-	int numberOfBlocks = Grid.x * Grid.y;
-	int numberOfThreadsPerBlock = Blocks.x * Blocks.y;
-	int numberOfThreads = numberOfThreadsPerBlock * numberOfBlocks;
-	if(checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, numberOfThreads, featureSize))
-	{
-		printGPULaunchConfiguration(Grid, Blocks);
-		computeFeatures<<<Grid, Blocks>>>(d_pixels, img, windowData, 
+	// Launch GPU computation
+	computeFeatures<<<Grid, Blocks>>>(d_pixels, img, windowData, 
 			numberOfPairsInWindow, d_featuresList);
-	}
-	else{
-		// 5k+ threads
-		Grid = getDefaultGrid();
-		Blocks = getDefaultBlock();
-		// Get the total number of threads and see if the gpu memory is sufficient
-		int numberOfBlocks = Grid.x * Grid.y;
-		int numberOfThreadsPerBlock = Blocks.x * Blocks.y;
-		int numberOfThreads = numberOfThreadsPerBlock * numberOfBlocks;
-		checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, numberOfThreads, featureSize);
-		printGPULaunchConfiguration(Grid, Blocks);
-		computeFeaturesMemoryEfficient<<<Grid, Blocks>>>(d_pixels, img, windowData, 
-			numberOfPairsInWindow, d_featuresList);
-	}
 	// Check if everything is ok
 	checkKernelLaunchError();
 
