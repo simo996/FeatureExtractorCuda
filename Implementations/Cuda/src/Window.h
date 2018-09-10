@@ -1,10 +1,3 @@
-/*
- * Window.h
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #ifndef WINDOW_H_
 #define WINDOW_H_
 
@@ -18,19 +11,28 @@
 #define CUDA_DEV
 #endif
 
+/*
+    This class embeds all the necessary metadata used from GLCM class to locate
+    the pixel pairs that need to be processed
+*/
+
 class Window {
 public:
-	// Structural data uniform for all windows
-	short int side; // side of each window
-    short int distance; // modulus of vector reference-neighbor pixel pair
-    bool symmetric;
-    short int directionType;
     CUDA_HOSTDEV Window(short int dimension, short int distance, short int directionType, bool symmetric = false);
+    // Structural data uniform for all windows
+    short int side; // side of each window, that are squared
+    short int distance; // modulus of vector reference-neighbor pixel pair
+    bool symmetric; // eventual symmetricity of the pixel pair
+
+    // This is a convenience attribute that WindowFeatureComputer uses
+    short int directionType; // redundant information
+
     // Directions shifts to locate the pixel pair <reference,neighbor>
     // The 4 possible combinations are imposed after the creation of the window
-    int shiftRows;
+    int shiftRows; 
     int shiftColumns;
     CUDA_HOSTDEV void setDirectionShifts(int shiftRows, int shiftColumns);
+
      // Offset to locate the starting point of the window inside the entire image
     int imageRowsOffset;
     int imageColumnsOffset;

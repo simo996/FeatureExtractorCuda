@@ -1,7 +1,3 @@
-//
-// Created by simo on 26/07/18.
-//
-
 #include "Window.h"
 
 Window::Window(const short int dimension, const short int distance,

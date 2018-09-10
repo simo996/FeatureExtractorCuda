@@ -1,10 +1,3 @@
-/*
- * Direction.cpp
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #include <iostream>
 #include <stdio.h>
 #include <cstring>

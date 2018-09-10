@@ -1,10 +1,3 @@
-/*
- * GrayPair.h
- *
- *  Created on: 25/ago/2018
- *      Author: simone
- */
-
 #ifndef GRAYPAIR_H_
 #define GRAYPAIR_H_
 
@@ -23,17 +16,28 @@
 typedef short unsigned grayLevelType;
 typedef short unsigned frequencyType;
 
+/*
+    This class represent the gray levels of a pixel pair
+*/
+
 class GrayPair{
 public:
+    // Constructor for initializing pre-allocated work areas
 	CUDA_DEV GrayPair();
+    // Constructor for effective gray-tone pairs
 	CUDA_DEV GrayPair(grayLevelType i, grayLevelType j);
+    // Getters
 	CUDA_DEV grayLevelType getGrayLevelI() const;
 	CUDA_DEV grayLevelType getGrayLevelJ() const;
 	CUDA_DEV frequencyType getFrequency() const;
-	CUDA_DEV void frequencyIncrease();
+    // Setter
+	CUDA_DEV void frequencyIncrease(); // frequency can be incremented only by 1
+    // method to determine equality based on the gray tones of the pair
 	CUDA_DEV bool compareTo(GrayPair other) const;
+    // show textual representation
 	CUDA_DEV void printPair() const;
 
+    // C++ operators inherited from implementation that uses STL
 	CUDA_DEV GrayPair& operator++(){
         this->frequency +=1;
         return *this;

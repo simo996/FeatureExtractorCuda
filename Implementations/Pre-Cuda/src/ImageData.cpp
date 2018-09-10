@@ -3,8 +3,6 @@
 #include <cstring>
 #include "ImageData.h"
 
-
-
 uint ImageData::getRows() const{
     return rows;
 }

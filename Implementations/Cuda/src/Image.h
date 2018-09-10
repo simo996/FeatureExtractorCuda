@@ -1,9 +1,3 @@
-/*
- * Image.h
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
 
 #ifndef IMAGE_H_
 #define IMAGE_H_
@@ -23,14 +17,23 @@
 
 using namespace std;
 
+/* This class represent the acquired image; it embeds:
+ * - all its pixels as unsigned ints
+ * - pysical dimensions (height, width as rows and columns)
+ * - the maximum gray level that could be encountered according to its type
+*/
 class Image {
 public:
     Image(vector<unsigned int> pixels, unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
             :pixels(pixels), rows(rows), columns(columns), maxGrayLevel(mxGrayLevel){};
+    // Getters
+    // Pixels will be used in GPU threads through a special handling
     vector<unsigned int> getPixels() const;
+    // Only pysical dimension can be used in GPU
     CUDA_HOSTDEV unsigned int getRows() const;
     CUDA_HOSTDEV unsigned int getColumns() const;
     CUDA_HOSTDEV unsigned int getMaxGrayLevel() const;
+    // Debug method
     CUDA_HOST void printElements() const;
 
 private:

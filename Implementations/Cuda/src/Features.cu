@@ -1,12 +1,7 @@
-/*
- * Features.cpp
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #include "Features.h"
 #include <vector>
+
+// At this moment only 18 features are supported, see the enum FeatureNames
 #define FNUMBER 18
 
 __host__ vector<FeatureNames> Features::getAllSupportedFeatures() {

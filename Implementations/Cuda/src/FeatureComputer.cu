@@ -1,9 +1,3 @@
-/*
- * FeatureComputer.cpp
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
 
 #include "FeatureComputer.h"
 

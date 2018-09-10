@@ -1,10 +1,3 @@
-/*
- * Features.h
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #ifndef FEATURES_H_
 #define FEATURES_H_
 
@@ -24,14 +17,43 @@
 
 using namespace std;
 
-enum FeatureNames { ASM, AUTOCORRELATION, ENTROPY, MAXPROB, HOMOGENEITY, CONTRAST,
-    CORRELATION, CLUSTERPROMINENCE, CLUSTERSHADE, SUMOFSQUARES, DISSIMILARITY, IDM,
-    SUMAVERAGE, SUMENTROPY, SUMVARIANCE, DIFFENTROPY, DIFFVARIANCE, IMOC
+/*
+ * List of all the feautures supported
+ * The index in the enumeration is used for accessing the right cell
+ * when saving results in a feature array
+*/
+enum FeatureNames {
+    ASM,
+    AUTOCORRELATION,
+    ENTROPY,
+    MAXPROB,
+    HOMOGENEITY,
+    CONTRAST,
+    CORRELATION,
+    CLUSTERPROMINENCE,
+    CLUSTERSHADE,
+    SUMOFSQUARES,
+    DISSIMILARITY,
+    IDM,
+    // Sum Aggregated
+    SUMAVERAGE,
+    SUMENTROPY,
+    SUMVARIANCE,
+    // Diff Aggregated
+    DIFFENTROPY,
+    DIFFVARIANCE,
+    // Marginal probability feature
+    IMOC
 };
 
+/*
+ * Helper class that lists all supported features and offers some
+ * utilities methods about them
+ */
 
 class Features {
 public:
+	// used for allocating features array
 	CUDA_HOSTDEV static int getSupportedFeaturesCount();
 	CUDA_HOST static void printFeatureName(FeatureNames featureName);
 	// return a list of the 18 features

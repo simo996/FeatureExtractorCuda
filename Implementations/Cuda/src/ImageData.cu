@@ -1,10 +1,3 @@
-/*
- * ImageData.cpp
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #include "ImageData.h"
 
 

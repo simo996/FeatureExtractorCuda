@@ -1,10 +1,3 @@
-/*
- * Window.cpp
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #include "Window.h"
 
 __host__ __device__ Window::Window(const short int dimension, const short int distance,

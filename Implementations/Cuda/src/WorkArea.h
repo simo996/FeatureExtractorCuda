@@ -1,10 +1,3 @@
-/*
- * WorkArea.h
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #ifndef WORKAREA_H_
 #define WORKAREA_H_
 
@@ -23,6 +16,15 @@
 
 using namespace std;
 
+
+/*
+ * This class handles memory locations used from GLCM class to generate
+ * glcm and the other 4 arrays from which features will be extracted + some
+ * useful data to pass to GLCM
+ *
+ * Memory is malloced externally to this class but pointers are grouped here
+*/
+
 class WorkArea {
 public:
     CUDA_HOSTDEV WorkArea(int length,
@@ -35,8 +37,11 @@ public:
             numberOfElements(length), grayPairs(grayPairs), summedPairs(summedPairs),
             subtractedPairs(subtractedPairs), xMarginalPairs(xMarginalPairs),
             yMarginalPairs(yMarginalPairs), output(out){};
+    // Get the arrays to initial state so another window can be processed
     CUDA_DEV void cleanup();
+    // Invocation of free on the pointers
     CUDA_DEV void release();
+
     // Where the GLCM will be assembled
     GrayPair* grayPairs;
     // Where the aggregated (sum or diff) representations will be assembled
@@ -45,8 +50,10 @@ public:
     // Where the marginal (x or y) representations will be assembled
     AggregatedGrayPair* xMarginalPairs;
     AggregatedGrayPair* yMarginalPairs;
+
     // Where to put the feature computed
     double* output;
+    // maximum length of all the arrays
     int numberOfElements;
 
 };

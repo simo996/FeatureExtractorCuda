@@ -1,10 +1,3 @@
-/*
- * ImageData.h
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #ifndef IMAGEDATA_H_
 #define IMAGEDATA_H_
 
@@ -22,15 +15,24 @@
 
 using namespace std;
 
+/*
+ * This class embeds metadata about the acquired image:
+ * - pysical dimensions (height, width as rows and columns)
+ * - the maximum gray level that could be encountered according to its type
+*/
+
 class ImageData {
 public:
     CUDA_HOSTDEV ImageData(unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
             : rows(rows), columns(columns), maxGrayLevel(mxGrayLevel){};
+    // Strip metadata from the "complete" Image class
     CUDA_HOSTDEV ImageData(Image& img)
                 : rows(img.getRows()), columns(img.getColumns()), maxGrayLevel(img.getMaxGrayLevel()){};
+    // Getters
     CUDA_HOSTDEV unsigned int getRows() const;
     CUDA_HOSTDEV unsigned int getColumns() const;
-    CUDA_HOSTDEV unsigned int getMaxGrayLevel() const;
+    CUDA_HOSTDEV unsigned int getMaxGrayLevel() const;   
+    // Debug method
     CUDA_HOSTDEV void printElements(unsigned int* pixels) const;
 
 private:

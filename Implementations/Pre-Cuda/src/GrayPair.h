@@ -1,7 +1,3 @@
-//
-// Created by simo on 11/07/18.
-//
-
 #ifndef FEATUREEXTRACTOR_GRAYPAIR_H
 #define FEATUREEXTRACTOR_GRAYPAIR_H
 
@@ -10,17 +6,26 @@
 typedef unsigned short grayLevelType;
 typedef unsigned short frequencyType;
 
+/*
+    This class represent the gray levels of a pixel pair
+*/
 class GrayPair {
 public:
+    // Constructor for initializing pre-allocated work areas
     GrayPair();
+    // Constructor for effective gray-tone pairs
     GrayPair(grayLevelType i, grayLevelType j);
+    // Getters
     grayLevelType getGrayLevelI() const;
     grayLevelType getGrayLevelJ() const;
     frequencyType getFrequency() const;
+    // method to determine equality based on the gray tones of the pair
     bool compareTo(GrayPair other) const;
-    void frequencyIncrease();
+    // Setter
+    void frequencyIncrease(); // frequency can be incremented only by 1
     void printPair() const;
 
+    // C++ operators inherited from implementation that uses STL
     GrayPair& operator++(){
         this->frequency +=1;
         return *this;

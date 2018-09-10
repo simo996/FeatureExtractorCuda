@@ -1,12 +1,4 @@
-/*
- * Image.cpp
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #include "Image.h"
-
 
 __host__ __device__ unsigned int Image::getRows() const{
     return rows;

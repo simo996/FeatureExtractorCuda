@@ -1,7 +1,3 @@
-//
-// Created by simo on 11/07/18.
-//
-
 #include <iostream>
 #include "AggregatedGrayPair.h"
 

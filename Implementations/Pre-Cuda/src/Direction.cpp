@@ -1,7 +1,3 @@
-//
-// Created by simo on 01/08/18.
-//
-
 #include <iostream>
 #include <cstring>
 #include "Direction.h"

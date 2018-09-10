@@ -1,8 +1,3 @@
-//
-// Created by simone on 12/08/18.
-//
-
-
 #include "Image.h"
 
 unsigned int Image::getRows() const{

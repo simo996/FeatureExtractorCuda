@@ -52,7 +52,7 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
                 break;
             }
             case 't':{
-                // Decide how many of the 4 directions will be copmuted
+                // Decide how many of the 4 directions will be computed
                 short int dirType = atoi(optarg);
                 if(dirType > 4 || dirType <1){
                     cout << "ERROR ! The type of directions to be computed "
@@ -95,11 +95,8 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
         cout << "imagepath: " << argv[optind];
         progArg.imagePath = argv[optind];
     } else{
-        progArg.imagePath= "../../../SampleImages/panorama.jpg";
-        /*
         cout << "Missing image path!" << endl;
         printProgramUsage();
-        */
     }
     return progArg;
 }

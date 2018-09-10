@@ -1,10 +1,3 @@
-/*
- * ImageFeatureComputer.cpp
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h>
@@ -617,6 +610,5 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
 	// Create a 2d matrix of double grayPairs
 	Mat_<double> imageFeature = ImageLoader::createDoubleMat(rowNumber, colNumber, featureValues);
 	// Transform to a format printable to file
-    Mat convertedImage = ImageLoader::convertToGrayScale(imageFeature);
-    ImageLoader::stretchAndSave(convertedImage, filePath);
+    ImageLoader::stretchAndSave(imageFeature, filePath);
 }

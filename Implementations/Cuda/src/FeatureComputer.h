@@ -1,10 +1,3 @@
-/*
- * FeatureComputer.h
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #ifndef FEATURECOMPUTER_H_
 #define FEATURECOMPUTER_H_
 
@@ -21,36 +14,39 @@
 #include "GLCM.h"
 #include "Features.h"
 
-class FeatureComputer {
-    /*
-     * RESPONSABILITA CLASSE: Computare le 18 features per la singola direzione della finestra
-     * Espone metodi per stampare i risultati
-     */
+/*
+ * This class will compute 18 features for a single window, for a
+ * particular direction
+ */
 
+class FeatureComputer {
 public:
+    /* Initialize the data structures needed; computes the features
+     * saving the results in the right spot of the given output vector
+     */
     CUDA_DEV FeatureComputer(const unsigned int * pixels, const ImageData& img,
             int shiftRows, int shiftColumns, const Window& windowData,
             WorkArea& wa);
-    CUDA_DEV void computeDirectionalFeatures();
 private:
-    // given data to initialize related GLCM
+   // given data to initialize related GLCM
     const unsigned int * pixels;
     ImageData image;
+    // Window of interest
     Window windowData;
+    // Memory location used for computing this window's feature
     WorkArea& workArea;
-    // offset to indentify where to put results
-    int outputWindowOffset;
+    // Where to put results
     double * featureOutput;
+    // offset to indentify right index where to put results
+    int outputWindowOffset;
+    CUDA_DEV void computeOutputWindowFeaturesIndex();
 
     // Actual computation of all 18 features
+    CUDA_DEV void computeDirectionalFeatures();
     CUDA_DEV void extractAutonomousFeatures(const GLCM& metaGLCM, double* features);
     CUDA_DEV void extractSumAggregatedFeatures(const GLCM& metaGLCM, double* features);
     CUDA_DEV void extractDiffAggregatedFeatures(const GLCM& metaGLCM, double* features);
     CUDA_DEV void extractMarginalFeatures(const GLCM& metaGLCM, double* features);
-
-    CUDA_DEV void computeOutputWindowFeaturesIndex();
-    // Support method useful for debugging this class
-    CUDA_DEV static void printGLCM(const GLCM& glcm); // prints glcms various information
 };
 
 
