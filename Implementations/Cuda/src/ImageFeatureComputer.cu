@@ -22,7 +22,7 @@ void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
 }
 
 void ImageFeatureComputer::compute(){
-	cout << "* LOADING image * " << endl;
+	cout << endl << "* LOADING image * " << endl;
 
 	// Image from imageLoader
 	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop, progArg.distance);
@@ -610,5 +610,5 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
 	// Create a 2d matrix of double grayPairs
 	Mat_<double> imageFeature = ImageLoader::createDoubleMat(rowNumber, colNumber, featureValues);
 	// Transform to a format printable to file
-    ImageLoader::stretchAndSave(imageFeature, filePath);
+    ImageLoader::saveImage(imageFeature, filePath);
 }

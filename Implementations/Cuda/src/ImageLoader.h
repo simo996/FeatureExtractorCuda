@@ -7,6 +7,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core.hpp>
 
+using namespace cv;
+using namespace std;
 /* This class uses OpenCv to read, transform and save images allowing the tool
  * to work with every image, in color channels or grayscale, format supported
  * by openCv but without being highly coupled to it
