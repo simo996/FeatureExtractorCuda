@@ -11,6 +11,7 @@
 #include "ImageLoader.h"
 #include "ProgramArguments.h"
 #include "WindowFeatureComputer.h"
+#include "Utils.h"
 
 using namespace cv;
 
@@ -52,9 +53,10 @@ private:
 	void saveFeatureImage(int rowNumber,  int colNumber,
 			const vector<double>& featureValues, const string& outputFilePath);
 
-	// DEBUG info
+	// Minimal set of information displayed
+    void printInfo(ImageData imgData, int padding);
+    // Extensive set of information printed with verbose
 	void printExtimatedSizes(const ImageData& img);
-
 };
 
 

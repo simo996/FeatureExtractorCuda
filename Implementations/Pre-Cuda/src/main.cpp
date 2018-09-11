@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 
     Clock::time_point t2 = high_resolution_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-    cout << "* Processing took " << time_span.count() << " seconds." << endl;
+    cout << endl << endl << "* Processing took " << time_span.count() << " seconds." << endl;
 
     return 0;
 }

@@ -1,16 +1,37 @@
-//
-// Created by simo on 25/07/18.
-//
-
 #include <iostream>
 #include <fstream>
-#include <sys/stat.h>
+
 #include "ImageFeatureComputer.h"
 
 
 ImageFeatureComputer::ImageFeatureComputer(const ProgramArguments& progArg)
 :progArg(progArg){}
 
+void ImageFeatureComputer::printInfo(const ImageData imgData, int padding) {
+	cout << endl << "- Input image: " << progArg.imagePath;
+	cout << endl << "- Output folder: " << progArg.outputFolder;
+	int pixelCount = imgData.getRows() * imgData.getColumns();
+	int rows = imgData.getRows() - padding -1;
+    int cols = imgData.getColumns() - padding -1;
+	cout << endl << "- Rows: " << rows << " - Columns: " << cols << " - Pixel count: " << pixelCount;
+	cout << endl << "- Gray Levels : " << imgData.getMaxGrayLevel();
+	cout << endl << "- Distance: " << progArg.distance;
+	cout << endl << "- Window side: " << progArg.windowSize;
+}
+
+void ImageFeatureComputer::printExtimatedSizes(const ImageData& img){
+    int numberOfRows = img.getRows() - progArg.windowSize + 1;
+    int numberOfColumns = img.getColumns() - progArg.windowSize + 1;
+    int numberOfWindows = numberOfRows * numberOfColumns;
+    int supportedFeatures = Features::getSupportedFeaturesCount();
+
+    int featureNumber = numberOfWindows * supportedFeatures;
+    cout << endl << "* Size estimation * " << endl;
+    cout << "\tTotal features number: " << featureNumber << endl;
+    int featureSize = (((featureNumber * sizeof(double))
+                        /1024)/1024);
+    cout << "\tTotal features weight: " <<  featureSize << " MB" << endl;
+}
 
 void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
     int imageSmallestSide = img.getRows();
@@ -26,49 +47,49 @@ void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
 }
 
 void ImageFeatureComputer::compute(){
-	cout << endl << "* LOADING image * " << endl;
+	bool verbose = progArg.verbose;
+
 	// Image from imageLoader
 	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop, progArg.distance);
 	ImageData imgData(image);
-    cout << "* Image loaded * " << endl;
+	if(verbose)
+    	cout << endl << "* Image loaded * ";
     checkOptionCompatibility(progArg, image);
-	printExtimatedSizes(imgData);
+    // Print computation info to cout
+	printInfo(imgData, progArg.distance);
+	if(verbose) {
+		// Additional info on memory occupation
+		printExtimatedSizes(imgData);
+	}
 
 	// Compute every feature
-	cout << "* COMPUTING features * " << endl;
+	if(verbose)
+		cout << "* COMPUTING features * " << endl;
 	vector<vector<WindowFeatures>> fs= computeAllFeatures(image.getPixels().data(), imgData);
 	vector<vector<FeatureValues>> formattedFeatures = getAllDirectionsAllFeatureValues(fs);
-	cout << "* Features computed * " << endl;
+	if(verbose)
+		cout << "* Features computed * " << endl;
 
 	// Save result to file
-	cout << "* Saving features to files *" << endl;
+	if(verbose)
+		cout << "* Saving features to files *" << endl;
 	saveFeaturesToFiles(formattedFeatures);
 
 	// Save feature images
 	if(progArg.createImages){
-		cout << "* Creating feature images *" << endl;
+		if(verbose)
+			cout << "* Creating feature images *" << endl;
 		// Compute how many features will be used for creating the image
 		int numberOfRows = image.getRows() - progArg.windowSize + 1;
         int numberOfColumns = image.getColumns() - progArg.windowSize + 1;
         saveAllFeatureImages(numberOfRows, numberOfColumns, formattedFeatures);
 
 	}
-	cout << "* DONE * " << endl;
+	if(verbose)
+		cout << "* DONE * " << endl;
 }
 
-void ImageFeatureComputer::printExtimatedSizes(const ImageData& img){
-    int numberOfRows = img.getRows() - progArg.windowSize + 1;
-    int numberOfColumns = img.getColumns() - progArg.windowSize + 1;
-    int numberOfWindows = numberOfRows * numberOfColumns;
-    int supportedFeatures = Features::getSupportedFeaturesCount();
 
-    int featureNumber = numberOfWindows * supportedFeatures;
-	cout << "\t- Size estimation - " << endl;
-    cout << "\tTotal features number: " << featureNumber << endl;
-    int featureSize = (((featureNumber * sizeof(double))
-                        /1024)/1024);
-    cout << "\tTotal features weight: " <<  featureSize << " MB" << endl;
-}
 
 /*
  * From linear to structured array of windowsFeature each containing
@@ -192,58 +213,17 @@ vector<vector<FeatureValues>> ImageFeatureComputer::getAllDirectionsAllFeatureVa
 	return output;
 }
 
-/* Support code for putting the results in the right output folder */
-void createFolder(string folderPath){
-    if (mkdir(folderPath.c_str(), 0777) == -1) {
-        if (errno == EEXIST) {
-            // alredy exists
-        } else {
-            // something else
-            cerr << "cannot create save folder: " << folderPath << endl
-                 << "error:" << strerror(errno) << endl;
-        }
-    }
-}
-
-// UNIX
-struct MatchPathSeparator
-{
-    bool operator()( char ch ) const
-    {
-        return ch == '/';
-    }
-};
-
-// remove the path and keep filename+extension
-string basename( std::string const& pathname )
-{
-    return string(
-            find_if( pathname.rbegin(), pathname.rend(),
-                     MatchPathSeparator() ).base(),
-            pathname.end() );
-}
-
-// remove extension from filename
-string removeExtension( std::string const& filename )
-{
-    string::const_reverse_iterator
-            pivot
-            = find( filename.rbegin(), filename.rend(), '.' );
-    return pivot == filename.rend()
-           ? filename
-           : std::string( filename.begin(), pivot.base() - 1 );
-}
 
 void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures){
     int dirType = progArg.directionType;
 
-    string fileName = removeExtension(basename(progArg.imagePath));
-    createFolder(fileName);
+    string outFolder = progArg.outputFolder;
+    Utils::createFolder(outFolder);
     string foldersPath[] ={ "/Values0/", "/Values45/", "/Values90/", "/Values135/"};
 
     // First create the the folder
-    string outputDirectionPath = fileName + foldersPath[dirType -1];
-    createFolder(outputDirectionPath);
+    string outputDirectionPath = outFolder + foldersPath[dirType -1];
+	Utils::createFolder(outputDirectionPath);
     saveDirectedFeaturesToFiles(imageFeatures[0], outputDirectionPath);
 }
 
@@ -282,10 +262,10 @@ void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 		const int colNumber, const vector<vector<FeatureValues>>& imageFeatures){
     int dirType = progArg.directionType;
 
-    string fileName = removeExtension(basename(progArg.imagePath));
+    string outFolder = progArg.outputFolder;
     string foldersPath[] ={ "/Images0/", "/Images45/", "/Images90/", "/Images135/"};
-    string outputDirectionPath = fileName + foldersPath[dirType -1];
-    createFolder(outputDirectionPath);
+    string outputDirectionPath = outFolder + foldersPath[dirType -1];
+	Utils::createFolder(outputDirectionPath);
     // For each direction computed
     saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[0],
                 outputDirectionPath);

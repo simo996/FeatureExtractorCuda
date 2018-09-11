@@ -1,7 +1,3 @@
-//
-// Created by simone on 26/08/18.
-//
-
 #include "ProgramArguments.h"
 #include <getopt.h> // For options check
 
@@ -14,7 +10,7 @@ void ProgramArguments::printProgramUsage(){
 ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
     ProgramArguments progArg;
     int opt;
-    while((opt = getopt(argc, argv, "sw:d:in:hct:")) != -1){
+    while((opt = getopt(argc, argv, "sw:d:in:hct:v")) != -1){
         switch (opt){
             case 'c':{
                 // Crop original dynamic resolution
@@ -29,6 +25,11 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
             case 'i':{
                 // Create images associated to features
                 progArg.createImages = true;
+                break;
+            }
+            case 'v':{
+                // Create images associated to features
+                progArg.verbose = true;
                 break;
             }
             case 'd': {
@@ -94,6 +95,11 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
     if(optind +1 == argc){
         cout << "imagepath: " << argv[optind];
         progArg.imagePath = argv[optind];
+
+        // Option output folder was not used
+        if(progArg.outputFolder.empty()){
+            progArg.outputFolder = Utils::removeExtension(Utils::basename(progArg.imagePath));
+        }
     } else{
         cout << "Missing image path!" << endl;
         printProgramUsage();

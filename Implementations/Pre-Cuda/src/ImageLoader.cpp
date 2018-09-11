@@ -73,7 +73,6 @@ inline void readUint(vector<uint>& output, Mat& img){
 Image ImageLoader::readImage(const string fileName, bool cropResolution, int borderSize){
     // Open image from file system
     Mat imgRead = readImage(fileName, cropResolution);
-    printMatImageData(imgRead);
 
     // Create borders to the image
     copyMakeBorder(imgRead, imgRead, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
@@ -101,25 +100,6 @@ Image ImageLoader::readImage(const string fileName, bool cropResolution, int bor
     return image;
 }
 
-// Debugging information to check if everything was loaded correctly
-void ImageLoader::printMatImageData(const Mat& img){
-    cout << "\t- ImageData metadata -" << endl;
-    cout << "\tRows: " << img.rows << " x Columns: "  << img.cols << endl;
-    cout << "\tPixel count: " << img.total() << endl;
-    cout << "\tDynamic: ";
-    switch (img.type()){
-        case 0:
-            cout << "256 gray levels depth";
-            break;
-        case 2:
-            cout << "65536 gray levels depth";
-            break;
-        default:
-            cerr << "ERROR! Unsupported depth type: " << img.type();
-            exit(-4);
-    }
-    cout << endl;
-}
 
 // Debug method
 void ImageLoader::showImagePaused(const Mat& img, const string& windowName){
