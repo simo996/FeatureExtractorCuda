@@ -489,45 +489,17 @@ void createFolder(string folderPath){
     }
 }
 
-// UNIX
-struct MatchPathSeparator
-{
-    bool operator()( char ch ) const
-    {
-        return ch == '/';
-    }
-};
-
-// remove the path and keep filename+extension
-string basename( std::string const& pathname )
-{
-    return string(
-            find_if( pathname.rbegin(), pathname.rend(),
-                     MatchPathSeparator() ).base(),
-            pathname.end() );
-}
-
-// remove extension from filename
-string removeExtension( std::string const& filename )
-{
-    string::const_reverse_iterator
-            pivot
-            = find( filename.rbegin(), filename.rend(), '.' );
-    return pivot == filename.rend()
-           ? filename
-           : std::string( filename.begin(), pivot.base() - 1 );
-}
 
 void ImageFeatureComputer::saveFeaturesToFiles(const vector<vector<FeatureValues>>& imageFeatures){
     int dirType = progArg.directionType;
 
-    string fileName = removeExtension(basename(progArg.imagePath));
-    createFolder(fileName);
+    string outFolder = progArg.outputFolder;
+    Utils::createFolder(outFolder);
     string foldersPath[] ={ "/Values0/", "/Values45/", "/Values90/", "/Values135/"};
 
     // First create the the folder
-    string outputDirectionPath = fileName + foldersPath[dirType -1];
-    createFolder(outputDirectionPath);
+    string outputDirectionPath = outFolder + foldersPath[dirType -1];
+	Utils::createFolder(outputDirectionPath);
     saveDirectedFeaturesToFiles(imageFeatures[0], outputDirectionPath);
 }
 
@@ -566,10 +538,10 @@ void ImageFeatureComputer::saveAllFeatureImages(const int rowNumber,
 		const int colNumber, const vector<vector<FeatureValues>>& imageFeatures){
     int dirType = progArg.directionType;
 
-    string fileName = removeExtension(basename(progArg.imagePath));
+    string outFolder = progArg.outputFolder;
     string foldersPath[] ={ "/Images0/", "/Images45/", "/Images90/", "/Images135/"};
-    string outputDirectionPath = fileName + foldersPath[dirType -1];
-    createFolder(outputDirectionPath);
+    string outputDirectionPath = outFolder + foldersPath[dirType -1];
+	Utils::createFolder(outputDirectionPath);
     // For each direction computed
     saveAllFeatureDirectedImages(rowNumber, colNumber, imageFeatures[0],
                 outputDirectionPath);
@@ -609,6 +581,6 @@ void ImageFeatureComputer::saveFeatureImage(const int rowNumber,
 
 	// Create a 2d matrix of double grayPairs
 	Mat_<double> imageFeature = ImageLoader::createDoubleMat(rowNumber, colNumber, featureValues);
-	// Transform to a format printable to file
     ImageLoader::saveImage(imageFeature, filePath);
 }
+

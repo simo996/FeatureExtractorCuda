@@ -1,41 +1,60 @@
 #include "ProgramArguments.h"
-#include <getopt.h> // For options check
 
 void ProgramArguments::printProgramUsage(){
-    cout << endl << "Usage: FeatureExtractor [<-s>] [<-i>] [<-d distance>] [<-w windowSize>] [<-n directionType>] "
-                    "imagePath" << endl;
+    cout << endl << "Usage: FeatureExtractor [<-s>] [<-i>] [<-d distance>] [<-w windowSize>] [<-t directionType>] "
+                    "[- i imagePath] [<-o outputFolder>]" << endl;
     exit(2);
 }
 
 ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
     ProgramArguments progArg;
     int opt;
-    while((opt = getopt(argc, argv, "sw:d:in:hct:v")) != -1){
+    while((opt = getopt(argc, argv, "g:sw:d:n:hct:vo:i:")) != -1){
         switch (opt){
             case 'c':{
                 // Crop original dynamic resolution
                 progArg.crop = true;
                 break;
             }
-            case 's':{
+            case 'g':{
                 // Make the glcm pairs symmetric
-                progArg.symmetric = true;
+                int type = atoi(optarg);
+                if (type == 1) {
+                    progArg.symmetric = true;
+                }
+                else{
+                    if(type == 0)
+                        progArg.symmetric = true;
+                    else
+                        cerr << "ERROR! -g option can be just 1 or 0" << endl;
+                        printProgramUsage();
+                }
                 break;
             }
-            case 'i':{
+            case 's':{
                 // Create images associated to features
                 progArg.createImages = true;
                 break;
             }
+            case 'i':{
+                // Folder where to put results
+                progArg.imagePath = optarg;
+                break;
+            }
+            case 'o':{
+                // Folder where to put results
+                progArg.outputFolder = optarg;
+                break;
+            }
             case 'v':{
-                // Create images associated to features
+                // Verbosity
                 progArg.verbose = true;
                 break;
             }
             case 'd': {
                 int distance = atoi(optarg);
                 if (distance < 1) {
-                    cout << "ERROR ! The distance between every pixel pair must be >= 1 ";
+                    cerr << "ERROR ! The distance between every pixel pair must be >= 1 ";
                     printProgramUsage();
                 }
                 progArg.distance = distance;
@@ -45,7 +64,7 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
                 // Decide what the size of each sub-window of the image will be
                 short int windowSize = atoi(optarg);
                 if ((windowSize < 2) || (windowSize > 10000)) {
-                    cout << "ERROR ! The size of the sub-windows to be extracted option (-w) "
+                    cerr << "ERROR ! The size of the sub-windows to be extracted option (-w) "
                             "must have a value between 2 and 10000";
                     printProgramUsage();
                 }
@@ -56,7 +75,7 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
                 // Decide how many of the 4 directions will be computed
                 short int dirType = atoi(optarg);
                 if(dirType > 4 || dirType <1){
-                    cout << "ERROR ! The type of directions to be computed "
+                    cerr << "ERROR ! The type of directions to be computed "
                             "option (-t) must be a value between 1 and 4" << endl;
                     printProgramUsage();
                 }
@@ -87,22 +106,21 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
 
 
     }
+
     if(progArg.distance > progArg.windowSize){
         cout << "WARNING: distance can't be > of each window size; distance value corrected to 1" << endl;
         progArg.distance = 1;
     }
-    // The last parameter must be the image path
-    if(optind +1 == argc){
-        cout << "imagepath: " << argv[optind];
-        progArg.imagePath = argv[optind];
 
-        // Option output folder was not used
-        if(progArg.outputFolder.empty()){
-            progArg.outputFolder = Utils::removeExtension(Utils::basename(progArg.imagePath));
-        }
-    } else{
-        cout << "Missing image path!" << endl;
+    // No image provided
+    if(progArg.imagePath.empty()) {
+        cerr << "ERROR! Missing image path!" << endl;
         printProgramUsage();
     }
+
+    // Option output folder was not used
+    if(progArg.outputFolder.empty())
+        progArg.outputFolder = Utils::removeExtension(Utils::basename(progArg.imagePath));
+
     return progArg;
 }

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <getopt.h> // For options check
 
 #include "Utils.h"
 

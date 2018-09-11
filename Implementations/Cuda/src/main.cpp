@@ -1,14 +1,3 @@
-/*
- ============================================================================
- Name        : test.cu
- Author      : Simone Galimberti
- Version     :
- Copyright   : Your copyright notice
- Description : Compute sum of reciprocals using STL on CPU and Thrust on GPU
- ============================================================================
- */
-
-
 #include <iostream>
 #include <assert.h>
 #include <opencv2/opencv.hpp>
@@ -20,11 +9,6 @@ using namespace std;
 using namespace cv;
 using namespace chrono;
 
-/*
-__global__ void test(ImageData img, unsigned int * pxs){
-	img.printElements(pxs);
-}
-*/
 
 int main(int argc, char* argv[])
 {
@@ -41,7 +25,7 @@ int main(int argc, char* argv[])
     // COMPUTE THE WORK
     Clock::time_point t2 = high_resolution_clock::now();
     duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-    cout << "* Processing took " << time_span.count() << " seconds." << endl;
+    cout << endl << endl << "* Processing took " << time_span.count() << " seconds." << endl;
 
 	return 0;
 }

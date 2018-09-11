@@ -1,9 +1,3 @@
-/*
- * ImageFeatureComputer.h
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
 
 #ifndef IMAGEFEATURECOMPUTER_H_
 #define IMAGEFEATURECOMPUTER_H_
@@ -12,6 +6,7 @@
 #include <opencv2/core.hpp>
 #include "ImageLoader.h"
 #include "ProgramArguments.h"
+#include "Utils.h"
 #include "WindowFeatureComputer.h"
 
 typedef vector<double> WindowFeatures;
