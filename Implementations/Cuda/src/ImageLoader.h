@@ -9,6 +9,7 @@
 
 using namespace cv;
 using namespace std;
+
 /* This class uses OpenCv to read, transform and save images allowing the tool
  * to work with every image, in color channels or grayscale, format supported
  * by openCv but without being highly coupled to it
@@ -18,7 +19,6 @@ class ImageLoader {
 public:
     // Method that external components will invoke to get an Image instance
     static Image readImage(string fileName, bool cropResolution, int borderSize);
-    static void printMatImageData(const Mat& img);
     // Method used when generating feature images with the features values computed
     static Mat createDoubleMat(int rows, int cols, const vector<double>& input);
     // Save the feature image on disk

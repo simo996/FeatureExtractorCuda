@@ -12,7 +12,6 @@ using namespace chrono;
 
 int main(int argc, char* argv[])
 {
-    cout << argv[0] << endl;
     ProgramArguments pa = ProgramArguments::checkOptions(argc, argv);
 
     typedef high_resolution_clock Clock;
