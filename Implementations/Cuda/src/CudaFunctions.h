@@ -12,8 +12,11 @@
 #endif
 
 #include <iostream>
+#include <assert.h>
 
 #include "Window.h"
+#include "WorkArea.h"
+#include "WindowFeatureComputer.h"
 #include "ImageData.h"
 
 using namespace std;
@@ -41,16 +44,17 @@ int getGridSide(int imageRows, int imageCols);
 dim3 getGridFromImage(int imageRows, int imageCols);
 dim3 getGridFromAvailableMemory(int numberOfPairs,
  size_t featureSize);
-dim3 getGrid(int numberOfPairsInWindow, size_t featureSize, int imgRows, int imgCols);
+dim3 getGrid(int numberOfPairsInWindow, size_t featureSize, int imgRows, 
+	int imgCols, bool verbose);
 __device__ WorkArea generateThreadWorkArea(int numberOfPairs, 
 	double* d_featuresList);
 /*
  * Memory checks
  */
-void incrementGPUHeap(size_t newHeapSize, size_t featureSize);
+void incrementGPUHeap(size_t newHeapSize, size_t featureSize, bool verbose);
 void handleInsufficientMemory();
 bool checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
- size_t featureSize);
+ size_t featureSize, bool verbose);
 
 /*
  * Kernel 

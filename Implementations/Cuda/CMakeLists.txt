@@ -63,6 +63,12 @@ add_executable(CuFeat
         ${PROJECT_SOURCE_DIR}/ProgramArguments.h
         ${PROJECT_SOURCE_DIR}/ProgramArguments.cpp
 
+        ${PROJECT_SOURCE_DIR}/CudaFunctions.h
+        ${PROJECT_SOURCE_DIR}/CudaFunctions.cu
+
+
+        ${PROJECT_SOURCE_DIR}/Utils.h
+        ${PROJECT_SOURCE_DIR}/Utils.cpp
         )
 
 # Add OpenCvTo the project
