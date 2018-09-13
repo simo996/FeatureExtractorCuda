@@ -52,8 +52,8 @@ void ImageFeatureComputer::compute(){
 	bool verbose = progArg.verbose;
 
 	// Image from imageLoader
-
-	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop, progArg.distance);
+	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop, 
+		progArg.quantitize, progArg.quantitizationMax, progArg.distance);
 	ImageData imgData(image);
 	if(verbose)
     	cout << "* Image loaded * ";

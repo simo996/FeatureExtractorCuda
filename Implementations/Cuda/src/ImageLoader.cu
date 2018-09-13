@@ -1,5 +1,9 @@
 #include "ImageLoader.h"
 
+#define IMG16MAXGRAYLEVEL 65535
+#define IMG8MAXGRAYLEVEL 255
+
+
 Mat ImageLoader::readImage(string fileName, bool cropResolution){
     Mat inputImage;
     try{
@@ -69,7 +73,8 @@ inline void readUint(vector<uint>& output, Mat& img){
     }
 }
 
-Image ImageLoader::readImage(const string fileName, bool cropResolution, int borderSize){
+Image ImageLoader::readImage(const string fileName, bool cropResolution, 
+    bool quantitize, int quantizationMax, int borderSize){
     // Open image from file system
     Mat imgRead = readImage(fileName, cropResolution);
 
