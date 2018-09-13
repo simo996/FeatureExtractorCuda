@@ -25,8 +25,8 @@ void ImageFeatureComputer::compute(){
 	cout << endl << "* LOADING image * " << endl;
 
 	// Image from imageLoader
-	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop, progArg.distance);
-	ImageData imgData(image);
+	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop, progArg.quantitize,
+	        progArg.quantitizationMax, progArg.distance);	ImageData imgData(image);
 	cout << "* Image loaded * " << endl;
 	checkOptionCompatibility(progArg, image);
 	printExtimatedSizes(imgData);

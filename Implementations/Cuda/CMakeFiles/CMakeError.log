@@ -1,0 +1,206 @@
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/bin/nvcc 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+No such file or directory
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/bin/nvcc 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+No such file or directory
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/bin/nvcc 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+No such file or directory
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/bin/nvcc 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+No such file or directory
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/local/cuda/nvcc 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+No such file or directory
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/local/cuda/nvcc 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+No such file or directory
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/local/cuda 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+Permission denied
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/local/cuda 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+Permission denied
+
+
+Determining if the CUDA compiler works failed with the following output:
+Change Dir: /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_858f1/fast"
+/usr/bin/make -f CMakeFiles/cmTC_858f1.dir/build.make CMakeFiles/cmTC_858f1.dir/build
+make[1]: ingresso nella directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Building CUDA object CMakeFiles/cmTC_858f1.dir/main.cu.o
+/usr/local/cuda     -x cu -c /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp/main.cu -o CMakeFiles/cmTC_858f1.dir/main.cu.o
+make[1]: execvp: /usr/local/cuda: Permesso negato
+CMakeFiles/cmTC_858f1.dir/build.make:65: set di istruzioni per l'obiettivo "CMakeFiles/cmTC_858f1.dir/main.cu.o" non riuscito
+make[1]: *** [CMakeFiles/cmTC_858f1.dir/main.cu.o] Errore 127
+make[1]: uscita dalla directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Makefile:121: set di istruzioni per l'obiettivo "cmTC_858f1/fast" non riuscito
+make: *** [cmTC_858f1/fast] Errore 2
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/local/cuda 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+Permission denied
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/local/cuda 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+Permission denied
+
+
+Determining if the CUDA compiler works failed with the following output:
+Change Dir: /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_927b7/fast"
+/usr/bin/make -f CMakeFiles/cmTC_927b7.dir/build.make CMakeFiles/cmTC_927b7.dir/build
+make[1]: ingresso nella directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Building CUDA object CMakeFiles/cmTC_927b7.dir/main.cu.o
+/usr/local/cuda     -x cu -c /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp/main.cu -o CMakeFiles/cmTC_927b7.dir/main.cu.o
+make[1]: execvp: /usr/local/cuda: Permesso negato
+CMakeFiles/cmTC_927b7.dir/build.make:65: set di istruzioni per l'obiettivo "CMakeFiles/cmTC_927b7.dir/main.cu.o" non riuscito
+make[1]: *** [CMakeFiles/cmTC_927b7.dir/main.cu.o] Errore 127
+make[1]: uscita dalla directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Makefile:121: set di istruzioni per l'obiettivo "cmTC_927b7/fast" non riuscito
+make: *** [cmTC_927b7/fast] Errore 2
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/local/cuda 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+Permission denied
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/local/cuda 
+Build flags: 
+Id flags:  -v;--keep;--keep-dir;tmp
+
+The output was:
+Permission denied
+
+
+Determining if the CUDA compiler works failed with the following output:
+Change Dir: /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_ccb11/fast"
+/usr/bin/make -f CMakeFiles/cmTC_ccb11.dir/build.make CMakeFiles/cmTC_ccb11.dir/build
+make[1]: ingresso nella directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Building CUDA object CMakeFiles/cmTC_ccb11.dir/main.cu.o
+/usr/local/cuda     -x cu -c /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp/main.cu -o CMakeFiles/cmTC_ccb11.dir/main.cu.o
+make[1]: execvp: /usr/local/cuda: Permesso negato
+CMakeFiles/cmTC_ccb11.dir/build.make:65: set di istruzioni per l'obiettivo "CMakeFiles/cmTC_ccb11.dir/main.cu.o" non riuscito
+make[1]: *** [CMakeFiles/cmTC_ccb11.dir/main.cu.o] Errore 127
+make[1]: uscita dalla directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Makefile:121: set di istruzioni per l'obiettivo "cmTC_ccb11/fast" non riuscito
+make: *** [cmTC_ccb11/fast] Errore 2
+
+
+Determining if the CUDA compiler works failed with the following output:
+Change Dir: /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_f0679/fast"
+/usr/bin/make -f CMakeFiles/cmTC_f0679.dir/build.make CMakeFiles/cmTC_f0679.dir/build
+make[1]: ingresso nella directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Building CUDA object CMakeFiles/cmTC_f0679.dir/main.cu.o
+/usr/local/cuda     -x cu -c /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp/main.cu -o CMakeFiles/cmTC_f0679.dir/main.cu.o
+make[1]: execvp: /usr/local/cuda: Permesso negato
+CMakeFiles/cmTC_f0679.dir/build.make:65: set di istruzioni per l'obiettivo "CMakeFiles/cmTC_f0679.dir/main.cu.o" non riuscito
+make[1]: *** [CMakeFiles/cmTC_f0679.dir/main.cu.o] Errore 127
+make[1]: uscita dalla directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Makefile:121: set di istruzioni per l'obiettivo "cmTC_f0679/fast" non riuscito
+make: *** [cmTC_f0679/fast] Errore 2
+
+
+Determining if the CUDA compiler works failed with the following output:
+Change Dir: /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_f3dd8/fast"
+/usr/bin/make -f CMakeFiles/cmTC_f3dd8.dir/build.make CMakeFiles/cmTC_f3dd8.dir/build
+make[1]: ingresso nella directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Building CUDA object CMakeFiles/cmTC_f3dd8.dir/main.cu.o
+/usr/local/cuda     -x cu -c /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp/main.cu -o CMakeFiles/cmTC_f3dd8.dir/main.cu.o
+make[1]: execvp: /usr/local/cuda: Permesso negato
+CMakeFiles/cmTC_f3dd8.dir/build.make:65: set di istruzioni per l'obiettivo "CMakeFiles/cmTC_f3dd8.dir/main.cu.o" non riuscito
+make[1]: *** [CMakeFiles/cmTC_f3dd8.dir/main.cu.o] Errore 127
+make[1]: uscita dalla directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Makefile:121: set di istruzioni per l'obiettivo "cmTC_f3dd8/fast" non riuscito
+make: *** [cmTC_f3dd8/fast] Errore 2
+
+
+Determining if the CUDA compiler works failed with the following output:
+Change Dir: /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_001c5/fast"
+make[1]: ingresso nella directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+/usr/bin/make -f CMakeFiles/cmTC_001c5.dir/build.make CMakeFiles/cmTC_001c5.dir/build
+make[2]: ingresso nella directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Building CUDA object CMakeFiles/cmTC_001c5.dir/main.cu.o
+/usr/local/cuda     -x cu -c /home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp/main.cu -o CMakeFiles/cmTC_001c5.dir/main.cu.o
+make[2]: execvp: /usr/local/cuda: Permesso negato
+CMakeFiles/cmTC_001c5.dir/build.make:65: set di istruzioni per l'obiettivo "CMakeFiles/cmTC_001c5.dir/main.cu.o" non riuscito
+make[2]: *** [CMakeFiles/cmTC_001c5.dir/main.cu.o] Errore 127
+make[2]: uscita dalla directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+Makefile:121: set di istruzioni per l'obiettivo "cmTC_001c5/fast" non riuscito
+make[1]: *** [cmTC_001c5/fast] Errore 2
+make[1]: uscita dalla directory "/home/simone/Sviluppo/Stage/FeatureExtractorCuda/Implementations/Cuda/CMakeFiles/CMakeTmp"
+
+

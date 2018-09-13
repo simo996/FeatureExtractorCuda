@@ -17,7 +17,8 @@ using namespace std;
 class ImageLoader {
 public:
     // Method that external components will invoke to get an Image instance
-    static Image readImage(string fileName, bool cropResolution, int borderSize);
+    static Image readImage(string fileName, bool cropResolution, bool quantitize, int quantizationMax,
+                           int borderSize);
     static void printMatImageData(const Mat& img);
     // Method used when generating feature images with the features values computed
     static Mat createDoubleMat(int rows, int cols, const vector<double>& input);
@@ -31,6 +32,8 @@ private:
     static Mat readImage(string fileName, bool cropResolution);
     // Converting images with colors to grayScale
     static Mat convertToGrayScale(const Mat& inputImage);
+    // Quantitze gray levels in set [0, Max]
+    static Mat quantitizeImage(Mat& inputImage, int maxLevel);
     // Images are stretched to enhance details in over/under exposed images
     static Mat stretchImage(const Mat& inputImage);
     // Save on the file system

@@ -9,11 +9,17 @@ void ProgramArguments::printProgramUsage(){
 ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
     ProgramArguments progArg;
     int opt;
-    while((opt = getopt(argc, argv, "g:sw:d:n:hct:vo:i:")) != -1){
+    while((opt = getopt(argc, argv, "g:sw:d:n:hct:vo:i:r:")) != -1){
         switch (opt){
             case 'c':{
                 // Crop original dynamic resolution
                 progArg.crop = true;
+                break;
+            }
+            case 'r':{
+                // Crop original dynamic resolution
+                progArg.quantitize = true;
+                progArg.quantitizationMax = atoi(optarg);
                 break;
             }
             case 'g':{

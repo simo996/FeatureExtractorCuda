@@ -1,5 +1,7 @@
 #include "ImageLoader.h"
 
+#define IMG16MAXGRAYLEVEL 65535
+#define IMG8MAXGRAYLEVEL 255
 
 Mat ImageLoader::readImage(string fileName, bool cropResolution){
     Mat inputImage;
@@ -70,12 +72,24 @@ inline void readUint(vector<uint>& output, Mat& img){
     }
 }
 
-Image ImageLoader::readImage(const string fileName, bool cropResolution, int borderSize){
+Image ImageLoader::readImage(const string fileName, bool cropResolution, bool quantitize, int quantizationMax,
+        int borderSize){
     // Open image from file system
     Mat imgRead = readImage(fileName, cropResolution);
 
     // Create borders to the image
     copyMakeBorder(imgRead, imgRead, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
+
+    if((quantitize) && (imgRead.depth() == CV_16UC1) && (quantizationMax > IMG16MAXGRAYLEVEL)){
+        cout << "Warning! Provided a quantization level > maximum gray level of the image";
+        quantizationMax = IMG16MAXGRAYLEVEL;
+    }
+    if((quantitize) && (imgRead.depth() == CV_8UC1) && (quantizationMax > IMG8MAXGRAYLEVEL)){
+        cout << "Warning! Provided a quantization level > maximum gray level of the image";
+        quantizationMax = IMG8MAXGRAYLEVEL;
+    }
+    if(quantitize)
+        imgRead = quantitizeImage(imgRead, quantizationMax);
 
     // Get the pixels from the image to a standard uint array
     vector<uint> pixels(imgRead.total());
@@ -85,11 +99,11 @@ Image ImageLoader::readImage(const string fileName, bool cropResolution, int bor
     switch (imgRead.type()){
         case CV_16UC1:
             readUint(pixels, imgRead);
-            maxGrayLevel = 65535;
+            maxGrayLevel = IMG16MAXGRAYLEVEL;
             break;
         case CV_8UC1:
             readUchars(pixels, imgRead);
-            maxGrayLevel = 255;
+            maxGrayLevel = IMG8MAXGRAYLEVEL;
             break;
         default:
             cerr << "ERROR! Unsupported depth type: " << imgRead.type();
@@ -113,6 +127,39 @@ Mat ImageLoader::convertToGrayScale(const Mat& inputImage) {
     // Convert image to a 255 grayscale
     Mat convertedImage = inputImage.clone();
     normalize(convertedImage, convertedImage, 0, 255, NORM_MINMAX, CV_8UC1);
+    return convertedImage;
+}
+
+unsigned int quantizationStep(int intensity, int maxLevel, int oldMax){
+    return (intensity * maxLevel / oldMax);
+}
+
+Mat ImageLoader::quantitizeImage(Mat& img, int maxLevel) {
+    Mat convertedImage = img.clone();
+
+    switch(img.depth()){
+        case CV_8UC1:{
+            typedef MatIterator_<uchar> MI;
+            for(MI element = convertedImage.begin<uchar>() ; element != convertedImage.end<uchar>() ; element++)
+            {
+                int intensity = *element;
+                int newIntensity = quantizationStep(intensity, maxLevel, IMG8MAXGRAYLEVEL);
+                *element = newIntensity;
+            }
+            break;
+        }
+        case CV_16UC1: {
+            typedef MatIterator_<ushort> MI;
+            for(MI element = convertedImage.begin<ushort>() ; element != convertedImage.end<ushort>() ; element++)
+            {
+                int intensity = *element;
+                int newIntensity = quantizationStep(intensity, maxLevel, IMG16MAXGRAYLEVEL);
+                *element = newIntensity;
+            }
+            break;
+        }
+    }
+
     return convertedImage;
 }
 

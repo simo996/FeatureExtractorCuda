@@ -16,7 +16,9 @@ class ProgramArguments {
 public:
     // Side of each squared window that will be generated
     short int windowSize;
-    // Eventual reduction of gray levels to range 0,255
+    // Eventual reduction of gray levels to range [0,Max]
+    bool quantitize;
+    int quantitizationMax;
     bool crop;
     // Eventual symmetricity of the pairs of gray levels
     bool symmetric;
@@ -38,6 +40,7 @@ public:
     // Constructor with default values
     ProgramArguments(short int windowSize = 4,
             bool crop = false,
+            bool quantitize = false,
             bool symmetric = false,
             short int distance = 1,
             short int dirType = 1,
@@ -45,7 +48,7 @@ public:
             bool createImages = false,
             bool verbose = false,
             string outFolder = "")
-            : windowSize(windowSize), crop(crop), symmetric(symmetric), distance(distance),
+            : windowSize(windowSize), crop(crop), quantitize(quantitize), symmetric(symmetric), distance(distance),
               directionType(dirType), directionsNumber(dirNumber),
               createImages(createImages), outputFolder(outFolder),
               verbose(verbose){};
