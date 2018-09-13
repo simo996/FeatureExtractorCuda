@@ -1,11 +1,22 @@
 #include "CudaFunctions.h"
 
+/* CUDA METHODS */
 
 void cudaCheckError(cudaError_t err){
 	if( err != cudaSuccess ) {
 		cerr << "ERROR: " << cudaGetErrorString(err) << endl;
 		exit(-1);
 	}
+}
+
+/* Need to call after kernel invocation */
+void checkKernelLaunchError(){
+	cudaError_t errSync  = cudaGetLastError();
+	cudaError_t errAsync = cudaDeviceSynchronize();
+	if (errSync != cudaSuccess) // Detect configuration launch errors
+		printf("Sync kernel error: %s\n", cudaGetErrorString(errSync));
+	if (errAsync != cudaSuccess) // Detect kernel execution errors
+		printf("Async kernel error: %s\n", cudaGetErrorString(errAsync));
 }
 
 // Print data about kernel launch configuration
@@ -82,13 +93,15 @@ dim3 getGridFromImage(int imageRows, int imageCols)
 	Allow threads to malloc the memory needed for their computation 
 	If this can't be done program will crash
 */
-void incrementGPUHeap(size_t newHeapSize, size_t featureSize){
+void incrementGPUHeap(size_t newHeapSize, size_t featureSize, bool verbose){
 	cudaCheckError(cudaDeviceSetLimit(cudaLimitMallocHeapSize,  newHeapSize));
 	cudaDeviceGetLimit(&newHeapSize, cudaLimitMallocHeapSize);
-	cout << "\tGPU threads space: (MB) " << newHeapSize / 1024 / 1024 << endl;
+	if(verbose)
+		cout << endl << "\tGPU threads space: (MB) " << newHeapSize / 1024 / 1024 << endl;
 	size_t free, total;
 	cudaMemGetInfo(&free,&total);
-	cout << "\tGPU free memory: (MB) " << (free - newHeapSize - featureSize) / 1024/1024 << endl;
+	if(verbose)
+		cout << "\tGPU free memory: (MB) " << (free - newHeapSize - featureSize) / 1024/1024 << endl;
 }
 
 /* 
@@ -104,7 +117,7 @@ void handleInsufficientMemory(){
 
 // See if the proposed number of threads will have enough memory
 bool checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
- size_t featureSize){
+ size_t featureSize, bool verbose){
 	// Get GPU mem size
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop, 0);
@@ -124,7 +137,7 @@ bool checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
 	}
 	else{
 		// Allow the GPU threads to allocate the necessary space
-		incrementGPUHeap(totalWorkAreas, featureSize);
+		incrementGPUHeap(totalWorkAreas, featureSize, verbose);
 		return true;
 	}
 }
@@ -168,7 +181,8 @@ dim3 getGridFromAvailableMemory(int numberOfPairs,
 	Gpu allocable heap will be changed according to the grid individuated
 	If not even 1 block can be launched the program will abort
 */
-dim3 getGrid(int numberOfPairsInWindow, size_t featureSize, int imgRows, int imgCols){
+dim3 getGrid(int numberOfPairsInWindow, size_t featureSize, int imgRows, 
+	int imgCols, bool verbose){
  	dim3 Blocks = getBlockConfiguration();
 	// Generate grid from image dimensions
 	dim3 Grid = getGridFromImage(imgRows, imgCols);
@@ -176,15 +190,18 @@ dim3 getGrid(int numberOfPairsInWindow, size_t featureSize, int imgRows, int img
 	int numberOfBlocks = Grid.x * Grid.y;
 	int numberOfThreadsPerBlock = Blocks.x * Blocks.y;
 	int numberOfThreads = numberOfThreadsPerBlock * numberOfBlocks;
-	if(! checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, numberOfThreads, featureSize))
+	if(! checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, 
+		numberOfThreads, featureSize, verbose))
 	{
 		Grid = getGridFromAvailableMemory(numberOfPairsInWindow, featureSize);
 		// Get the total number of threads and see if the gpu memory is sufficient
 		numberOfBlocks = Grid.x * Grid.y;
 		numberOfThreads = numberOfThreadsPerBlock * numberOfBlocks;
-		checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, numberOfThreads, featureSize);
+		checkEnoughWorkingAreaForThreads(numberOfPairsInWindow, 
+			numberOfThreads, featureSize, verbose);
 	}
-	printGPULaunchConfiguration(Grid, Blocks);
+	if(verbose)
+		printGPULaunchConfiguration(Grid, Blocks);
 	return Grid;
 }
 
@@ -252,12 +269,3 @@ __global__ void computeFeatures(unsigned int * pixels,
 }
 
 
-/* Need to call after kernel invocation */
-void checkKernelLaunchError(){
-	cudaError_t errSync  = cudaGetLastError();
-	cudaError_t errAsync = cudaDeviceSynchronize();
-	if (errSync != cudaSuccess) // Detect configuration launch errors
-		printf("Sync kernel error: %s\n", cudaGetErrorString(errSync));
-	if (errAsync != cudaSuccess) // Detect kernel execution errors
-		printf("Async kernel error: %s\n", cudaGetErrorString(errAsync));
-}

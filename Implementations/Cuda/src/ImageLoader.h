@@ -9,6 +9,7 @@
 
 using namespace cv;
 using namespace std;
+
 /* This class uses OpenCv to read, transform and save images allowing the tool
  * to work with every image, in color channels or grayscale, format supported
  * by openCv but without being highly coupled to it
@@ -20,6 +21,7 @@ public:
     static Image readImage(string fileName, bool cropResolution, bool quantitize, int quantizationMax,
                            int borderSize);
     static void printMatImageData(const Mat& img);
+
     // Method used when generating feature images with the features values computed
     static Mat createDoubleMat(int rows, int cols, const vector<double>& input);
     // Save the feature image on disk
