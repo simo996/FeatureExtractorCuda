@@ -1,12 +1,12 @@
 import subprocess
 
-variables = ['brain1.tiff', 'brain2.tiff']
+variables = ['brain1.tiff', 'brain2.tiff', 'prostata.tiff' , 'SampleImages/nyck4k.jpg', 'cells.png']
 
 optionWindowSize = '-w'
 optionSymmtrecity = '-g'
 optionInputFile = '-i'  
 
-for variable in variables:
+for variable in variables:	
     
     result = subprocess.run(['./FeatureExtractor', '-i', variable, optionWindowSize, '7'], stdout=subprocess.PIPE)
     print(subprocess.list2cmdline(result.args))
@@ -16,4 +16,5 @@ for variable in variables:
 
     with open(variable +'_RESULT.txt', 'w') as file:
         file.write(output)
+
 
