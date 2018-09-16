@@ -50,8 +50,8 @@ void ImageFeatureComputer::compute(){
 	bool verbose = progArg.verbose;
 
 	// Image from imageLoader
-	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop, progArg.quantitize,
-	        progArg.quantitizationMax, progArg.distance);
+	Image image = ImageLoader::readImage(progArg.imagePath, progArg.borderType,
+	        progArg.windowSize, progArg.quantitize, progArg.quantitizationMax);
 	ImageData imgData(image);
 	if(verbose)
     	cout << endl << "* Image loaded * ";
@@ -159,14 +159,14 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
 
-	// Slide windows on the image
-    for(int i = 0; (i + windowData.side) <= img.getRows(); i++){
+	// Slide windows on the imag
+    for(int i = 0; (i + windowData.side) <= img.getRows() ; i++){
         for(int j = 0; (j + windowData.side) <= img.getColumns(); j++){
 			// Create local window information
 			Window actualWindow {windowData.side, windowData.distance,
                                  progArg.directionType, windowData.symmetric};
 			// tell the window its relative offset (starting point) inside the image
-			actualWindow.setSpacialOffsets(i,j);
+			actualWindow.setSpacialOffsets(i, j);
             // Launch the computation of features on the window
 			WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
 		}
