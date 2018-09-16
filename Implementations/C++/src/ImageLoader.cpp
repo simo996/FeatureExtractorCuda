@@ -1,15 +1,12 @@
-//
-// Created by simo on 05/08/18.
-//
-
-
 #include "ImageLoader.h"
 
+#define IMG16MAXGRAYLEVEL 65535
+#define IMG8MAXGRAYLEVEL 255
 
-Mat ImageLoader::readMriImage(const string fileName, bool cropResolution){
+Mat ImageLoader::readImage(string fileName){
     Mat inputImage;
     try{
-            inputImage = imread(fileName, CV_LOAD_IMAGE_ANYDEPTH);
+        inputImage = imread(fileName, CV_LOAD_IMAGE_ANYDEPTH);
     }
     catch (cv::Exception& e) {
         const char *err_msg = e.what();
@@ -26,8 +23,6 @@ Mat ImageLoader::readMriImage(const string fileName, bool cropResolution){
         cvtColor(inputImage, inputImage, CV_RGB2GRAY);
         inputImage.convertTo(inputImage, CV_8UC1);
     }
-    if((cropResolution) && (inputImage.depth() != CV_8UC1))
-        inputImage.convertTo(inputImage, CV_8UC1);
 
     return inputImage;
 }
@@ -43,15 +38,6 @@ Mat ImageLoader::readMriImage(const string fileName, bool cropResolution){
  * If matrix is of type CV_64F then use Mat.at<double>(y,x).
 */
 
-void ImageLoader::writeToDouble(const int rows, const int cols,
-        const vector<double>& input, Mat& output){
-    for (int r = 0; r < rows; ++r) {
-        for (int c = 0; c < cols; ++c) {
-            output.at<double>(r,c) = input[r * rows+ cols];
-        }
-    }
-}
-
 Mat ImageLoader::createDoubleMat(const int rows, const int cols,
                                  const vector<double>& input){
     Mat_<double> output = Mat(rows, cols, CV_64F);
@@ -60,7 +46,8 @@ Mat ImageLoader::createDoubleMat(const int rows, const int cols,
     return output;
 }
 
-
+// TODO use generics
+// Utility method to iterate on the pysical pixels expressed as uchars
 inline void readUchars(vector<uint>& output, Mat& img){
     typedef MatConstIterator_<uchar> MI;
     int address = 0;
@@ -71,6 +58,7 @@ inline void readUchars(vector<uint>& output, Mat& img){
     }
 }
 
+// Utility method to iterate on the pysical pixels expressed as uint
 inline void readUint(vector<uint>& output, Mat& img){
     typedef MatConstIterator_<ushort> MI;
     int address = 0;
@@ -81,69 +69,57 @@ inline void readUint(vector<uint>& output, Mat& img){
     }
 }
 
-Image ImageLoader::readImage(const string fileName, bool cropResolution, int borderSize){
+Image ImageLoader::readImage(const string fileName, short int borderType,
+                             int borderSize, bool quantitize, int quantizationMax){
     // Open image from file system
-    Mat imgRead = readMriImage(fileName, cropResolution);
-    printMatImageData(imgRead);
+    Mat imgRead = readImage(fileName);
+
     // Create borders to the image
-    copyMakeBorder(imgRead, imgRead, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
-    // COPY THE IMAGE DATA TO SMALL array
+    addBorderToImage(imgRead, borderType, borderSize);
+
+    if((quantitize) && (imgRead.depth() == CV_16UC1) && (quantizationMax > IMG16MAXGRAYLEVEL)){
+        cout << "Warning! Provided a quantization level > maximum gray level of the image";
+        quantizationMax = IMG16MAXGRAYLEVEL;
+    }
+    if((quantitize) && (imgRead.depth() == CV_8UC1) && (quantizationMax > IMG8MAXGRAYLEVEL)){
+        cout << "Warning! Provided a quantization level > maximum gray level of the image";
+        quantizationMax = IMG8MAXGRAYLEVEL;
+    }
+    if(quantitize)
+        imgRead = quantitizeImage(imgRead, quantizationMax);
+
+    // Get the pixels from the image to a standard uint array
     vector<uint> pixels(imgRead.total());
 
     int maxGrayLevel;
-   // TODO think again this mechanism , DRY
+    // TODO think again this mechanism , DRY
     switch (imgRead.type()){
         case CV_16UC1:
             readUint(pixels, imgRead);
-            maxGrayLevel = 65535;
+            maxGrayLevel = IMG16MAXGRAYLEVEL;
             break;
         case CV_8UC1:
             readUchars(pixels, imgRead);
-            maxGrayLevel = 255;
+            maxGrayLevel = IMG8MAXGRAYLEVEL;
             break;
         default:
             cerr << "ERROR! Unsupported depth type: " << imgRead.type();
             exit(-4);
     }
-
     // CREATE IMAGE abstraction structure
-    Image img = Image(pixels, imgRead.rows, imgRead.cols, maxGrayLevel);
-    return img;
+    Image image = Image(pixels, imgRead.rows, imgRead.cols, maxGrayLevel);
+    return image;
 }
 
-void ImageLoader::printMatImageData(const Mat& img){
-    cout << "\t- Image metadata -" << endl;
-    cout << "\tRows: " << img.rows << " x Columns: "  << img.cols << endl;
-    cout << "\tPixel count: " << img.total() << endl;
-    cout << "\tDynamic: ";
-    switch (img.type()){
-        case 0:
-            cout << "256 gray levels depth";
-            break;
-        case 2:
-            cout << "65536 gray levels depth";
-            break;
-        default:
-            // TODO allow translation from signed to unsigned int
-            cerr << "ERROR! Unsupported depth type: " << img.type();
-            exit(-4);
-            break;
-    }
-    cout << endl;
-    //cout << img;
-}
 
-void ImageLoader::showImage(const Mat& img, const string& windowName){
-    namedWindow(windowName, WINDOW_AUTOSIZE );// Create a window for display.
-    imshow(windowName, img );                   // Show our image inside it.
-}
-
+// Debug method
 void ImageLoader::showImagePaused(const Mat& img, const string& windowName){
     namedWindow(windowName, WINDOW_AUTOSIZE );// Create a window for display.
     imshow(windowName, img );                   // Show our image inside it.
     waitKey(0);
 }
 
+// GLCM can work only with grayscale images
 Mat ImageLoader::convertToGrayScale(const Mat& inputImage) {
     // Convert image to a 255 grayscale
     Mat convertedImage = inputImage.clone();
@@ -151,6 +127,54 @@ Mat ImageLoader::convertToGrayScale(const Mat& inputImage) {
     return convertedImage;
 }
 
+unsigned int quantizationStep(int intensity, int maxLevel, int oldMax){
+    return (intensity * maxLevel / oldMax);
+}
+
+Mat ImageLoader::quantitizeImage(Mat& img, int maxLevel) {
+    Mat convertedImage = img.clone();
+
+    switch(img.depth()){
+        case CV_8UC1:{
+            typedef MatIterator_<uchar> MI;
+            for(MI element = convertedImage.begin<uchar>() ; element != convertedImage.end<uchar>() ; element++)
+            {
+                int intensity = *element;
+                int newIntensity = quantizationStep(intensity, maxLevel, IMG8MAXGRAYLEVEL);
+                *element = newIntensity;
+            }
+            break;
+        }
+        case CV_16UC1: {
+            typedef MatIterator_<ushort> MI;
+            for(MI element = convertedImage.begin<ushort>() ; element != convertedImage.end<ushort>() ; element++)
+            {
+                int intensity = *element;
+                int newIntensity = quantizationStep(intensity, maxLevel, IMG16MAXGRAYLEVEL);
+                *element = newIntensity;
+            }
+            break;
+        }
+    }
+
+    return convertedImage;
+}
+
+void ImageLoader::addBorderToImage(Mat &img, short int borderType, int borderSize) {
+    switch (borderType){
+        case 0: // NO PADDING
+            break;
+        case 1: // 0 pixel padding
+            copyMakeBorder(img, img, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
+            break;
+        case 2: // Reflect pixels at the borders
+            copyMakeBorder(img, img, borderSize, borderSize, borderSize, borderSize, BORDER_REPLICATE);
+            break;
+    }
+
+}
+
+// Improve clarity in very dark/bright images
 Mat ImageLoader::stretchImage(const Mat& inputImage){
     Mat stretched;
 
@@ -165,26 +189,20 @@ Mat ImageLoader::stretchImage(const Mat& inputImage){
     return stretched;
 }
 
+// Perform needed transformation and save the image
+void ImageLoader::saveImage(const Mat &img, const string &fileName, bool stretch){
+    // Transform to a format that opencv can save with imwrite
+    Mat convertedImage = ImageLoader::convertToGrayScale(img);
 
-void ImageLoader::showImageStretched(const Mat& img, const string& windowName){
-    Mat stretched = stretchImage(img);
-
-    showImage(img, "Original" + windowName);
-    showImage(stretched, "Stretched" + windowName);
-}
-
-void ImageLoader::stretchAndSave(const Mat &img, const string &fileName){
-    Mat stretched = stretchImage(img);
-    try {
-        imwrite(fileName +".png", stretched);
-    }catch (exception& e){
-        cout << e.what() << '\n';
-        cerr << "Fatal Error! Couldn't save the image";
-        exit(-3);
+    if(stretch){
+        Mat stretched = stretchImage(convertedImage);
+        saveImageToFileSystem(stretched, fileName);
     }
+    else
+        saveImageToFileSystem(convertedImage, fileName);
 }
 
-void ImageLoader::saveImageToFile(const Mat& img, const string& fileName){
+void ImageLoader::saveImageToFileSystem(const Mat& img, const string& fileName){
     try {
         imwrite(fileName +".png", img);
     }catch (exception& e){

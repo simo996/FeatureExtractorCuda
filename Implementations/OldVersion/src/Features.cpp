@@ -1,10 +1,11 @@
+//
+// Created by simo on 01/08/18.
+//
 
 #include "Features.h"
-
-// At this moment only 18 features are supported, see the enum FeatureNames
 #define FNUMBER 18
-
 // Support method
+
 vector<FeatureNames> Features::getAllSupportedFeatures() {
     vector<FeatureNames> output(FNUMBER);
     for (int i = 0; i <= IMOC; ++i) {
@@ -134,7 +135,7 @@ string Features::printFeatureNameAndValue(const double value, FeatureNames fname
 }
 
 void Features::printSingleFeature(const vector<double>& features,
-                                         FeatureNames featureName){
+                                  FeatureNames featureName){
 
     for (int i = 0; i < features.size(); ++i) {
         // Print the label with the apposite method

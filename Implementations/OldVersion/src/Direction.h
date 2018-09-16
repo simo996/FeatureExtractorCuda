@@ -1,6 +1,12 @@
 
+
 #ifndef FEATUREEXTRACTOR_DIRECTION_H
 #define FEATUREEXTRACTOR_DIRECTION_H
+
+#include <string>
+#include <vector>
+
+using namespace std;
 
 /*
     This class represent a supported direction;
@@ -9,17 +15,16 @@
     Supported directions with their number associated:
     0°[1], 45°[2], 90° [3], 135° [4]
 */
-
 class Direction {
 public:
     Direction(int directionNumber);
     static void printDirectionLabel(const int direction);
     char label[20];
-    // shift one the y axis to locate the neighbor pixel
+    // shift on the y axis to locate the neighbor pixel
     int shiftRows;
-    // shift one the x axis to locate the neighbor pixel
+    // shift on the x axis to locate the neighbor pixel
     int shiftColumns;
-};
 
+};
 
 #endif //FEATUREEXTRACTOR_DIRECTION_H

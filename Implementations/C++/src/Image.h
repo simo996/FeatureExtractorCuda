@@ -1,28 +1,34 @@
-/*
- * This class embeds pixels and image's metadata used by other components
-*/
+#ifndef PRE_CUDA_IMAGEALLOCATED_H
+#define PRE_CUDA_IMAGEALLOCATED_H
 
-#ifndef FEATUREEXTRACTOR_IMAGE_H
-#define FEATUREEXTRACTOR_IMAGE_H
-
+#include <iostream>
 #include <vector>
 
 using namespace std;
+
+/* This class represent the acquired image; it embeds:
+ * - all its pixels as unsigned ints
+ * - pysical dimensions (height, width as rows and columns)
+ * - the maximum gray level that could be encountered according to its type
+*/
 class Image {
 public:
-    Image(vector<uint> pixels, uint rows, uint columns, uint mxGrayLevel)
+    Image(vector<unsigned int> pixels, unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
             :pixels(pixels), rows(rows), columns(columns), maxGrayLevel(mxGrayLevel){};
-    const vector<uint> getPixels() const;
-    uint getRows() const;
-    uint getColumns() const;
-    uint getMaxGrayLevel() const;
+    // Getters
+    vector<unsigned int> getPixels() const;
+    unsigned int getRows() const;
+    unsigned int getColumns() const;
+    unsigned int getMaxGrayLevel() const;
+    // Debug method
     void printElements() const;
-    // Should belong to private class
-    vector<uint> pixels;
-    const uint rows;
-    const uint columns;
-    const uint maxGrayLevel;
+
+private:
+    vector<unsigned int> pixels;
+    const unsigned int rows;
+    const unsigned int columns;
+    const unsigned int maxGrayLevel;
 };
 
 
-#endif //FEATUREEXTRACTOR_IMAGE_H
+#endif //PRE_CUDA_IMAGEALLOCATED_H

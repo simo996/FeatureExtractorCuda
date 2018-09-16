@@ -32,8 +32,8 @@ add_executable(FeatureExtractor
         ${PROJECT_SOURCE_DIR}/GLCM.cpp
         ${PROJECT_SOURCE_DIR}/GLCM.h
 
-        ${PROJECT_SOURCE_DIR}/Image.cpp
-        ${PROJECT_SOURCE_DIR}/Image.h
+        ${PROJECT_SOURCE_DIR}/ImageData.cpp
+        ${PROJECT_SOURCE_DIR}/ImageData.h
 
         ${PROJECT_SOURCE_DIR}/Features.cpp
         ${PROJECT_SOURCE_DIR}/Features.h
@@ -55,7 +55,15 @@ add_executable(FeatureExtractor
 
         ${PROJECT_SOURCE_DIR}/Image.cpp
         ${PROJECT_SOURCE_DIR}/Image.h
-        src/ProgramArguments.cpp src/ProgramArguments.h)
+
+        ${PROJECT_SOURCE_DIR}/WorkArea.cpp
+        ${PROJECT_SOURCE_DIR}/WorkArea.h
+
+        ${PROJECT_SOURCE_DIR}/ProgramArguments.cpp
+        ${PROJECT_SOURCE_DIR}/ProgramArguments.h
+
+        ${PROJECT_SOURCE_DIR}/Utils.cpp
+        ${PROJECT_SOURCE_DIR}/Utils.h)
 
 # Add OpenCvTo the project
 find_package( OpenCV REQUIRED )

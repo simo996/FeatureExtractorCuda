@@ -1,38 +1,37 @@
-//
-// Created by simo on 16/07/18.
-//
-
 #ifndef FEATUREEXTRACTOR_WINDOWFEATURECOMPUTER_H
 #define FEATUREEXTRACTOR_WINDOWFEATURECOMPUTER_H
 
-#include <vector>
-#include <map>
 #include "FeatureComputer.h"
 #include "Direction.h"
 
-using namespace std;
-
-typedef vector<vector<double>> WindowFeatures; // will contain result for 4 directions
+typedef vector<double> WindowFeatures;
 typedef vector<double> FeatureValues;
 
+using namespace std;
+
+/*
+ * This class will compute the features for a direction of the window of interest
+ */
+
 class WindowFeatureComputer {
-    /*
-   * RESPONSABILITA CLASSE: Computare le feature per la finestra nelle 4 direzioni
-     * Fornire un stream di rappresentazione verso file
-   */
 
 public:
-    WindowFeatureComputer(const Image& img, const Window& wd);
+    WindowFeatureComputer(unsigned int * pixels, const ImageData& img, const Window& wd, WorkArea& wa);
     // Will be computed features in the directions specified
     // Default = 4 = all feautures ; oder 0->45->90->135°
-    WindowFeatures computeWindowFeatures();
+    void computeWindowFeatures();
     /* Oss. No sense in computing a single feature, simply select the one
       needed from the complete list
      */
 private:
-        // Initialization data to pass to each FeatureComputer
-        Image image;
-        Window windowData;
+    // Pixels of the image
+    unsigned int * pixels;
+    // Metadata about the image (dimensions, maxGrayLevel)
+    ImageData image;
+    // Metadata about the window
+    Window windowData;
+    // Memory location used for computation
+    WorkArea& workArea;
 };
 
 
