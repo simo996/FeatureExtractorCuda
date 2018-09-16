@@ -51,7 +51,9 @@ private:
 	// This method will produce and save on the filesystem the image associated with a feature in 1 direction
 	void saveFeatureImage(int rowNumber,  int colNumber,
 			const FeatureValues& featureValues, const string& outputFilePath);
-
+	
+	// Utility method
+	int getAppliedBorders();
 	// Minimal set of information displayed
     void printInfo(ImageData imgData, int padding);
     // Extensive set of information printed with verbose

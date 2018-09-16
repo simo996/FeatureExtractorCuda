@@ -9,6 +9,10 @@ __host__ __device__ unsigned int ImageData::getColumns() const{
     return columns;
 }
 
+__host__ __device__ int ImageData::getBorderSize() const {
+    return appliedBorders;
+}
+
 __host__ __device__ unsigned int ImageData::getMaxGrayLevel() const{
     return maxGrayLevel;
 }

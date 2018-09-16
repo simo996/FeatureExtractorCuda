@@ -19,7 +19,7 @@ public:
     // Eventual reduction of gray levels to range [0,Max]
     bool quantitize;
     int quantitizationMax;
-    bool crop;
+    short int borderType;
     // Eventual symmetricity of the pairs of gray levels
     bool symmetric;
     // Modulus of the vector that links reference to neighbor pixel
@@ -39,16 +39,17 @@ public:
 
     // Constructor with default values
     ProgramArguments(short int windowSize = 4,
-            bool crop = false,
-            bool quantitize = false,
-            bool symmetric = false,
-            short int distance = 1,
-            short int dirType = 1,
-            short int dirNumber = 1,
-            bool createImages = false,
-            bool verbose = false,
-            string outFolder = "")
-            : windowSize(windowSize), crop(crop), quantitize(quantitize), symmetric(symmetric), distance(distance),
+                     bool crop = false,
+                     bool quantitize = false,
+                     bool symmetric = false,
+                     short int distance = 1,
+                     short int dirType = 1,
+                     short int dirNumber = 1,
+                     bool createImages = false,
+                     short int padding = 1,
+                     bool verbose = false,
+                     string outFolder = "")
+            : windowSize(windowSize), borderType(padding), quantitize(quantitize), symmetric(symmetric), distance(distance),
               directionType(dirType), directionsNumber(dirNumber),
               createImages(createImages), outputFolder(outFolder),
               verbose(verbose){};

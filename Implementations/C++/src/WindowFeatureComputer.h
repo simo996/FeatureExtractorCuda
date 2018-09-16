@@ -17,8 +17,7 @@ class WindowFeatureComputer {
 
 public:
     WindowFeatureComputer(unsigned int * pixels, const ImageData& img, const Window& wd, WorkArea& wa);
-    // Will be computed features in the directions specified
-    // Default = 4 = all feautures ; oder 0->45->90->135°
+    // Will be computed features in the direction specified
     void computeWindowFeatures();
     /* Oss. No sense in computing a single feature, simply select the one
       needed from the complete list

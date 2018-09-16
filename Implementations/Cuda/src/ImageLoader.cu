@@ -3,11 +3,10 @@
 #define IMG16MAXGRAYLEVEL 65535
 #define IMG8MAXGRAYLEVEL 255
 
-
-Mat ImageLoader::readImage(string fileName, bool cropResolution){
+Mat ImageLoader::readImage(string fileName){
     Mat inputImage;
     try{
-            inputImage = imread(fileName, CV_LOAD_IMAGE_ANYDEPTH);
+        inputImage = imread(fileName, CV_LOAD_IMAGE_ANYDEPTH);
     }
     catch (cv::Exception& e) {
         const char *err_msg = e.what();
@@ -24,26 +23,13 @@ Mat ImageLoader::readImage(string fileName, bool cropResolution){
         cvtColor(inputImage, inputImage, CV_RGB2GRAY);
         inputImage.convertTo(inputImage, CV_8UC1);
     }
-    // Eventually reduce gray levels to range 0,255
-    if((cropResolution) && (inputImage.depth() != CV_8UC1))
-        inputImage.convertTo(inputImage, CV_8UC1);
 
     return inputImage;
 }
 
-// TODO detect and read other values that can be mapped into uint
-/* SEE Mat::at() documentation to understand addressing
- * If matrix is of type CV_8U then use Mat.at<uchar>(y,x).
- * If matrix is of type CV_8S then use Mat.at<schar>(y,x).
- * If matrix is of type CV_16U then use Mat.at<ushort>(y,x).
- * If matrix is of type CV_16S then use Mat.at<short>(y,x).
- * If matrix is of type CV_32S then use Mat.at<int>(y,x).
- * If matrix is of type CV_32F then use Mat.at<float>(y,x).
- * If matrix is of type CV_64F then use Mat.at<double>(y,x).
-*/
 
 Mat ImageLoader::createDoubleMat(const int rows, const int cols,
-        const vector<double>& input){
+                                 const vector<double>& input){
     Mat_<double> output = Mat(rows, cols, CV_64F);
     // Copy the values into the image
     memcpy(output.data, input.data(), rows * cols * sizeof(double));
@@ -73,13 +59,13 @@ inline void readUint(vector<uint>& output, Mat& img){
     }
 }
 
-Image ImageLoader::readImage(const string fileName, bool cropResolution, 
-    bool quantitize, int quantizationMax, int borderSize){
+Image ImageLoader::readImage(const string fileName, short int borderType,
+                             int borderSize, bool quantitize, int quantizationMax){
     // Open image from file system
-    Mat imgRead = readImage(fileName, cropResolution);
+    Mat imgRead = readImage(fileName);
 
     // Create borders to the image
-    copyMakeBorder(imgRead, imgRead, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
+    addBorderToImage(imgRead, borderType, borderSize);
 
     if((quantitize) && (imgRead.depth() == CV_16UC1) && (quantizationMax > IMG16MAXGRAYLEVEL)){
         cout << "Warning! Provided a quantization level > maximum gray level of the image";
@@ -91,20 +77,20 @@ Image ImageLoader::readImage(const string fileName, bool cropResolution,
     }
     if(quantitize)
         imgRead = quantitizeImage(imgRead, quantizationMax);
-    
+
     // Get the pixels from the image to a standard uint array
     vector<uint> pixels(imgRead.total());
 
     int maxGrayLevel;
-   // TODO think again this mechanism , DRY
+    // TODO think again this mechanism , DRY
     switch (imgRead.type()){
         case CV_16UC1:
             readUint(pixels, imgRead);
-            maxGrayLevel = 65535;
+            maxGrayLevel = IMG16MAXGRAYLEVEL;
             break;
         case CV_8UC1:
             readUchars(pixels, imgRead);
-            maxGrayLevel = 255;
+            maxGrayLevel = IMG8MAXGRAYLEVEL;
             break;
         default:
             cerr << "ERROR! Unsupported depth type: " << imgRead.type();
@@ -114,6 +100,7 @@ Image ImageLoader::readImage(const string fileName, bool cropResolution,
     Image image = Image(pixels, imgRead.rows, imgRead.cols, maxGrayLevel);
     return image;
 }
+
 
 // Debug method
 void ImageLoader::showImagePaused(const Mat& img, const string& windowName){
@@ -129,7 +116,6 @@ Mat ImageLoader::convertToGrayScale(const Mat& inputImage) {
     normalize(convertedImage, convertedImage, 0, 255, NORM_MINMAX, CV_8UC1);
     return convertedImage;
 }
-
 
 unsigned int quantizationStep(int intensity, int maxLevel, int oldMax){
     return (intensity * maxLevel / oldMax);
@@ -162,6 +148,20 @@ Mat ImageLoader::quantitizeImage(Mat& img, int maxLevel) {
     }
 
     return convertedImage;
+}
+
+void ImageLoader::addBorderToImage(Mat &img, short int borderType, int borderSize) {
+    switch (borderType){
+        case 0: // NO PADDING
+            break;
+        case 1: // 0 pixel padding
+            copyMakeBorder(img, img, borderSize, borderSize, borderSize, borderSize, BORDER_CONSTANT, 0);
+            break;
+        case 2: // Reflect pixels at the borders
+            copyMakeBorder(img, img, borderSize, borderSize, borderSize, borderSize, BORDER_REPLICATE);
+            break;
+    }
+
 }
 
 // Improve clarity in very dark/bright images

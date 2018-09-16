@@ -27,16 +27,7 @@ Mat ImageLoader::readImage(string fileName){
     return inputImage;
 }
 
-// TODO detect and read other values that can be mapped into uint
-/* SEE Mat::at() documentation to understand addressing
- * If matrix is of type CV_8U then use Mat.at<uchar>(y,x).
- * If matrix is of type CV_8S then use Mat.at<schar>(y,x).
- * If matrix is of type CV_16U then use Mat.at<ushort>(y,x).
- * If matrix is of type CV_16S then use Mat.at<short>(y,x).
- * If matrix is of type CV_32S then use Mat.at<int>(y,x).
- * If matrix is of type CV_32F then use Mat.at<float>(y,x).
- * If matrix is of type CV_64F then use Mat.at<double>(y,x).
-*/
+
 
 Mat ImageLoader::createDoubleMat(const int rows, const int cols,
                                  const vector<double>& input){

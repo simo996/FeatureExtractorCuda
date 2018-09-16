@@ -169,7 +169,6 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
 
-    int DEBUG;
     // Slide windows on the image
     for(int i = 0; i < realImageRows ; i++){
         for(int j = 0; j < realImageCols ; j++){
@@ -180,7 +179,6 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
             actualWindow.setSpacialOffsets(i + getAppliedBorders(), j + getAppliedBorders());
             // Launch the computation of features on the window
             WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
-            DEBUG = j;
         }
 
 	}

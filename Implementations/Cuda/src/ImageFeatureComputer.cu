@@ -9,12 +9,12 @@
 ImageFeatureComputer::ImageFeatureComputer(const ProgramArguments& progArg)
 :progArg(progArg){}
 
-void ImageFeatureComputer::printInfo(const ImageData imgData, int padding) {
-	cout << "- Input image: " << progArg.imagePath;
+void ImageFeatureComputer::printInfo(const ImageData imgData, int border) {
+	cout << endl << "- Input image: " << progArg.imagePath;
 	cout << endl << "- Output folder: " << progArg.outputFolder;
 	int pixelCount = imgData.getRows() * imgData.getColumns();
-	int rows = imgData.getRows() - padding -1;
-    int cols = imgData.getColumns() - padding -1;
+	int rows = imgData.getRows() - 2 * getAppliedBorders();
+    int cols = imgData.getColumns() - 2 * getAppliedBorders();
 	cout << endl << "- Rows: " << rows << " - Columns: " << cols << " - Pixel count: " << pixelCount;
 	cout << endl << "- Gray Levels : " << imgData.getMaxGrayLevel();
 	cout << endl << "- Distance: " << progArg.distance;
@@ -48,13 +48,22 @@ void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
 
 }
 
+int ImageFeatureComputer::getAppliedBorders(){
+    int bordersToApply = 0;
+    if(progArg.borderType != 0 )
+        bordersToApply = progArg.windowSize;
+    return bordersToApply;
+}
+
+
 void ImageFeatureComputer::compute(){
 	bool verbose = progArg.verbose;
 
 	// Image from imageLoader
-	Image image = ImageLoader::readImage(progArg.imagePath, progArg.crop, 
-		progArg.quantitize, progArg.quantitizationMax, progArg.distance);
-	ImageData imgData(image);
+	Image image = ImageLoader::readImage(progArg.imagePath, progArg.borderType,
+                                         getAppliedBorders(), progArg.quantitize,
+                                         progArg.quantitizationMax);
+	ImageData imgData(image, getAppliedBorders());
 	if(verbose)
     	cout << "* Image loaded * ";
     checkOptionCompatibility(progArg, image);
@@ -82,10 +91,9 @@ void ImageFeatureComputer::compute(){
 		if(verbose)
 			cout << "* Creating feature images *" << endl;
 		// Compute how many features will be used for creating the image
-		int numberOfRows = image.getRows() - progArg.windowSize + 1;
-        int numberOfColumns = image.getColumns() - progArg.windowSize + 1;
-        saveAllFeatureImages(numberOfRows, numberOfColumns, formattedFeatures);
-
+		int realImageRows = image.getRows() - 2 * getAppliedBorders();
+        int realImageCols = image.getColumns() - 2 * getAppliedBorders();
+        saveAllFeatureImages(realImageRows, realImageCols, formattedFeatures);
 	}
 	if(verbose)
 		cout << "* DONE * " << endl;
@@ -142,9 +150,11 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
 	Window windowData = Window(progArg.windowSize, progArg.distance, 
 		progArg.directionType, progArg.symmetric);
 
+  	int realImageRows = img.getRows() - 2 * getAppliedBorders();
+    int realImageCols = img.getColumns() - 2 * getAppliedBorders();
+
 	// How many windows need to be allocated
-	int numberOfWindows = (img.getRows() - progArg.windowSize + 1)
-						  * (img.getColumns() - progArg.windowSize + 1);
+    int numberOfWindows = (realImageRows * realImageCols);
 	// How many directions need to be allocated for each window
 	short int numberOfDirs = 1;
 	// How many feature values need to be allocated for each direction

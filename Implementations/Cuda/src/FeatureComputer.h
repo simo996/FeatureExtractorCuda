@@ -28,8 +28,10 @@ public:
             int shiftRows, int shiftColumns, const Window& windowData,
             WorkArea& wa);
 private:
-   // given data to initialize related GLCM
+    // given data to initialize related GLCM
+    // Pixels of the image
     const unsigned int * pixels;
+    // Metadata about the image (dimensions, maxGrayLevel)
     ImageData image;
     // Window of interest
     Window windowData;

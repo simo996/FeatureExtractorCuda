@@ -6,27 +6,35 @@ __device__ FeatureComputer::FeatureComputer(const unsigned int * pixels, const I
         const Window& wd, WorkArea& wa)
                                  : pixels(pixels), image(img),
                                    windowData(wd), workArea(wa) {
+    // Each direction has 2 shift used for addressing each pixel
     windowData.setDirectionShifts(shiftRows, shiftColumns);
-    // deduct what feature this thread is computing
+    
+    /* Deduct what window this thread is computing for saving the results
+     * in the right memory location */
     computeOutputWindowFeaturesIndex();
-    // get the pointer to the memlocation where to put feature results
     int featuresCount = Features::getSupportedFeaturesCount();
-    int actualWindowOffset = outputWindowOffset * featuresCount;
-    double * rightLocation = workArea.output + actualWindowOffset;
+    int actualWindowOffset = outputWindowOffset * featuresCount;  // consider space for each feature
+    double * rightLocation = workArea.output + actualWindowOffset; // where results will be saved
     featureOutput = rightLocation;
     // Compute features
     computeDirectionalFeatures();
 }
 
+/* This method produces a value is the number of the window in the total
+ * window set of the image*/
 __device__ void FeatureComputer::computeOutputWindowFeaturesIndex(){
-    // this will be thread idx e thread idy
-    int rowOffset = windowData.imageRowsOffset;
-    int colOffset = windowData.imageColumnsOffset;
-    // this value identifies the window part of the result in the global array
-    outputWindowOffset = (rowOffset * (image.getColumns() - windowData.side + 1)) + colOffset;
+    // If bordered, the original image is at the center
+    int rowOffset = windowData.imageRowsOffset - image.getBorderSize();
+    int colOffset = windowData.imageColumnsOffset - image.getBorderSize();
+    outputWindowOffset = (rowOffset * (image.getColumns() - 2 * image.getBorderSize()))
+            + colOffset;
 }
 
+/* Computes all the features supported.
+ * The results will be saved in the array of the work area given to this thread
+ */
 __device__ void FeatureComputer::computeDirectionalFeatures() {
+    // Generate the 5 needed array of representations
     GLCM glcm(pixels, image, windowData, workArea);
     //glcm.printGLCM(); // Print data and elements for debugging
 
@@ -176,7 +184,7 @@ __device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, dou
     // First batch of computable features
     int length = glcm.effectiveNumberOfGrayPairs;
     for (int k = 0; k < length; ++k) {
-        GrayPair actualPair = glcm.elements[k];
+        GrayPair actualPair = glcm.grayPairs[k];
 
         grayLevelType i = actualPair.getGrayLevelI();
         grayLevelType j = actualPair.getGrayLevelJ();
@@ -214,7 +222,7 @@ __device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, dou
 
     for (int k = 0; k < length; ++k)
     {
-        GrayPair actualPair = glcm.elements[k];
+        GrayPair actualPair = glcm.grayPairs[k];
         grayLevelType i = actualPair.getGrayLevelI();
         grayLevelType j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
@@ -238,7 +246,7 @@ __device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, dou
 
     for (int k = 0; k < length; ++k)
     {
-        GrayPair actualPair = glcm.elements[k];
+        GrayPair actualPair = glcm.grayPairs[k];
         grayLevelType i = actualPair.getGrayLevelI();
         grayLevelType j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
@@ -348,8 +356,8 @@ __device__ void FeatureComputer::extractMarginalFeatures(const GLCM& glcm, doubl
 
     int length = glcm.effectiveNumberOfGrayPairs;
     for (int l = 0; l < length; ++l) {
-        GrayPair actualPair = glcm.elements[l];
-        double actualPairProbability = ((double) glcm.elements[l].getFrequency()) / numberOfPairs;
+        GrayPair actualPair = glcm.grayPairs[l];
+        double actualPairProbability = ((double) glcm.grayPairs[l].getFrequency()) / numberOfPairs;
 
         AggregatedGrayPair i (actualPair.getGrayLevelI(), 0); // 0 frequency is placeholder
         int xposition = 0;

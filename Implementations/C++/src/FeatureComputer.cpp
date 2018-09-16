@@ -31,6 +31,8 @@ void FeatureComputer::computeOutputWindowFeaturesIndex(){
     int colOffset = windowData.imageColumnsOffset - image.getBorderSize();
     outputWindowOffset = (rowOffset * (image.getColumns() - 2 * image.getBorderSize()))
             + colOffset;
+    assert(rowOffset < image.getRows() - 2 * image.getBorderSize());
+    assert(colOffset < image.getColumns() - 2 * image.getBorderSize());
 
 }
 
@@ -38,7 +40,7 @@ void FeatureComputer::computeOutputWindowFeaturesIndex(){
  * The results will be saved in the array of the work area given to this thread
  */
 void FeatureComputer::computeDirectionalFeatures() {
-    // Generate the 5 needed representation
+    // Generate the 5 needed array of representations
     GLCM glcm(pixels, image, windowData, workArea);
     //glcm.printGLCM(); // Print data and grayPairs for debugging
 

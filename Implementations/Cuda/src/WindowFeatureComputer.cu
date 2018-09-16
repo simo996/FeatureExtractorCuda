@@ -1,10 +1,3 @@
-/*
- * WindowFeatureComputer.cpp
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #include "WindowFeatureComputer.h"
 
 
@@ -15,9 +8,8 @@ __device__ WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
 }
 
 /*
-	This method will compute all the features for all numberOfDirections directions
+	This method will compute all the features for all directionType directions
  	provided by a parameter to the program ; the order is 0,45,90,135° ;
- 	By default all 4 directions are evaluated
 */
 __device__ void WindowFeatureComputer::computeWindowFeatures() {
   	// Get shift vector for each direction of interest

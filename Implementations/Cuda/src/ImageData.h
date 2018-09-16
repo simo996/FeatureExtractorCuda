@@ -23,15 +23,20 @@ using namespace std;
 
 class ImageData {
 public:
-    CUDA_HOSTDEV ImageData(unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
-            : rows(rows), columns(columns), maxGrayLevel(mxGrayLevel){};
+    CUDA_HOSTDEV explicit ImageData(unsigned int rows, unsigned int columns, int borders,
+            unsigned int mxGrayLevel)
+            : rows(rows), columns(columns), appliedBorders(borders),
+            maxGrayLevel(mxGrayLevel){};
     // Strip metadata from the "complete" Image class
-    CUDA_HOSTDEV ImageData(Image& img)
-                : rows(img.getRows()), columns(img.getColumns()), maxGrayLevel(img.getMaxGrayLevel()){};
+    CUDA_HOSTDEV explicit ImageData(const Image& img, int borders)
+            : rows(img.getRows()), columns(img.getColumns()),
+            appliedBorders(borders), maxGrayLevel(img.getMaxGrayLevel()){};
     // Getters
     CUDA_HOSTDEV unsigned int getRows() const;
     CUDA_HOSTDEV unsigned int getColumns() const;
-    CUDA_HOSTDEV unsigned int getMaxGrayLevel() const;   
+    CUDA_HOSTDEV unsigned int getMaxGrayLevel() const;
+    // Borders applied to the original image
+    CUDA_HOSTDEV int getBorderSize() const;
     // Debug method
     CUDA_HOSTDEV void printElements(unsigned int* pixels) const;
 
@@ -39,6 +44,8 @@ private:
     const unsigned int rows;
     const unsigned int columns;
     const unsigned int maxGrayLevel;
+    // Amount of borders applied to each side of the original image
+    int appliedBorders;
 };
 
 

@@ -20,10 +20,10 @@ public:
             WorkArea& wa);
 private:
     // given data to initialize related GLCM
-     // Pixels of the image
-     const unsigned int * pixels;
-     // Metadata about the image (dimensions, maxGrayLevel)
-     ImageData image;
+    // Pixels of the image
+    const unsigned int * pixels;
+    // Metadata about the image (dimensions, maxGrayLevel)
+    ImageData image;
     // Window of interest
     Window windowData;
     // Memory location used for computing this window's feature

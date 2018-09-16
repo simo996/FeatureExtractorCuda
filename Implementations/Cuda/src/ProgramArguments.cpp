@@ -3,19 +3,29 @@
 #include <getopt.h> // For options check
 
 void ProgramArguments::printProgramUsage(){
-    cout << endl << "Usage: FeatureExtractor [<-s>] [<-i>] [<-d distance>] [<-w windowSize>] [<-t directionType>] "
-                    "[- i imagePath] [<-o outputFolder>]" << endl;
+    cout << endl << "Usage: FeatureExtractor [<-s>] [<-d distance>] [<-w windowSize>] [<-t directionType>] "
+                    "[<-b borderType>] [<-g>][- i imagePath] [<-o outputFolder>]" << endl;
     exit(2);
 }
 
 ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
     ProgramArguments progArg;
     int opt;
-    while((opt = getopt(argc, argv, "g:sw:d:n:hct:vo:i:r:")) != -1){
+    while((opt = getopt(argc, argv, "gsw:d:n:hct:vo:i:r:b:")) != -1){
         switch (opt){
-            case 'c':{
-                // Crop original dynamic resolution
-                progArg.crop = true;
+            case 'b':{
+                // Choose between no, zero or symmetric padding
+                short int type = atoi(optarg);
+                switch(type){
+                    case 0:
+                    case 1:
+                    case 2:
+                        progArg.borderType = type;
+                        break;
+                    default:
+                        cerr << "ERROR! -b option must be a value between 0 and 2" << endl;
+                        printProgramUsage();
+                }
                 break;
             }
             case 'r':{
@@ -26,18 +36,7 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
             }
             case 'g':{
                 // Make the glcm pairs symmetric
-                int type = atoi(optarg);
-                if (type == 1) {
-                    progArg.symmetric = true;
-                }
-                else{
-                    if(type == 0)
-                        progArg.symmetric = true;
-                    else
-                        cerr << "ERROR! -g option can be just 1 or 0" << endl;
-                        printProgramUsage();
-                }
-                break;
+                progArg.symmetric = true;
             }
             case 's':{
                 // Create images associated to features

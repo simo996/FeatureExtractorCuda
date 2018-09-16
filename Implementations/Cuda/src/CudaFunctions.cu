@@ -253,14 +253,19 @@ __global__ void computeFeatures(unsigned int * pixels,
 	int colsStride =  gridDim.x * blockDim.x; 
 	// How many shift down for reaching the next window to compute
 	int rowsStride =  gridDim.y * blockDim.y;
+
+	// Consider bordering and the consequent padding
+	int appliedBorders = img.getBorderSize();
+	int realImageRows = img.getRows() - 2 * appliedBorders;
+    int realImageCols = img.getColumns() - 2 * appliedBorders;
 	
 	// Create local window information
 	Window actualWindow {windowData.side, windowData.distance,
 								 windowData.directionType, windowData.symmetric};
-	for(int j = x; (j + windowData.side) <= img.getColumns() ; j+= colsStride){
-		for(int i = y; (i + windowData.side) <= img.getRows(); i+= rowsStride){
+	for(int i = y; i < realImageRows; i+= rowsStride){
+		for(int j = x; j < realImageCols ; j+= colsStride){
 			// tell the window its relative offset (starting point) inside the image
-			actualWindow.setSpacialOffsets(i, j);
+			actualWindow.setSpacialOffsets(i + appliedBorders, j + appliedBorders);
 			// Launch the computation of features on the window
 			WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
 		}

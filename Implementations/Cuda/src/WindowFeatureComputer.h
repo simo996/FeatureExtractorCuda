@@ -1,10 +1,3 @@
-/*
- * WindowFeatureComputer.h
- *
- *  Created on: 26/ago/2018
- *      Author: simone
- */
-
 #ifndef WINDOWFEATURECOMPUTER_H_
 #define WINDOWFEATURECOMPUTER_H_
 
@@ -23,25 +16,26 @@
 
 using namespace std;
 
+/*
+ * This class will compute the features for a direction of the window of interest
+ */
 class WindowFeatureComputer {
-    /*
-   * RESPONSABILITA CLASSE: Computare le feature per la finestra nelle 4 direzioni
-     * Fornire un stream di rappresentazione verso file
-   */
 
 public:
     CUDA_DEV WindowFeatureComputer(unsigned int * pixels, const ImageData& img, const Window& wd, WorkArea& wa);
-    // Will be computed features in the directions specified
-    // Default = 4 = all feautures ; oder 0->45->90->135°
+    // Will be computed features in the direction specified
     CUDA_DEV void computeWindowFeatures();
     /* Oss. No sense in computing a single feature, simply select the one
       needed from the complete list
      */
 private:
-        // Initialization data to pass to each FeatureComputer
-        WorkArea& workArea;
-        unsigned int * pixels;
-        ImageData image;
-        Window windowData;
+    // Pixels of the image
+    unsigned int * pixels;
+    // Metadata about the image (dimensions, maxGrayLevel)
+    ImageData image;
+    // Metadata about the window
+    Window windowData;
+    // Memory location used for computation
+    WorkArea& workArea;
 };
 #endif /* WINDOWFEATURECOMPUTER_H_ */
