@@ -1,7 +1,3 @@
-//
-// Created by simo on 16/07/18.
-//
-
 #include "WindowFeatureComputer.h"
 
 WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
@@ -13,7 +9,6 @@ WindowFeatureComputer::WindowFeatureComputer(unsigned int * pxls,
 /*
 	This method will compute all the features for all directionType directions
  	provided by a parameter to the program ; the order is 0,45,90,135° ;
- 	By default all 4 directions are evaluated
 */
 void WindowFeatureComputer::computeWindowFeatures() {
     // Get shift vector for each direction of interest

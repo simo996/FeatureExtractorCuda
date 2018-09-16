@@ -11,6 +11,9 @@ uint ImageData::getColumns() const{
     return columns;
 }
 
+int ImageData::getBorderSize() const {
+    return appliedBorders;
+}
 uint ImageData::getMaxGrayLevel() const{
     return maxGrayLevel;
 }

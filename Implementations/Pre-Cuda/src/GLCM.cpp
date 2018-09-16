@@ -1,7 +1,3 @@
-//
-// Created by simo on 11/07/18.
-//
-
 #include <iostream>
 #include <assert.h>
 #include "GLCM.h"
@@ -17,12 +13,14 @@ GLCM::GLCM(const unsigned int * pixels, const ImageData& image,
         summedPairs(wa.summedPairs), subtractedPairs(wa.subtractedPairs),
         xMarginalPairs(wa.xMarginalPairs), yMarginalPairs(wa.yMarginalPairs)
         {
+    // Compute the number of pairs that need to be processed in this GLCM
     this->numberOfPairs = getWindowRowsBorder() * getWindowColsBorder();
     if(this->windowData.symmetric)
         this->numberOfPairs *= 2;
 
-
+    // Replacing dirty memory with items that represent "available memory"
     workArea.cleanup();
+    // Generate elements of this GLCM
     initializeGlcmElements();
 }
 
@@ -32,7 +30,6 @@ GLCM::~GLCM(){
 
 }
 
-// Warning, se simmetrica lo spazio deve raddoppiare
 int GLCM::getNumberOfPairs() const {
         return numberOfPairs;
 }
@@ -41,10 +38,12 @@ int GLCM::getMaxGrayLevel() const {
     return img.getMaxGrayLevel();
 }
 
+// y-Side of the sub-window of interest for creating pairs
 int GLCM::getWindowRowsBorder() const{
    return (windowData.side - (windowData.distance * abs(windowData.shiftRows)));
 }
 
+// x-Side of the sub-window of interest for creating pairs
 int GLCM::getWindowColsBorder() const{
     return (windowData.side - (windowData.distance * abs(windowData.shiftColumns)));
 }
@@ -77,7 +76,7 @@ inline int GLCM::computeWindowRowOffset()
     return initialRowOffset;
 }
 
-// addressing method for reference pixel; see documentation
+// addressing method for reference pixel
 inline int GLCM::getReferenceIndex(const int i, const int j,
                                    const int initialWindowRowOffset, const int initialWindowColumnOffset){
     int row = (i + windowData.imageRowsOffset) // starting point in the image
@@ -89,7 +88,7 @@ inline int GLCM::getReferenceIndex(const int i, const int j,
     return index;
 }
 
-// addressing method for neighbor pixel; see documentation
+// addressing method for neighbor pixel
 inline int GLCM::getNeighborIndex(const int i, const int j,
                                   const int initialWindowColumnOffset){
     int row = (i + windowData.imageRowsOffset); // starting point in the image
@@ -101,8 +100,13 @@ inline int GLCM::getNeighborIndex(const int i, const int j,
     return index;
 }
 
+/* Method that inserts a GrayPair in the pre-allocated memory
+ * Uses that convention that GrayPair ( i=0, j=0, frequency=0) means
+ * available memory
+ */
 inline void GLCM::insertElement(GrayPair* elements, const GrayPair actualPair, uint& lastInsertionPosition){
     int position = 0;
+    // Find if the element was already inserted, and where
     while((!elements[position].compareTo(actualPair)) && (position < numberOfPairs))
         position++;
     // If found
@@ -122,18 +126,17 @@ inline void GLCM::insertElement(GrayPair* elements, const GrayPair actualPair, u
 }
 
 /*
-    This method puts inside the map of grayPairs map<GrayPair, int> each
-    frequency associated with each pair of grayLevels
+    This method creates array of GrayPairs
 */
 void GLCM::initializeGlcmElements() {
     // Define subBorders offset depending on orientation
     int initialWindowColumnOffset = computeWindowColumnOffset();
     int initialWindowRowOffset = computeWindowRowOffset();
-    // Offset to locate the starting point of the window inside the sliding image
 
     grayLevelType referenceGrayLevel;
     grayLevelType neighborGrayLevel;
     unsigned int lastInsertionPosition = 0;
+    // Navigate the sub-window of interest
     for (int i = 0; i < getWindowRowsBorder() ; i++)
     {
         for (int j = 0; j < getWindowColsBorder(); j++)
@@ -164,8 +167,13 @@ void GLCM::initializeGlcmElements() {
     codifyMarginalPairs();
 }
 
+/* Method that inserts a AggregatedGrayPair in the pre-allocated memory
+ * Uses that convention that AggregateGrayPair (k=0, frequency=0) means
+ * available memory
+ */
 inline void GLCM::insertElement(AggregatedGrayPair* elements, const AggregatedGrayPair actualPair, uint& lastInsertionPosition){
     int position = 0;
+    // Find if the element was already inserted, and where
     while((!elements[position].compareTo(actualPair)) && (position < numberOfPairs))
         position++;
     // If found
@@ -184,10 +192,9 @@ inline void GLCM::insertElement(AggregatedGrayPair* elements, const AggregatedGr
     }
 }
 
-/*
-    This method, given the map<GrayPair, int freq> will produce 
-    map<int k, int freq> where k is the sum of both grayLevels of the GrayPair.
-    This representation is used in computeSumXXX() features
+/* This method will produce the 2 arrays of AggregatedPairs (k, frequency)
+ * where k is the sum or difference of both grayLevels of 1 GrayPair.
+ * This representation is used in computeSumXXX() and computeDiffXXX() features
 */
 void GLCM::codifyAggregatedPairs() {
     unsigned int lastInsertPosition = 0;
@@ -213,16 +220,16 @@ void GLCM::codifyAggregatedPairs() {
     numberOfSubtractedPairs = lastInsertPosition;
 }
 
-/*
-    This method, given the map<GrayPair, int freq> will produce 
-    map<int k, int freq> where k is the REFERENCE grayLevel of the GrayPair 
-    while freq is the "marginal" frequency of that level 
-    (ie. how many times k is present in all GrayPair<k, ?>)
-    This representation is used for computing features HX, HXY, HXY1, imoc
+
+/* This method will produce the 2 arrays of AggregatedPairs (k, frequency)
+ * where k is one grayLevel of GLCM and frequency is the "marginal" frequency of that level
+ * (ie. how many times k is present in all GrayPair<k, ?>)
+ * This representation is used for computing features HX, HXY, HXY1, imoc
 */
 void GLCM::codifyMarginalPairs() {
     unsigned int lastInsertPosition = 0;
     // xMarginalPairs first
+    // X Marginal pairs consider the reference gray level of the pixel pairs
     for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
         grayLevelType firstGrayLevel = grayPairs[i].getGrayLevelI();
         AggregatedGrayPair element(firstGrayLevel, grayPairs[i].getFrequency());
@@ -232,6 +239,7 @@ void GLCM::codifyMarginalPairs() {
     numberOfxMarginalPairs = lastInsertPosition;
 
     // yMarginalPairs second
+    // Y Marginal pairs consider the neighbor gray level of the pixel pairs
     lastInsertPosition = 0;
     for(int i = 0 ; i < effectiveNumberOfGrayPairs; i++){
         grayLevelType secondGrayLevel = grayPairs[i].getGrayLevelJ();
@@ -242,6 +250,8 @@ void GLCM::codifyMarginalPairs() {
     numberOfyMarginalPairs = lastInsertPosition;
 }
 
+
+/* DEBUGGING METHODS */
 void GLCM::printGLCM() const {
     printGLCMData();
     printGLCMElements();
@@ -294,8 +304,6 @@ void GLCM::printGLCMAggregatedElements(bool areSummed) const{
         }
     }
 }
-
-
 
 void GLCM::printMarginalProbabilityElements() const{
     cout << endl << "* xMarginal Codifica" << endl;

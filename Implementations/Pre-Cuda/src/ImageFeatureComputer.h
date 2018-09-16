@@ -53,6 +53,8 @@ private:
 	void saveFeatureImage(int rowNumber,  int colNumber,
 			const vector<double>& featureValues, const string& outputFilePath);
 
+	// Utility method
+	int getAppliedBorders();
 	// Minimal set of information displayed
     void printInfo(ImageData imgData, int padding);
     // Extensive set of information printed with verbose

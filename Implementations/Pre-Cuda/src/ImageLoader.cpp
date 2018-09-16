@@ -172,7 +172,6 @@ void ImageLoader::addBorderToImage(Mat &img, short int borderType, int borderSiz
             break;
     }
 
-    cout << "DEBUG Dimensions afer paddin: rows " << img.rows << " -cols" << img.cols << endl;
 }
 
 // Improve clarity in very dark/bright images

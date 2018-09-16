@@ -7,12 +7,12 @@
 ImageFeatureComputer::ImageFeatureComputer(const ProgramArguments& progArg)
 :progArg(progArg){}
 
-void ImageFeatureComputer::printInfo(const ImageData imgData, int padding) {
+void ImageFeatureComputer::printInfo(const ImageData imgData, int border) {
 	cout << endl << "- Input image: " << progArg.imagePath;
 	cout << endl << "- Output folder: " << progArg.outputFolder;
 	int pixelCount = imgData.getRows() * imgData.getColumns();
-	int rows = imgData.getRows() - padding -1;
-    int cols = imgData.getColumns() - padding -1;
+	int rows = imgData.getRows() - 2 * getAppliedBorders();
+    int cols = imgData.getColumns() - 2 * getAppliedBorders();
 	cout << endl << "- Rows: " << rows << " - Columns: " << cols << " - Pixel count: " << pixelCount;
 	cout << endl << "- Gray Levels : " << imgData.getMaxGrayLevel();
 	cout << endl << "- Distance: " << progArg.distance;
@@ -46,18 +46,26 @@ void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
 
 }
 
+int ImageFeatureComputer::getAppliedBorders(){
+    int bordersToApply = 0;
+    if(progArg.borderType != 0 )
+        bordersToApply = progArg.windowSize;
+    return bordersToApply;
+}
+
 void ImageFeatureComputer::compute(){
 	bool verbose = progArg.verbose;
 
 	// Image from imageLoader
 	Image image = ImageLoader::readImage(progArg.imagePath, progArg.borderType,
-	        progArg.windowSize, progArg.quantitize, progArg.quantitizationMax);
-	ImageData imgData(image);
+                                         getAppliedBorders(), progArg.quantitize,
+                                         progArg.quantitizationMax);
+	ImageData imgData(image, getAppliedBorders());
 	if(verbose)
     	cout << endl << "* Image loaded * ";
     checkOptionCompatibility(progArg, image);
     // Print computation info to cout
-	printInfo(imgData, progArg.distance);
+	printInfo(imgData, progArg.windowSize);
 	if(verbose) {
 		// Additional info on memory occupation
 		printExtimatedSizes(imgData);

@@ -17,15 +17,20 @@ using namespace std;
 
 class ImageData {
 public:
-    explicit ImageData(unsigned int rows, unsigned int columns, unsigned int mxGrayLevel)
-            : rows(rows), columns(columns), maxGrayLevel(mxGrayLevel){};
+    explicit ImageData(unsigned int rows, unsigned int columns, int borders,
+            unsigned int mxGrayLevel)
+            : rows(rows), columns(columns), appliedBorders(borders),
+            maxGrayLevel(mxGrayLevel){};
     // Strip metadata from the "complete" Image class
-    explicit ImageData(const Image& img)
-            : rows(img.getRows()), columns(img.getColumns()), maxGrayLevel(img.getMaxGrayLevel()){};
+    explicit ImageData(const Image& img, int borders)
+            : rows(img.getRows()), columns(img.getColumns()),
+            appliedBorders(borders), maxGrayLevel(img.getMaxGrayLevel()){};
     // Getters
     unsigned int getRows() const;
     unsigned int getColumns() const;
     unsigned int getMaxGrayLevel() const;
+    // Borders applied to the original image
+    int getBorderSize() const;
     // Debug method
     void printElements(unsigned int* pixels) const;
 
@@ -33,6 +38,8 @@ private:
     const unsigned int rows;
     const unsigned int columns;
     const unsigned int maxGrayLevel;
+    // Amount of borders applied to each side of the original image
+    int appliedBorders;
 };
 
 

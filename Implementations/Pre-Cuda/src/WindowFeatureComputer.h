@@ -1,7 +1,3 @@
-//
-// Created by simo on 16/07/18.
-//
-
 #ifndef FEATUREEXTRACTOR_WINDOWFEATURECOMPUTER_H
 #define FEATUREEXTRACTOR_WINDOWFEATURECOMPUTER_H
 
@@ -13,11 +9,11 @@ typedef vector<double> FeatureValues;
 
 using namespace std;
 
+/*
+ * This class will compute the features for a direction of the window of interest
+ */
+
 class WindowFeatureComputer {
-    /*
-   * RESPONSABILITA CLASSE: Computare le feature per la finestra nelle 4 direzioni
-     * Fornire un stream di rappresentazione verso file
-   */
 
 public:
     WindowFeatureComputer(unsigned int * pixels, const ImageData& img, const Window& wd, WorkArea& wa);
@@ -28,11 +24,14 @@ public:
       needed from the complete list
      */
 private:
-        // Initialization data to pass to each FeatureComputer
-        WorkArea& workArea;
-        unsigned int * pixels;
-        ImageData image;
-        Window windowData;
+    // Pixels of the image
+    unsigned int * pixels;
+    // Metadata about the image (dimensions, maxGrayLevel)
+    ImageData image;
+    // Metadata about the window
+    Window windowData;
+    // Memory location used for computation
+    WorkArea& workArea;
 };
 
 

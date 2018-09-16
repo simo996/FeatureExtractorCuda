@@ -9,28 +9,33 @@ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& i
         const Window& wd, WorkArea& wa)
                                  : pixels(pixels), image(img),
                                  windowData(wd), workArea(wa) {
+    // Each direction has 2 shift used for addressing each pixel
     windowData.setDirectionShifts(shiftRows, shiftColumns);
-    // deduct what window this thread is computing
+
+    /* Deduct what window this thread is computing for saving the results
+     * in the right memory location */
     computeOutputWindowFeaturesIndex();
-    // get the pointer to the memlocation where to put feature results
     int featuresCount = Features::getSupportedFeaturesCount();
-    int actualWindowOffset = outputWindowOffset * featuresCount;
-    double * rightLocation = workArea.output + actualWindowOffset;
-    featureOutput = rightLocation;
+    int actualWindowOffset = outputWindowOffset * featuresCount; // consider space for each feature
+    featureOutput = workArea.output + actualWindowOffset; // where results will be saved
     // Compute features
     computeDirectionalFeatures();
 }
 
-
+/* This method produces a value is the number of the window in the total
+ * window set of the image*/
 void FeatureComputer::computeOutputWindowFeaturesIndex(){
-    // this will be thread idx e thread idy
     int rowOffset = windowData.imageRowsOffset;
     int colOffset = windowData.imageColumnsOffset;
-    // this value identifies the window part of the result in the global array
-    outputWindowOffset = (rowOffset * (image.getColumns() - windowData.side + 1)) + colOffset;
+    outputWindowOffset = (rowOffset * (image.getColumns() - windowData.side + 1))
+            + colOffset;
 }
 
+/* Computes all the features supported.
+ * The results will be saved in the array of the work area given to this thread
+ */
 void FeatureComputer::computeDirectionalFeatures() {
+    // Generate the 5 needed representation
     GLCM glcm(pixels, image, windowData, workArea);
     //glcm.printGLCM(); // Print data and grayPairs for debugging
 
@@ -43,7 +48,6 @@ void FeatureComputer::computeDirectionalFeatures() {
 
     // Imoc
     extractMarginalFeatures(glcm, featureOutput);
-    double * temp = featureOutput;
 }
 
 
