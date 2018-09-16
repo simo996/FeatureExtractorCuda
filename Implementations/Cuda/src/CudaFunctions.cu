@@ -128,7 +128,7 @@ bool checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
 	// Multiply per threads number
 	size_t totalWorkAreas = workAreaSpace * numberOfThreads;
 	// add some space needed for local variables
-	int FACTOR = 2; 
+	int FACTOR = 1.5; 
 	totalWorkAreas *= FACTOR;
 
 	long long int difference = gpuMemory - (featureSize + totalWorkAreas);
