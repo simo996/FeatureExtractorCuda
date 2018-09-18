@@ -16,6 +16,9 @@ void ImageFeatureComputer::printInfo(const ImageData imgData, int border) {
 	int rows = imgData.getRows() - 2 * getAppliedBorders();
     int cols = imgData.getColumns() - 2 * getAppliedBorders();
 	cout << endl << "- Rows: " << rows << " - Columns: " << cols << " - Pixel count: " << pixelCount;
+	if(progArg.verbose)
+		cout << endl << "- Image weight (MB): " << (pixelCount 
+			* sizeof(unsigned int)) / 1024 / 1024;
 	cout << endl << "- Gray Levels : " << imgData.getMaxGrayLevel();
 	cout << endl << "- Distance: " << progArg.distance;
 	cout << endl << "- Window side: " << progArg.windowSize;
@@ -99,16 +102,6 @@ void ImageFeatureComputer::compute(){
 		cout << "* DONE * " << endl;
 }
 
-void checkMinimumMemoryOccupation(size_t featureSize){
-	cudaDeviceProp prop;
-	cudaGetDeviceProperties(&prop, 0);
-	size_t gpuMemory = prop.totalGlobalMem;
-	if(featureSize > gpuMemory){
-		cerr << "FAILURE ! Gpu doesn't have enough memory \
-	to hold the results" << endl;
-	exit(-1);
-	}
-}
 
 
 /*
@@ -162,7 +155,11 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
 
 	// Pre-Allocate the array that will contain features
 	size_t featureSize = numberOfWindows * numberOfDirs * featuresCount * sizeof(double);
-	double* featuresList = (double*) malloc(featureSize);
+	double* featuresList = (double*) malloc(featureSize * sizeof(double));
+	if(featuresList == NULL){
+		cerr << "FATAL ERROR! Not enough mallocable memory on the system" << endl;
+		exit(3);
+	}
 
 	// Allocate GPU space to contain results
 	double* d_featuresList;
