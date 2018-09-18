@@ -101,7 +101,7 @@ void incrementGPUHeap(size_t newHeapSize, size_t featureSize, bool verbose){
 	size_t free, total;
 	cudaMemGetInfo(&free,&total);
 	if(verbose)
-		cout << "\tGPU free memory: (MB) " << (free - newHeapSize - featureSize) / 1024/1024 << endl;
+		cout << "\tGPU used memory: (MB) " << (((newHeapSize + featureSize) / 1024) / 1024) << endl;
 }
 
 /* 
@@ -153,9 +153,9 @@ dim3 getGridFromAvailableMemory(int numberOfPairs,
 	// Compute the memory needed for a single thread
 	size_t workAreaSpace = numberOfPairs * 
 		( 4 * sizeof(AggregatedGrayPair) + 1 * sizeof(GrayPair));
-	// add some space needed for local variables
-	int FACTOR = 2; 
-	workAreaSpace *= FACTOR;
+	
+	// add some space needed for local variables ???
+	
 
 	// how many thread fit into a single block
 	int threadInBlock = getCudaBlockSideX() * getCudaBlockSideX();
