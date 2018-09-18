@@ -6,23 +6,51 @@
 typedef unsigned short grayLevelType;
 typedef unsigned short frequencyType;
 
-/*
-    This class represent the gray levels of a pixel pair
+/**
+ * This class represent the gray levels of a pixel pair
 */
 class GrayPair {
 public:
-    // Constructor for initializing pre-allocated work areas
+    /**
+     * Constructor for initializing pre-allocated work areas
+     */
     GrayPair();
-    // Constructor for effective gray-tone pairs
+    /**
+     * Constructor for effective gray-tone pairs
+     * @param i grayLevel of the reference pixel of the pair
+     * @param j grayLevel of the neighbor pixel of the pair
+     */
     GrayPair(grayLevelType i, grayLevelType j);
-    // Getters
+    /**
+     * Getter
+     * @return the gray level of the reference pixel of the pair
+     */
     grayLevelType getGrayLevelI() const;
+    /**
+     * Getter
+     * @return the gray level of the neighbor pixel of the pair
+     */
     grayLevelType getGrayLevelJ() const;
+
+    /**
+     * Getter
+     * @return the frequency of the pair of gray levels in the glcm
+     */
     frequencyType getFrequency() const;
-    // method to determine equality based on the gray tones of the pair
+    /**
+     * method to determine equality based on the gray tones of the pair
+     * @param other: graypair to compare
+     * @return: true if both grayLevels of both items are the same
+     */
     bool compareTo(GrayPair other) const;
     // Setter
+    /**
+     * DEPRECATED Setter. Use the ++ operator instad
+     */
     void frequencyIncrease(); // frequency can be incremented only by 1
+    /**
+     * Show textual representation of the gray pair
+     */
     void printPair() const;
 
     // C++ operators inherited from implementation that uses STL

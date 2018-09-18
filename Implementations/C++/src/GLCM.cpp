@@ -8,7 +8,7 @@ using namespace std;
 
 // Constructors
 GLCM::GLCM(const unsigned int * pixels, const ImageData& image,
-        Window& windowData, WorkArea& wa): pixels(pixels), img(image),
+        Window& windowData, WorkArea& wa): pixels(pixels), image(image),
         windowData(windowData),  workArea(wa) ,grayPairs(wa.grayPairs),
         summedPairs(wa.summedPairs), subtractedPairs(wa.subtractedPairs),
         xMarginalPairs(wa.xMarginalPairs), yMarginalPairs(wa.yMarginalPairs)
@@ -35,26 +35,32 @@ int GLCM::getNumberOfPairs() const {
 }
 
 int GLCM::getMaxGrayLevel() const {
-    return img.getMaxGrayLevel();
+    return image.getMaxGrayLevel();
 }
 
-// y-Side of the sub-window of interest for creating pairs
+/**
+ * Geometric limit of the sub-window
+ * @return how many rows of the window need to be considered
+ */
 int GLCM::getWindowRowsBorder() const{
    return (windowData.side - (windowData.distance * abs(windowData.shiftRows)));
 }
 
-// x-Side of the sub-window of interest for creating pairs
+/**
+ * Geometric limit of the sub-window
+ * @return how many columns of the window need to be considered
+ */
 int GLCM::getWindowColsBorder() const{
     return (windowData.side - (windowData.distance * abs(windowData.shiftColumns)));
 }
 
 
 
-/*
-    columnOffset is a shift value used for reading the correct batch of grayPairs
-    from given linearized input pixels; for 135° the first d (distance) grayPairs
-    need to be ignored
-*/
+/**
+ * Compute the shift to apply at the column for locating the pixels of each
+ * pair of the glcm; it affects only 135° orientation
+ * @return d (distance) pixels need to be ignored
+ */
 inline int GLCM::computeWindowColumnOffset()
 {
     int initialColumnOffset = 0; // for 0°,45°,90°
@@ -63,10 +69,10 @@ inline int GLCM::computeWindowColumnOffset()
     return initialColumnOffset;
 }
 
-/*
-    rowOffset is a shift value used for reading the correct batch of grayPairs
-    from given linearized input pixels according to the direction in use; 
-    45/90/135° must skip d (distance) "rows"
+/**
+ * Compute the shift to apply at the row for locating the pixels of each
+ * pair of the glcm; it doesn't affect only 0° orientation
+ * @return d (distance) pixels need to be ignored
 */
 inline int GLCM::computeWindowRowOffset()
 {
@@ -76,31 +82,47 @@ inline int GLCM::computeWindowRowOffset()
     return initialRowOffset;
 }
 
-// addressing method for reference pixel
+/**
+ * Addressing methods to get the reference pixel in each pair of the glcm
+ * @param row in the sub-window of the reference pixel
+ * @param col in the sub-window of the reference pixel
+ * @param initialRowOffset see computeWindowRowOffset
+ * @param initialColumnOffset see computeWindowColOffset
+ * @return the index of the pixel in the array of pixels (linearized) of
+ * the window
+ */
 inline int GLCM::getReferenceIndex(const int i, const int j,
                                    const int initialWindowRowOffset, const int initialWindowColumnOffset){
     int row = (i + windowData.imageRowsOffset) // starting point in the image
               + (initialWindowRowOffset * windowData.distance); // add direction shift
     int col = (j + windowData.imageColumnsOffset) + // starting point in the image
               (initialWindowColumnOffset * windowData.distance); // add direction shift
-    int index = ( row * img.getColumns()) + col;
+    int index = ( row * image.getColumns()) + col;
     assert(index >= 0);
     return index;
 }
 
-// addressing method for neighbor pixel
+/**
+ * Addressing methods to get the neighbor pixel in each pair of the glcm
+ * @param row in the sub-window of the neighbor pixel
+ * @param col in the sub-window of the neighbor pixel
+ * @param initialColumnOffset see computeWindowColOffset
+ * @return the index of the pixel in the array of pixels (linearized) of
+ * the window
+ */
 inline int GLCM::getNeighborIndex(const int i, const int j,
                                   const int initialWindowColumnOffset){
     int row = (i + windowData.imageRowsOffset); // starting point in the image
     int col = (j + windowData.imageColumnsOffset) + // starting point in the image
               (initialWindowColumnOffset * windowData.distance) +  // add 135* right-shift
               (windowData.shiftColumns * windowData.distance); // add direction shift
-    int index = (row * img.getColumns()) + col;
+    int index = (row * image.getColumns()) + col;
     assert(index >= 0);
     return index;
 }
 
-/* Method that inserts a GrayPair in the pre-allocated memory
+/**
+ * Method that inserts a GrayPair in the pre-allocated memory
  * Uses that convention that GrayPair ( i=0, j=0, frequency=0) means
  * available memory
  */
@@ -125,8 +147,8 @@ inline void GLCM::insertElement(GrayPair* elements, const GrayPair actualPair, u
     }
 }
 
-/*
-    This method creates array of GrayPairs
+/**
+ * This method creates array of GrayPairs
 */
 void GLCM::initializeGlcmElements() {
     // Define subBorders offset depending on orientation
@@ -167,7 +189,8 @@ void GLCM::initializeGlcmElements() {
     codifyMarginalPairs();
 }
 
-/* Method that inserts a AggregatedGrayPair in the pre-allocated memory
+/**
+ * Method that inserts a AggregatedGrayPair in the pre-allocated memory
  * Uses that convention that AggregateGrayPair (k=0, frequency=0) means
  * available memory
  */
@@ -192,7 +215,8 @@ inline void GLCM::insertElement(AggregatedGrayPair* elements, const AggregatedGr
     }
 }
 
-/* This method will produce the 2 arrays of AggregatedPairs (k, frequency)
+/**
+ * This method will produce the 2 arrays of AggregatedPairs (k, frequency)
  * where k is the sum or difference of both grayLevels of 1 GrayPair.
  * This representation is used in computeSumXXX() and computeDiffXXX() features
 */
@@ -221,7 +245,8 @@ void GLCM::codifyAggregatedPairs() {
 }
 
 
-/* This method will produce the 2 arrays of AggregatedPairs (k, frequency)
+/**
+ * This method will produce the 2 arrays of AggregatedPairs (k, frequency)
  * where k is one grayLevel of GLCM and frequency is the "marginal" frequency of that level
  * (ie. how many times k is present in all GrayPair<k, ?>)
  * This representation is used for computing features HX, HXY, HXY1, imoc

@@ -1,11 +1,21 @@
 #include "ProgramArguments.h"
 
+/**
+ * Show a visual helper to the user on how to use the tool
+ */
 void ProgramArguments::printProgramUsage(){
     cout << endl << "Usage: FeatureExtractor [<-s>] [<-d distance>] [<-w windowSize>] [<-t directionType>] "
                     "[<-b borderType>] [<-g>][- i imagePath] [<-o outputFolder>]" << endl;
     exit(2);
 }
 
+/**
+ * Function that checks and load into the class ProgramArgument the option
+ * given by the user
+ * @param argc number of options provided
+ * @param argv value of the options provided
+ * @return class ProgramArguments that embeds all parameters of the computation
+ */
 ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
     ProgramArguments progArg;
     int opt;

@@ -23,8 +23,22 @@ struct MatchPathSeparator
 class Utils {
 public:
     // File system interaction
+    /**
+     * Create a folder with the specified path/name
+     * @param folderPath
+     */
     static void createFolder(string folderPath);
+    /**
+     * Removes the path symbols to a file an returns only its name
+     * @param pathname
+     * @return
+     */
     static string basename(string const& pathname);
+    /**
+     * Removes the extension of a file
+     * @param filename
+     * @return
+     */
     static string removeExtension( std::string const& filename );
 };
 

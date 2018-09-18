@@ -23,8 +23,12 @@ FeatureComputer::FeatureComputer(const unsigned int * pixels, const ImageData& i
     computeDirectionalFeatures();
 }
 
-/* This method produces a value is the number of the window in the total
- * window set of the image*/
+
+
+/**
+ * This method produces a value is the number of the window in the total
+ * window set of the image
+ */
 void FeatureComputer::computeOutputWindowFeaturesIndex(){
     // If bordered, the original image is at the center
     int rowOffset = windowData.imageRowsOffset - image.getBorderSize();
