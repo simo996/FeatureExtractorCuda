@@ -16,27 +16,50 @@
 typedef short unsigned grayLevelType;
 typedef short unsigned frequencyType;
 
-/*
-    This class represent two possible type of elements:
-    - Elements obtained by summing or subtracting 2 gray levels of a pixel pair
-    - Elements representing the frequency of 1 of the 2 gray levels of the 
-    pixel pairs (reference gray level or neighbor gray level)
-*/ 
+/**
+ * This class represent two possible type of elements:
+ * - Elements obtained by summing or subtracting 2 gray levels of a pixel pair
+ * - Elements representing the frequency of 1 of the 2 gray levels of the
+ * pixel pairs (reference gray level or neighbor gray level)
+*/
 
 class AggregatedGrayPair {
 public:
-    // Constructor for initializing pre-allocated work areas
+    /**
+     * Constructor for initializing pre-allocated work areas
+     */
     CUDA_DEV AggregatedGrayPair();
-    // Constructor for effective gray-tone pairs
+    /**
+     * Constructor for effective gray-tone pairs
+     * @param level: gray level of the object
+     * @param frequency: frequency of the object
+     */
     CUDA_DEV AggregatedGrayPair(grayLevelType grayLevel, frequencyType frequency);
-    // show textual representation
+    /**
+     * show textual representation with level and frequency
+     */
     CUDA_DEV void printPair() const; 
-    // Getters 
+    /**
+     * Getter
+     * @return the grayLevel of the object
+     */
     CUDA_DEV grayLevelType getAggregatedGrayLevel() const;
+    /**
+     * Getter
+     * @return the frequency of the object
+     */
     CUDA_DEV frequencyType getFrequency() const;
-    // Setter
+    /**
+     * Setter
+     * @param amount that will increment the frequency
+     */
     CUDA_DEV void increaseFrequency(frequencyType amount);
-    // method to determine equality based on the gray tone
+    /**
+     * Method to determine the equality with another object based on the
+     * equality of gray levels
+     * @param other: object of the same type
+     * @return true if the 2 objects have the same gray level
+     */
     CUDA_DEV bool compareTo(AggregatedGrayPair other) const;
 
     // C++ operators inherited from implementation that uses STL

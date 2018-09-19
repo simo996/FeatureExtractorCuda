@@ -11,7 +11,7 @@ using namespace std;
  * - all its pixels as unsigned ints
  * - pysical dimensions (height, width as rows and columns)
  * - the maximum gray level that could be encountered according to its type
-*/
+ */
 class Image {
 public:
     /**

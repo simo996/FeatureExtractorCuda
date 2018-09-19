@@ -16,25 +16,51 @@
 typedef short unsigned grayLevelType;
 typedef short unsigned frequencyType;
 
-/*
-    This class represent the gray levels of a pixel pair
+/**
+ * This class represent the gray levels of a pixel pair
 */
-
 class GrayPair{
 public:
-    // Constructor for initializing pre-allocated work areas
-	CUDA_DEV GrayPair();
-    // Constructor for effective gray-tone pairs
-	CUDA_DEV GrayPair(grayLevelType i, grayLevelType j);
+	/**
+     * Constructor for initializing pre-allocated work areas
+     */
+    CUDA_DEV GrayPair();
+	/**
+     * Constructor for effective gray-tone pairs
+     * @param i grayLevel of the reference pixel of the pair
+     * @param j grayLevel of the neighbor pixel of the pair
+     */
+    CUDA_DEV GrayPair(grayLevelType i, grayLevelType j);
     // Getters
+    /**
+     * Getter
+     * @return the gray level of the reference pixel of the pair
+     */
 	CUDA_DEV grayLevelType getGrayLevelI() const;
+    /**
+     * Getter
+     * @return the gray level of the neighbor pixel of the pair
+     */
 	CUDA_DEV grayLevelType getGrayLevelJ() const;
+    /**
+     * Getter
+     * @return the frequency of the pair of gray levels in the glcm
+     */
 	CUDA_DEV frequencyType getFrequency() const;
-    // Setter
+    /**
+     * Setter. Increase the frequency of the pair by 1
+     */
 	CUDA_DEV void frequencyIncrease(); // frequency can be incremented only by 1
     // method to determine equality based on the gray tones of the pair
-	CUDA_DEV bool compareTo(GrayPair other) const;
-    // show textual representation
+	/**
+     * method to determine equality based on the gray tones of the pair
+     * @param other: graypair to compare
+     * @return: true if both grayLevels of both items are the same
+     */
+    CUDA_DEV bool compareTo(GrayPair other) const;
+    /**
+     * Show textual representation of the gray pair
+     */
 	CUDA_DEV void printPair() const;
 
     // C++ operators inherited from implementation that uses STL

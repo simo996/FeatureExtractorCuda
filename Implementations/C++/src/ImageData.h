@@ -17,6 +17,13 @@ using namespace std;
 
 class ImageData {
 public:
+    /**
+     * USE THE OTHER CONSTRUCTOR
+     * @param rows
+     * @param columns
+     * @param borders
+     * @param mxGrayLevel
+     */
     explicit ImageData(unsigned int rows, unsigned int columns, int borders,
             unsigned int mxGrayLevel)
             : rows(rows), columns(columns), appliedBorders(borders),
@@ -31,14 +38,14 @@ public:
             appliedBorders(borders), maxGrayLevel(img.getMaxGrayLevel()){};
     // Getters
     /**
-    * Getter
-    * @return the number of rows of the image
-    */
+     * Getter
+     * @return the number of rows of the image
+     */
     unsigned int getRows() const;
     /**
-    * Getter
-    * @return the number of columns of the image
-    */
+     * Getter
+     * @return the number of columns of the image
+     */
     unsigned int getColumns() const;
     /**
      * @return maximum gray level that can be encountered in the

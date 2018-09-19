@@ -17,11 +17,11 @@
 
 using namespace std;
 
-/*
- * List of all the feautures supported
+/**
+ * List of all the features supported
  * The index in the enumeration is used for accessing the right cell
  * when saving results in a feature array
-*/
+ */
 enum FeatureNames {
     ASM,
     AUTOCORRELATION,
@@ -46,29 +46,58 @@ enum FeatureNames {
     IMOC
 };
 
-/*
+/**
  * Helper class that lists all supported features and offers some
  * utilities methods about them
  */
-
 class Features {
 public:
-	// used for allocating features array
+	/**
+     * The quantity of features supported by this tool; used for allocating
+     * arrays of features
+     * @return quantity of features supported by this tool
+     */
 	CUDA_HOSTDEV static int getSupportedFeaturesCount();
+    /**
+     * Print the label associated with the enum
+     * @param featureName whose label will be printed
+     */
 	CUDA_HOST static void printFeatureName(FeatureNames featureName);
-	// return a list of the 18 features
+	/**
+     * Return a list of all the features supported
+     * @return list of all the features supported
+     */
 	CUDA_HOST static vector<FeatureNames> getAllSupportedFeatures();
-	// return a list of all the file names associated at features
-	CUDA_HOST static vector<string> getAllFeaturesFileNames();
-	// print features labels and their values
-	CUDA_HOST static void printAllFeatures(const vector<double>& features);
-	// print single feature label and its value
-	CUDA_HOST static void printSingleFeature(const vector<double> &features,
+	/**
+     * return a list of all the file names associated at features
+     * @return list of all the file names associated at features
+     */
+    CUDA_HOST static vector<string> getAllFeaturesFileNames();
+	/**
+     * DEBUG METHOD. This method will print features labels and their values
+     * @param features
+     */
+    CUDA_HOST static void printAllFeatures(const vector<double>& features);
+	/**
+     * DEBUG METHOD. This method will print single feature label
+     * @param features list of features computed
+     * @param featureName index of the feature in the enumeration
+     */
+    CUDA_HOST static void printSingleFeature(const vector<double> &features,
 	                                   FeatureNames featureName);
-	CUDA_HOST static string printFeatureNameAndValue(double value, FeatureNames fname);
+    /**
+     * DEBUG METHOD. This method will print single feature label and its value
+     * @param value: value of the feature to print
+     * @param fname: index of the feature in the enumeration
+     * @return
+     */
+    CUDA_HOST static string printFeatureNameAndValue(double value, FeatureNames fname);
 
-	// print the label associated with the enum
-	CUDA_HOST static string getFeatureName(FeatureNames featureName);
+	/**
+     * Returns as a string the label associated with the enum
+     * @param featureName whose label will be returned
+     */
+    CUDA_HOST static string getFeatureName(FeatureNames featureName);
 
 };
 

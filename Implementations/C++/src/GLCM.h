@@ -13,7 +13,7 @@ using namespace std;
 /**
  * This class generates all the elements needed to compute the features
  * from the pixel pairs of the image.
-*/
+ */
 class GLCM {
 public:
     /**

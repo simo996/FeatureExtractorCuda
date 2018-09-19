@@ -31,7 +31,6 @@ public:
      * @return the gray level of the neighbor pixel of the pair
      */
     grayLevelType getGrayLevelJ() const;
-
     /**
      * Getter
      * @return the frequency of the pair of gray levels in the glcm
