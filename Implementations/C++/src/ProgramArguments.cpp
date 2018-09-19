@@ -5,7 +5,7 @@
  */
 void ProgramArguments::printProgramUsage(){
     cout << endl << "Usage: FeatureExtractor [<-s>] [<-d distance>] [<-w windowSize>] [<-t directionType>] "
-                    "[<-b borderType>] [<-g>][- i imagePath] [<-o outputFolder>]" << endl;
+                    "[<-b borderType>] [<-g>][- i imagePath] [<-o outputFolder>] [<-r maximumGrayLevel>]" << endl;
     exit(2);
 }
 
