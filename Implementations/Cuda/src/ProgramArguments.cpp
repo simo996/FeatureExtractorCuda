@@ -3,7 +3,7 @@
 #include <getopt.h> // For options check
 
 void ProgramArguments::printProgramUsage(){
-    cout << endl << "Usage: FeatureExtractor [<-s>] [<-d distance>] [<-w windowSize>] [<-t directionType>] "
+    cout << endl << "Usage: CuFeat [<-s>] [<-d distance>] [<-w windowSize>] [<-t directionType>] "
                     "[<-b borderType>] [<-g>][- i imagePath] [<-o outputFolder>]" << endl;
     exit(2);
 }
