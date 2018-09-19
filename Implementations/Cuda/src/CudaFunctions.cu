@@ -2,6 +2,10 @@
 
 /* CUDA METHODS */
 
+/**
+ * Exit the program if any of the cuda runtime function invocation controlled
+ * with this method returns a failure
+ */
 void cudaCheckError(cudaError_t err){
 	if( err != cudaSuccess ) {
 		cerr << "ERROR: " << cudaGetErrorString(err) << endl;
@@ -9,7 +13,11 @@ void cudaCheckError(cudaError_t err){
 	}
 }
 
-/* Need to call after kernel invocation */
+ 
+/**
+ * Exit the program if the launch of the only kernel of computation fails
+ * Need to call after kernel invocation 
+ */
 void checkKernelLaunchError(){
 	cudaError_t errSync  = cudaGetLastError();
 	cudaError_t errAsync = cudaDeviceSynchronize();
@@ -19,14 +27,19 @@ void checkKernelLaunchError(){
 		printf("Async kernel error: %s\n", cudaGetErrorString(errAsync));
 }
 
-// Print data about kernel launch configuration
+/**
+ * Print how many blocks and how many threads per block will compute the 
+ * the kernel
+ */
 void printGPULaunchConfiguration(dim3 Grid, dim3 Blocks){
 	cout << "\t- GPU Launch Configuration -" << endl;
 	cout << "\t GRID\t rows: " << Grid.y << " x cols: " << Grid.x << endl;
 	cout << "\t BLOCK\t rows: " << Blocks.y << " x cols: " << Blocks.x << endl;
 }
 
-// 	Print data about the GPU
+/*
+ * Querying and print info on the gpu of the system
+ */
 void queryGPUData(){
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop, 0);
@@ -51,8 +64,8 @@ int getCudaBlockSideY(){
 }
 
 /* 
-	The block is always fixed, only the grid changes 
-	according to memory/image size 
+ * The block is always fixed, only the grid changes 
+ * according to gpu memory/image size 
 */
 dim3 getBlockConfiguration()
 {
@@ -64,7 +77,10 @@ dim3 getBlockConfiguration()
 	return configuration;
 }
 
-// create a grid from image size
+/**
+ * Returns the side of a grid obtained from the image physical dimension where
+ * each thread computes just a window
+ */
 int getGridSide(int imageRows, int imageCols){
 	// Smallest side of a rectangular image will determine grid dimension
 	int imageSmallestSide = imageRows;
@@ -82,17 +98,20 @@ int getGridSide(int imageRows, int imageCols){
 	return gridSide;
 }
 
-// 1 square of blocks from physical image dimensions
+/**
+ * Create a grid from the image physical dimension where each thread  
+ * computes just a window
+ */
 dim3 getGridFromImage(int imageRows, int imageCols)
 {
 	return dim3(getGridSide(imageRows, imageCols), 
 		getGridSide(imageRows, imageCols));
 }
 
-/* 
-	Allow threads to malloc the memory needed for their computation 
-	If this can't be done program will crash
-*/
+/**
+ * Allow threads to malloc the memory needed for their computation 
+ * If this can't be done program will crash
+ */
 void incrementGPUHeap(size_t newHeapSize, size_t featureSize, bool verbose){
 	cudaCheckError(cudaDeviceSetLimit(cudaLimitMallocHeapSize,  newHeapSize));
 	cudaDeviceGetLimit(&newHeapSize, cudaLimitMallocHeapSize);
@@ -104,10 +123,10 @@ void incrementGPUHeap(size_t newHeapSize, size_t featureSize, bool verbose){
 		cout << "\tGPU used memory: (MB) " << (((newHeapSize + featureSize) / 1024) / 1024) << endl;
 }
 
-/* 
-	What to do if the default kernel configuration is not enough 
-	Only for very obsolete GPUs (less than 1 GB Ram probably)
-*/
+/**
+ * Program aborts if not even 1 block of threads can be launched for 
+ * insufficient memory (very obsolete gpu)
+ */
 void handleInsufficientMemory(){
 	cerr << "FAILURE ! Gpu doesn't have enough memory \
 	to hold the results and the space needed to threads" << endl;
@@ -115,7 +134,13 @@ void handleInsufficientMemory(){
 	exit(-1);
 }  
 
-// See if the proposed number of threads will have enough memory
+/**
+ * Method that will check if the proposed number of threads will have enough memory
+ * @param numberOfPairs: number of pixel pairs that belongs to each window
+ * @param featureSize: memory space consumed by the values that will be computed
+ * @param numberOfThreads: how many threads the proposed grid has
+ * @param verbose: print extra info on the memory consumed
+ */
 bool checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
  size_t featureSize, bool verbose){
 	// Get GPU mem size
@@ -139,7 +164,12 @@ bool checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
 	}
 }
 
-// will return the smallest grid that can fit into the GPU memory
+/**
+ * Method that will generate the smallest computing grid that can fit into
+ *  the GPU memory
+ * @param numberOfPairs: number of pixel pairs that belongs to each window
+ * @param featureSize: memory space consumed by the values that will be computed
+ */
 dim3 getGridFromAvailableMemory(int numberOfPairs,
  size_t featureSize){
 
@@ -170,11 +200,16 @@ dim3 getGridFromAvailableMemory(int numberOfPairs,
 }
 
 
-/* 
-	Method that will generate the computing grid 
-	Gpu allocable heap will be changed according to the grid individuated
-	If not even 1 block can be launched the program will abort
-*/
+/**
+ * Method that will generate the computing grid 
+ * Gpu allocable heap will be changed according to the grid individuated
+ * If not even 1 block can be launched the program will abort
+ * @param numberOfPairsInWindow: number of pixel pairs that belongs to each window
+ * @param featureSize: memory space consumed by the values that will be computed
+ * @param imgRows: how many rows the image has
+ * @param imgCols: how many columns the image has
+ * @param verbose: print extra info on the memory consumed
+ */
 dim3 getGrid(int numberOfPairsInWindow, size_t featureSize, int imgRows, 
 	int imgCols, bool verbose){
  	dim3 Blocks = getBlockConfiguration();
@@ -199,10 +234,23 @@ dim3 getGrid(int numberOfPairsInWindow, size_t featureSize, int imgRows,
 	return Grid;
 }
 
+/**
+ * Check if each malloc invoked by each thread to allocate the memory needed 
+ * for their computation was successful
+ */
+__host__ __device__ void checkAllocationError(GrayPair* grayPairs, AggregatedGrayPair * summed, 
+    AggregatedGrayPair* subtracted, AggregatedGrayPair* xMarginal, 
+    AggregatedGrayPair* yMarginal){
+    if((grayPairs == NULL) || (summed == NULL) || (subtracted == NULL) ||
+    (xMarginal == NULL) || (yMarginal == NULL))
+        printf("ERROR: Device doesn't have enough memory");
+} 
 
-/* 
-	Each threads will get the memory needed for its computation 
-*/
+/**
+ * Method invoked by each thread to allocate the memory needed for its computation
+ * @param numberOfPairs: number of pixel pairs that belongs to each window
+ * @param d_featuresList: pointer where to save the features values
+ */
 __device__ WorkArea generateThreadWorkArea(int numberOfPairs, 
 	double* d_featuresList){
 	// Each 1 of these data structures allow 1 thread to work
@@ -223,16 +271,22 @@ __device__ WorkArea generateThreadWorkArea(int numberOfPairs,
 	d_yMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) 
 		* numberOfPairs);
 	// check if allocated correctly
+	/*checkAllocationError(d_elements, d_summedPairs, d_subtractedPairs, 
+	d_xMarginalPairs, d_yMarginalPairs); */
+	// Embed all the pointers in a single entity
 	WorkArea wa(numberOfPairs, d_elements, d_summedPairs,
 				d_subtractedPairs, d_xMarginalPairs, d_yMarginalPairs, d_featuresList);
 	return wa;
 }
 
-/*
-	This kernel will iterate only when the GPU doesn't have enough memory for 
-	allowing 1 thread to compute only 1 window or when 
-	the image has recatungar shape
-*/
+/**
+ * Kernel that will compute all the features in each window of the image. Each
+ * window will be computed by a autonomous thread of the grid
+ * @param pixels: pixels intensities of the image provided
+ * @param img: image metadata
+ * @param numberOfPairsInWindow: number of pixel pairs that belongs to each window
+ * @param d_featuresList: pointer where to save the features values
+ */
 __global__ void computeFeatures(unsigned int * pixels, 
 	ImageData img, Window windowData, int numberOfPairsInWindow, 
 	double* d_featuresList){

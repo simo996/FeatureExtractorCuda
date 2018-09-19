@@ -9,35 +9,80 @@
 
 using namespace std;
 
-/*
- * Class that gets and checks all the possible parameters to the problem
-*/
+/**
+ * Class that gets, embeds and checks all the possible parameters to the problem
+ */
 class ProgramArguments {
 public:
-    // Side of each squared window that will be generated
+    /**
+     * Side of each squared window that will be generated
+     */
     short int windowSize;
-    // Eventual reduction of gray levels to range [0,Max]
+    /**
+     *  Optional reduction of gray levels to range [0,Max]
+     */
     bool quantitize;
+    /**
+     *  Maximum gray level when a reduction of gray levels to range [0,Max]
+     *  is applied
+     */
     int quantitizationMax;
+    /**
+     * Type of border applied to the orginal image:
+     * 0 = no border
+     * 1 = zero pixel border
+     * 2 = symmetric border
+     */
     short int borderType;
-    // Eventual symmetricity of the pairs of gray levels
+    /**
+     * Optional symmetricity of the pairs of gray levels in each glcm
+     */
     bool symmetric;
-    // Modulus of the vector that links reference to neighbor pixel
+    /**
+     * Modulus of the vector that links reference to neighbor pixel
+     */
     short int distance;
-    // Which direction to compute between 0°, 45°, 90°, 135°
+    /**
+     * Which direction to compute between 0°, 45°, 90°, 135°
+     */
     short int directionType;
-    // How many direction compute for each window. At the moment just 1
+    /**
+     * How many direction compute for each window. LIMITED to 1 at this release
+     */
     short int directionsNumber;
-    // Eventual generation of images from features values computed
+    /**
+     * Optional generation of images from features values computed
+     */
     bool createImages;
-    // Where to read the image
+    /**
+     * Path/name of the image to process; MANDATORY
+     */
     string imagePath;
-    // Where to put the results the image
+    /**
+     * Where to put the results the image.
+     * If none is provided the name of the image will be used without
+     * path/extensions
+     */
     string outputFolder;
-    // Print addition info
+    /**
+     * Print additional information
+     */
     bool verbose;
 
-    // Constructor with default values
+    /**
+     * Constructor of the class that embeds all the parameters of the problem
+     * @param windowSize: side of each squared window that will be created
+     * @param quantitize: optional reduction of gray levels in [0, M]
+     * @param symmetric: optional symmetricity of gray levels in each pixels pair
+     * @param distance: modulus of the vector that links reference to neighbor pixel
+     * @param dirType: Which direction to compute between 0°, 45°, 90°, 135°
+     * @param dirNumber: how many direction will be computed simultaneously
+     * @param createImages: optional generation of images from features values
+     * computed
+     * @param border: type of border applied to the orginal image
+     * @param verbose: print additional info
+     * @param outFolder: where to put results
+     */
     ProgramArguments(short int windowSize = 4,
                      bool crop = false,
                      bool quantitize = false,
@@ -53,7 +98,16 @@ public:
               directionType(dirType), directionsNumber(dirNumber),
               createImages(createImages), outputFolder(outFolder),
               verbose(verbose){};
+    /**
+     * Show the user how to use the program and its options
+     */
     static void printProgramUsage();
+    /**
+     * Loads the options given in the command line and checks them
+     * @param argc
+     * @param argv
+     * @return
+     */
     static ProgramArguments checkOptions(int argc, char* argv[]);
 };
 

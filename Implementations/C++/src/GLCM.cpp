@@ -55,7 +55,6 @@ int GLCM::getWindowColsBorder() const{
 }
 
 
-
 /**
  * Compute the shift to apply at the column for locating the pixels of each
  * pair of the glcm; it affects only 135° orientation

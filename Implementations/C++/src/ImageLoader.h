@@ -14,7 +14,6 @@ using namespace cv;
  * to work with every image, in color channels or grayscale, format supported
  * by openCv but without being highly coupled to it
 */
-
 class ImageLoader {
 public:
     /**

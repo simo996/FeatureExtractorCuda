@@ -13,7 +13,6 @@ using namespace std;
  *
  * Memory is malloced externally to this class but pointers are grouped here
 */
-
 class WorkArea {
 public:
     /**
@@ -58,16 +57,16 @@ public:
      */
     AggregatedGrayPair* summedPairs;
     /**
-    * Where the diff-aggregated representations will be assembled
-    */
+     * Where the diff-aggregated representations will be assembled
+     */
     AggregatedGrayPair* subtractedPairs;
     /**
-    * Where the x-marginalPairs representations will be assembled
-    */
+     * Where the x-marginalPairs representations will be assembled
+     */
     AggregatedGrayPair* xMarginalPairs;
     /**
-   * Where the y-marginalPairs representations will be assembled
-   */
+     * Where the y-marginalPairs representations will be assembled
+     */
     AggregatedGrayPair* yMarginalPairs;
     /**
      * memory space where all the features values will be put

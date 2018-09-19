@@ -60,6 +60,7 @@ void checkOptionCompatibility(ProgramArguments& progArg, const Image img){
     }
 
 }
+
 /**
  * Utility method
  * @return applied border to the original image read
