@@ -172,14 +172,14 @@ __device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, dou
     double sigmaY = 0;
 
     // Actual features
-    double angularSecondMoment = 0;
-    double autoCorrelation = 0;
-    double entropy = 0;
-    double maxprob = 0;
-    double homogeneity = 0;
-    double contrast = 0;
-    double dissimilarity = 0;
-    double idm = 0;
+    features[ASM] = 0;
+    features[AUTOCORRELATION] = 0;
+    features[ENTROPY] = 0;
+    features[MAXPROB] = 0;
+    features[HOMOGENEITY] = 0;
+    features[CONTRAST] = 0;
+    features[DISSIMILARITY] = 0;
+    features[IDM]= 0;
 
     // First batch of computable features
     int length = glcm.effectiveNumberOfGrayPairs;
@@ -190,15 +190,15 @@ __device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, dou
         grayLevelType j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
 
-        angularSecondMoment += computeAsmStep(actualPairProbability);
-        autoCorrelation += computeAutocorrelationStep(i, j, actualPairProbability);
-        entropy += computeEntropyStep(actualPairProbability);
-        if(maxprob < actualPairProbability)
-            maxprob = actualPairProbability;
-        homogeneity += computeHomogeneityStep(i, j, actualPairProbability);
-        contrast += computeContrastStep(i, j, actualPairProbability);
-        dissimilarity += computeDissimilarityStep(i, j, actualPairProbability);
-        idm += computeInverceDifferenceMomentStep(i, j, actualPairProbability, glcm.getMaxGrayLevel());
+        features[ASM] += computeAsmStep(actualPairProbability);
+        features[AUTOCORRELATION] += computeAutocorrelationStep(i, j, actualPairProbability);
+        features[ENTROPY] += computeEntropyStep(actualPairProbability);
+        if(features[MAXPROB] < actualPairProbability)
+            features[MAXPROB] = actualPairProbability;
+        features[HOMOGENEITY] += computeHomogeneityStep(i, j, actualPairProbability);
+        features[CONTRAST] += computeContrastStep(i, j, actualPairProbability);
+        features[DISSIMILARITY] += computeDissimilarityStep(i, j, actualPairProbability);
+        features[IDM] += computeInverceDifferenceMomentStep(i, j, actualPairProbability, glcm.getMaxGrayLevel());
 
         // intemediate values
         mean += (i * j * actualPairProbability);
@@ -206,19 +206,13 @@ __device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, dou
         muY += (j * actualPairProbability);
     }
 
-    features[ASM] = angularSecondMoment;
-    features[AUTOCORRELATION] = autoCorrelation;
-    features[ENTROPY] = (-1 * entropy);
-    features[MAXPROB] = maxprob;
-    features[HOMOGENEITY] = homogeneity;
-    features[CONTRAST] = contrast;
-    features[DISSIMILARITY] = dissimilarity;
-    features[IDM] = idm;
+    features[ENTROPY] = (-1 * features[ENTROPY]);
+
 
     // Second batch of computable features
-    double clusterProm = 0;
-    double clusterShade = 0;
-    double sumOfSquares = 0;
+    features[CLUSTERPROMINENCE] = 0;
+    features[CLUSTERSHADE] = 0;
+    features[SUMOFSQUARES] = 0;
 
     for (int k = 0; k < length; ++k)
     {
@@ -227,9 +221,9 @@ __device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, dou
         grayLevelType j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
 
-        clusterProm += computeClusterProminenceStep(i, j, actualPairProbability, muX, muY);
-        clusterShade += computeClusterShadeStep(i, j, actualPairProbability, muX, muY);
-        sumOfSquares += computeSumOfSquaresStep(i, actualPairProbability, mean);
+        features[CLUSTERPROMINENCE] += computeClusterProminenceStep(i, j, actualPairProbability, muX, muY);
+        features[CLUSTERSHADE] += computeClusterShadeStep(i, j, actualPairProbability, muX, muY);
+        features[SUMOFSQUARES] += computeSumOfSquaresStep(i, actualPairProbability, mean);
         sigmaX += pow((i - muX), 2) * actualPairProbability;
         sigmaY += pow((j - muY), 2) * actualPairProbability;
     }
@@ -237,12 +231,8 @@ __device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, dou
     sigmaX = sqrt(sigmaX);
     sigmaY = sqrt(sigmaY);
 
-    features[CLUSTERPROMINENCE] = clusterProm;
-    features[CLUSTERSHADE] = clusterShade;
-    features[SUMOFSQUARES] = sumOfSquares;
-
     // Only feature that needs the third scan of the glcm
-    double correlation = 0;
+    features[CORRELATION] = 0;
 
     for (int k = 0; k < length; ++k)
     {
@@ -251,10 +241,9 @@ __device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, dou
         grayLevelType j = actualPair.getGrayLevelJ();
         double actualPairProbability = ((double) actualPair.getFrequency())/glcm.getNumberOfPairs();
 
-        correlation += computeCorrelationStep(i, j, actualPairProbability,
+        features[CORRELATION] += computeCorrelationStep(i, j, actualPairProbability,
             muX, muY, sigmaX, sigmaY);
     }
-    features[CORRELATION] = correlation;
 
 }
 
@@ -265,9 +254,9 @@ __device__ void FeatureComputer::extractAutonomousFeatures(const GLCM& glcm, dou
 __device__ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, double* features) {
     int numberOfPairs = glcm.getNumberOfPairs();
 
-    double sumavg = 0;
-    double sumentropy = 0;
-    double sumvariance = 0;
+    features[SUMAVERAGE] = 0;
+    features[SUMENTROPY] = 0;
+    features[SUMVARIANCE] = 0;
 
     // First batch of computable features
     int length = glcm.numberOfSummedPairs;
@@ -276,22 +265,19 @@ __device__ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, 
         grayLevelType k = actualPair.getAggregatedGrayLevel();
         double actualPairProbability = ((double) actualPair.getFrequency()) / numberOfPairs;
 
-        sumavg += computeSumAverageStep(k, actualPairProbability);
-        sumentropy += computeSumEntropyStep(actualPairProbability);
+        features[SUMAVERAGE] += computeSumAverageStep(k, actualPairProbability);
+        features[SUMENTROPY] += computeSumEntropyStep(actualPairProbability);
     }
-    sumentropy *= -1;
-    features[SUMAVERAGE] = sumavg;
-    features[SUMENTROPY] = sumentropy;
+    features[SUMENTROPY] *= -1;
 
     for (int i = 0; i < length; ++i) {
         AggregatedGrayPair actualPair = glcm.summedPairs[i];
         grayLevelType k = actualPair.getAggregatedGrayLevel();
         double actualPairProbability = ((double) actualPair.getFrequency()) / numberOfPairs;
 
-        sumvariance += computeSumVarianceStep(k, actualPairProbability, sumentropy);
+        features[SUMVARIANCE] += computeSumVarianceStep(k, actualPairProbability, features[SUMENTROPY]);
     }
 
-    features[SUMVARIANCE] = sumvariance;
 }
 
 /*
@@ -302,8 +288,8 @@ __device__ void FeatureComputer::extractSumAggregatedFeatures(const GLCM& glcm, 
 __device__ void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm, double* features) {
     int numberOfPairs= glcm.getNumberOfPairs();
 
-    double diffentropy = 0;
-    double diffvariance = 0;
+    features[DIFFENTROPY] = 0;
+    features[DIFFVARIANCE] = 0;
 
     int length = glcm.numberOfSubtractedPairs;
     for (int i = 0; i < length; ++i) {
@@ -311,12 +297,10 @@ __device__ void FeatureComputer::extractDiffAggregatedFeatures(const GLCM& glcm,
         grayLevelType k = actualPair.getAggregatedGrayLevel();
         double actualPairProbability = ((double) actualPair.getFrequency()) / numberOfPairs;
 
-        diffentropy += computeDiffEntropyStep(actualPairProbability);
-        diffvariance += computeDiffVarianceStep(k, actualPairProbability);
+        features[DIFFENTROPY] += computeDiffEntropyStep(actualPairProbability);
+        features[DIFFVARIANCE] += computeDiffVarianceStep(k, actualPairProbability);
     }
-    diffentropy *= -1;
-    features[DIFFENTROPY] = diffentropy;
-    features[DIFFVARIANCE] = diffvariance;
+    features[DIFFENTROPY] *= -1;
 
 }
 
