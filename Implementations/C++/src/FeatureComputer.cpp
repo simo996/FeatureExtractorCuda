@@ -40,7 +40,7 @@ void FeatureComputer::computeOutputWindowFeaturesIndex(){
 
 }
 
-/* Computes all the features supported.
+/** Computes all the features supported.
  * The results will be saved in the array of the work area given to this thread
  */
 void FeatureComputer::computeDirectionalFeatures() {

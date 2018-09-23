@@ -4,7 +4,20 @@ Implementations/C++/.idea/
 Implementations/C++/.idea/workspace.xml
 Implementations/C++/CMakeFiles/
 Implementations/C++/.bin/
+Implementations/C++/CMakeCache.txt
+Implementations/C++/Makefile
+Implementations/C++/bin/
+Implementations/C++/cmake-build-debug/
+Implementations/C++/cmake_install.cmake
+Implementations/C++/Pre-Cuda.cbp
 
-Implementations/Pre-Cuda/.idea/
-Implementations/Pre-Cuda/bin/
-Implementations/Pre-Cuda/cmake-build-debug/
+Implementations/Cuda/CMakeCache.txt
+Implementations/Cuda/CMakeFiles/
+Implementations/Cuda/Makefile
+Implementations/Cuda/bin/
+Implementations/Cuda/cmake_install.cmake
+
+
+
+SampleImages/GPU_*
+SammpleImages/CPU_*
