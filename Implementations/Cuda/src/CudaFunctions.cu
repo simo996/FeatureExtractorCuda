@@ -108,20 +108,6 @@ dim3 getGridFromImage(int imageRows, int imageCols)
 		getGridSide(imageRows, imageCols));
 }
 
-/**
- * Allow threads to malloc the memory needed for their computation 
- * If this can't be done program will crash
- */
-void incrementGPUHeap(size_t newHeapSize, size_t featureSize, bool verbose){
-	cudaCheckError(cudaDeviceSetLimit(cudaLimitMallocHeapSize,  newHeapSize));
-	cudaDeviceGetLimit(&newHeapSize, cudaLimitMallocHeapSize);
-	if(verbose)
-		cout << endl << "\tGPU threads space: (MB) " << newHeapSize / 1024 / 1024 << endl;
-	size_t free, total;
-	cudaMemGetInfo(&free,&total);
-	if(verbose)
-		cout << "\tGPU used memory: (MB) " << (((newHeapSize + featureSize) / 1024) / 1024) << endl;
-}
 
 /**
  * Program aborts if not even 1 block of threads can be launched for 
@@ -158,8 +144,12 @@ bool checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
 		return false;
 	}
 	else{
-		// Allow the GPU threads to allocate the necessary space
-		incrementGPUHeap(totalWorkAreas, featureSize, verbose);
+		if(verbose){
+			cout << endl << "\tGPU threads space: (MB) " << totalWorkAreas / 1024 / 1024 << endl;
+			size_t free, total;
+			cudaMemGetInfo(&free,&total);
+			cout << "\tGPU used memory: (MB) " << (((totalWorkAreas + featureSize) / 1024) / 1024) << endl;
+		}
 		return true;
 	}
 }
@@ -190,7 +180,7 @@ dim3 getGridFromAvailableMemory(int numberOfPairs,
 		handleInsufficientMemory(); // exit
 	}
 
-	cout << "WARNING! Maximum available gpu memory consumed" << endl;
+	cout << endl << "WARNING! Maximum available gpu memory consumed" << endl;
 	// how many blocks can be launched
 	int numberOfBlocks = freeGpuMemory / singleBlockMemoryOccupation;
 	
@@ -202,7 +192,6 @@ dim3 getGridFromAvailableMemory(int numberOfPairs,
 
 /**
  * Method that will generate the computing grid 
- * Gpu allocable heap will be changed according to the grid individuated
  * If not even 1 block can be launched the program will abort
  * @param numberOfPairsInWindow: number of pixel pairs that belongs to each window
  * @param featureSize: memory space consumed by the values that will be computed
@@ -235,47 +224,45 @@ dim3 getGrid(int numberOfPairsInWindow, size_t featureSize, int imgRows,
 }
 
 /**
- * Check if each malloc invoked by each thread to allocate the memory needed 
- * for their computation was successful
+ * Method that each thread invokes when it needs to know its own unique
+ * index inside the kernel launch configuration
  */
-__host__ __device__ void checkAllocationError(GrayPair* grayPairs, AggregatedGrayPair * summed, 
-    AggregatedGrayPair* subtracted, AggregatedGrayPair* xMarginal, 
-    AggregatedGrayPair* yMarginal){
-    if((grayPairs == NULL) || (summed == NULL) || (subtracted == NULL) ||
-    (xMarginal == NULL) || (yMarginal == NULL))
-        printf("ERROR: Device doesn't have enough memory");
-} 
+__device__ int getGlobalIdx_2D()
+{
+	int blockId = blockIdx.x + blockIdx.y * gridDim.x;
+	int threadId = blockId * (blockDim.x * blockDim.y) + (threadIdx.y * blockDim.x)	+ threadIdx.x;
+	return threadId;
+}
+
 
 /**
- * Method invoked by each thread to allocate the memory needed for its computation
- * @param numberOfPairs: number of pixel pairs that belongs to each window
- * @param d_featuresList: pointer where to save the features values
+ * Method invoked by each thread to get the reference to their own memory,
+ * entirely pre-allocated on the host, needed for their computation
+ * @param globalWorkArea: reference to the global, allocated by host, memory
+ * that each thread will use to do their job
+ * @param threadId: unique thread id inside the launch configuration
  */
-__device__ WorkArea generateThreadWorkArea(int numberOfPairs, 
-	double* d_featuresList){
+__device__ WorkArea adjustThreadWorkArea(WorkArea globalWorkArea, int threadId){
 	// Each 1 of these data structures allow 1 thread to work
-	GrayPair* d_elements;
-	AggregatedGrayPair* d_summedPairs;
-	AggregatedGrayPair* d_subtractedPairs;
-	AggregatedGrayPair* d_xMarginalPairs;
-	AggregatedGrayPair* d_yMarginalPairs;
+	GrayPair* grayPairs = globalWorkArea.grayPairs;
+	AggregatedGrayPair* summedPairs = globalWorkArea.summedPairs;
+	AggregatedGrayPair* subtractedPairs = globalWorkArea.subtractedPairs;
+	AggregatedGrayPair* xMarginalPairs = globalWorkArea.xMarginalPairs;
+	AggregatedGrayPair* yMarginalPairs = globalWorkArea.yMarginalPairs;
 
-	d_elements = (GrayPair*) malloc(sizeof(GrayPair) 
-		* numberOfPairs );
-	d_summedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) 
-		* numberOfPairs );
-	d_subtractedPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) 
-		* numberOfPairs );
-	d_xMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) 
-		* numberOfPairs);
-	d_yMarginalPairs = (AggregatedGrayPair*) malloc(sizeof(AggregatedGrayPair) 
-		* numberOfPairs);
-	// check if allocated correctly
-	/*checkAllocationError(d_elements, d_summedPairs, d_subtractedPairs, 
-	d_xMarginalPairs, d_yMarginalPairs); */
-	// Embed all the pointers in a single entity
-	WorkArea wa(numberOfPairs, d_elements, d_summedPairs,
-				d_subtractedPairs, d_xMarginalPairs, d_yMarginalPairs, d_featuresList);
+	// Thread shift for accessing its memory
+	int pointerStride = globalWorkArea.numberOfElements * threadId;
+
+	// Point to own memory
+	grayPairs += pointerStride;
+	summedPairs += pointerStride;
+	subtractedPairs += pointerStride;
+	xMarginalPairs += pointerStride;
+	yMarginalPairs += pointerStride;
+
+	WorkArea wa(globalWorkArea.numberOfElements, grayPairs, summedPairs,
+				subtractedPairs, xMarginalPairs, yMarginalPairs, 
+				globalWorkArea.output);
 	return wa;
 }
 
@@ -284,14 +271,18 @@ __device__ WorkArea generateThreadWorkArea(int numberOfPairs,
  * window will be computed by a autonomous thread of the grid
  * @param pixels: pixels intensities of the image provided
  * @param img: image metadata
- * @param numberOfPairsInWindow: number of pixel pairs that belongs to each window
- * @param d_featuresList: pointer where to save the features values
+ * @param globalWorkArea: class that embeds pointers to the pre-allocated 
+ * space that will contain the arrays of representations that each thread will
+ * use to perform its computation
  */
 __global__ void computeFeatures(unsigned int * pixels, 
-	ImageData img, Window windowData, int numberOfPairsInWindow, 
-	double* d_featuresList){
+	ImageData img, Window windowData,  
+	WorkArea globalWorkArea){
+
 	// Memory location on which the thread will work
-	WorkArea wa = generateThreadWorkArea(numberOfPairsInWindow, d_featuresList);
+	int threadUniqueId = getGlobalIdx_2D();
+	WorkArea wa = adjustThreadWorkArea(globalWorkArea, threadUniqueId);
+
 	// Get X and Y starting coordinates
 	int x = blockIdx.x * blockDim.x + threadIdx.x; 
 	int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -307,6 +298,7 @@ __global__ void computeFeatures(unsigned int * pixels,
 	int realImageRows = img.getRows() - 2 * appliedBorders;
     int realImageCols = img.getColumns() - 2 * appliedBorders;
 	
+	
 	// Create local window information
 	Window actualWindow {windowData.side, windowData.distance,
 								 windowData.directionType, windowData.symmetric};
@@ -318,7 +310,5 @@ __global__ void computeFeatures(unsigned int * pixels,
 			WindowFeatureComputer wfc(pixels, img, actualWindow, wa);
 		}
 	}
-	wa.release();
 }
-
 

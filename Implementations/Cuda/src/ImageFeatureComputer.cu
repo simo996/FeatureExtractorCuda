@@ -157,6 +157,36 @@ vector<vector<vector<double>>> formatOutputResults(const double* featureValues,
 	return output;
 }
 
+
+WorkArea generateGlobalWorkArea(int numberOfPairs, int numberOfThreads,
+	double* d_featuresList){
+	
+	int totalNumberOfPairs = numberOfPairs * numberOfThreads;
+	
+	// Each 1 of these data structures allow 1 thread to work
+	GrayPair* d_grayParis;
+	AggregatedGrayPair* d_summedPairs;
+	AggregatedGrayPair* d_subtractedPairs;
+	AggregatedGrayPair* d_xMarginalPairs;
+	AggregatedGrayPair* d_yMarginalPairs;
+
+	cudaCheckError(cudaMalloc(&d_grayParis, sizeof(GrayPair) * 
+		totalNumberOfPairs));
+	cudaCheckError(cudaMalloc(&d_summedPairs, sizeof(AggregatedGrayPair) * 
+		totalNumberOfPairs));
+	cudaCheckError(cudaMalloc(&d_subtractedPairs, sizeof(AggregatedGrayPair) * 
+		totalNumberOfPairs));
+	cudaCheckError(cudaMalloc(&d_xMarginalPairs, sizeof(AggregatedGrayPair) * 
+		totalNumberOfPairs));
+	cudaCheckError(cudaMalloc(&d_yMarginalPairs, sizeof(AggregatedGrayPair) * 
+		totalNumberOfPairs));
+
+	WorkArea wa(numberOfPairs, d_grayParis, d_summedPairs,
+				d_subtractedPairs, d_xMarginalPairs, d_yMarginalPairs, d_featuresList);
+	return wa;
+}
+
+
 /**
  * This method will compute all the features for every window for the
  * number of directions provided
@@ -218,9 +248,16 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
 	dim3 Grid = getGrid(numberOfPairsInWindow, featureSize, 
 		img.getRows(), img.getColumns(), verbose);
 
-	// Launch GPU computation
+	int numberOfThreads = Grid.x * Grid.y * Blocks.x * Blocks.y;
+
+	// CPU pre-allocation of the device memory consumed by threads
+	WorkArea globalWorkArea = generateGlobalWorkArea(numberOfPairsInWindow, 
+		numberOfThreads, d_featuresList);
+
+	// Launch the kernel
 	computeFeatures<<<Grid, Blocks>>>(d_pixels, img, windowData, 
-			numberOfPairsInWindow, d_featuresList);
+			globalWorkArea);
+
 	// Check if everything is ok
 	checkKernelLaunchError();
 
@@ -235,6 +272,7 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
 			formatOutputResults(featuresList, numberOfWindows, featuresCount);
 
 	free(featuresList); // release Cpu feature array
+	globalWorkArea.release(); // Release device work memory
 	cudaFree(d_featuresList); // release Gpu feature array
 	cudaFree(d_pixels); // release Gpu image
 	

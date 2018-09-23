@@ -21,10 +21,10 @@ __device__ void WorkArea::cleanup() {
 }
 
 // Invoked externally when the workArea is not needed
-__device__ void WorkArea::release(){
-	free(grayPairs);
-    free(summedPairs);
-    free(subtractedPairs);
-    free(xMarginalPairs);
-    free(yMarginalPairs);
+__host__ void WorkArea::release(){
+	cudaFree(grayPairs);
+    cudaFree(summedPairs);
+    cudaFree(subtractedPairs);
+    cudaFree(xMarginalPairs);
+    cudaFree(yMarginalPairs);
 }

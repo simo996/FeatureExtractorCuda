@@ -57,7 +57,7 @@ public:
     /**
      * Invocation of free on the pointers of all the meta-Arrays of pairs
      */
-    CUDA_DEV void release();
+    CUDA_HOST void release();
     /**
      * Where the GLCM will be assembled
      */

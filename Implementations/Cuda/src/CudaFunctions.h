@@ -81,17 +81,13 @@ dim3 getGridFromAvailableMemory(int numberOfPairs,
 dim3 getGrid(int numberOfPairsInWindow, size_t featureSize, int imgRows, 
 	int imgCols, bool verbose);
 /**
- * Method invoked by each thread to allocate the memory needed for its computation
- * @param numberOfPairs: number of pixel pairs that belongs to each window
- * @param d_featuresList: pointer where to save the features values
+ * Method invoked by each thread to get the reference to their own memory,
+ * entirely pre-allocated on the host, needed for their computation
+ * @param globalWorkArea: reference to the global, allocated by host, memory
+ * that each thread will use to do their job
+ * @param threadId: unique thread id inside the launch configuration
  */
-__device__ WorkArea generateThreadWorkArea(int numberOfPairs, 
-	double* d_featuresList);
-/**
- * Allow threads to malloc the memory needed for their computation 
- * If this can't be done program will crash
- */
-void incrementGPUHeap(size_t newHeapSize, size_t featureSize, bool verbose);
+__device__ WorkArea adjustThreadWorkArea(WorkArea globalWorkArea, int threadId);
 /**
  * Program aborts if not even 1 block of threads can be launched for 
  * insufficient memory (very obsolete gpu)
@@ -112,10 +108,10 @@ bool checkEnoughWorkingAreaForThreads(int numberOfPairs, int numberOfThreads,
  * window will be computed by a autonomous thread of the grid
  * @param pixels: pixels intensities of the image provided
  * @param img: image metadata
- * @param numberOfPairsInWindow: number of pixel pairs that belongs to each window
- * @param d_featuresList: pointer where to save the features values
+ * @param globalWorkArea: class that embeds pointers to the pre-allocated 
+ * space that will contain the arrays of representations that each thread will
+ * use to perform its computation
  */
 __global__ void computeFeatures(unsigned int * pixels, 
-	ImageData img, Window windowData, int numberOfPairsInWindow, 
-	double* d_featuresList);
+	ImageData img, Window windowData, WorkArea globalWorkArea);
 #endif 
