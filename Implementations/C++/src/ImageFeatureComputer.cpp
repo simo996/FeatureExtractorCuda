@@ -182,7 +182,12 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
     int featuresCount = Features::getSupportedFeaturesCount();
 
     // Pre-Allocate the array that will contain features
-    double* featuresList = (double*) malloc(numberOfWindows * numberOfDirs * featuresCount * sizeof(double));
+    size_t featureSize = numberOfWindows * numberOfDirs * featuresCount * sizeof(double);
+    double* featuresList = (double*) malloc(featureSize);
+    if(featuresList == NULL){
+        cerr << "FATAL ERROR! Not enough mallocable memory on the system" << endl;
+        exit(3);
+    }
 
     // 	Pre-Allocate working area
     int extimatedWindowRows = windowData.side; // 0° has all rows

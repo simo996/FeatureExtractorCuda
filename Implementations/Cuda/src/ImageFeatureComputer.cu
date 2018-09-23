@@ -216,7 +216,7 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
 
 	// Pre-Allocate the array that will contain features
 	size_t featureSize = numberOfWindows * numberOfDirs * featuresCount * sizeof(double);
-	double* featuresList = (double*) malloc(featureSize * sizeof(double));
+	double* featuresList = (double*) malloc(featureSize);
 	if(featuresList == NULL){
 		cerr << "FATAL ERROR! Not enough mallocable memory on the system" << endl;
 		exit(3);
