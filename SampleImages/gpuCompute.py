@@ -1,24 +1,28 @@
 import subprocess
 
-images = ['brain1.tiff', 'brain2.tiff', 'prostata.tiff']
-windowSizes = [3, 5, 7, 9, 11, 13, 15]
+images = ['brain', 'prostate', 'uterine', 'fluorescence']
+windowSizes = [3, 5, 7, 11, 15, 23, 31]
 
-program = '../Implementations/Cuda/bin/./CuFeat'
+program = '../Implementations/C++/bin/./FeatureExtractor'
 optionWindowSize = '-w'
 optionSymmtrecity = '-g'
 optionInputFile = '-i'  
 optionSave = '-s'
 
 for image in images:	
-    
-    for optionWindowSizeValue in windowSizes:
+	
+	for i in range(1,10):
+		
+		actualImage = image + str(i) + '.tiff'
 
-	    result = subprocess.run([program, '-i', image, optionWindowSize, str(optionWindowSizeValue), optionSave], stdout=subprocess.PIPE)
-	    print(subprocess.list2cmdline(result.args))
+	    for optionWindowSizeValue in windowSizes:
 
-	    output = result.stdout.decode('utf-8').strip()
-	    print(output)
+		    result = subprocess.run([program, '-i', actualImage, optionWindowSize, str(optionWindowSizeValue), optionSave], stdout=subprocess.PIPE)
+		    print(subprocess.list2cmdline(result.args))
 
-	    with open('GPU_' + image + '_WSIZE=' + str(optionWindowSizeValue) +'_RESULT.txt', 'w') as file:
-	        file.write(output)
+		    output = result.stdout.decode('utf-8').strip()
+		    print(output)
+
+		    with open('GPU_' + actualImage + '_WSIZE=' + str(optionWindowSizeValue) +'_RESULT.txt', 'w') as file:
+		        file.write(output)
 
