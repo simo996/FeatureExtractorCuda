@@ -25,4 +25,3 @@ for image in images:
 
 			with open('GPU_' + actualImage + '_WSIZE=' + str(optionWindowSizeValue) +'_RESULT.txt', 'w') as file:
 				file.write(output)
-
