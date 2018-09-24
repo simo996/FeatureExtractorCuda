@@ -3,7 +3,7 @@ import subprocess
 images = ['brain', 'prostate', 'uterine', 'fluorescence']
 windowSizes = [3, 5, 9, 15, 23, 33]
 
-program = '../Implementations/C++/bin/./FeatureExtractor'
+program = '../Implementations/Cuda/bin/./CuFeat'
 optionWindowSize = '-w'
 optionSymmtrecity = '-g'
 optionInputFile = '-i'  
