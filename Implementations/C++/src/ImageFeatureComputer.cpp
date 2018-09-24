@@ -169,13 +169,13 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
 	Window windowData = Window(progArg.windowSize, progArg.distance, progArg.directionType, progArg.symmetric);
 
 	// Get dimensions of the original image without borders
-    int realImageRows = img.getRows() - 2 * getAppliedBorders();
-    int realImageCols = img.getColumns() - 2 * getAppliedBorders();
+    int originalImageRows = img.getRows() - 2 * getAppliedBorders();
+    int originalImageCols = img.getColumns() - 2 * getAppliedBorders();
 
     // Pre-Allocation of working areas
 
 	// How many windows need to be allocated
-    int numberOfWindows = (realImageRows * realImageCols);
+    int numberOfWindows = (originalImageRows * originalImageCols);
     // How many directions need to be allocated for each window
     short int numberOfDirs = 1;
     // How many feature values need to be allocated for each direction
@@ -211,9 +211,16 @@ vector<vector<WindowFeatures>> ImageFeatureComputer::computeAllFeatures(unsigned
     WorkArea wa(numberOfPairsInWindow, elements, summedPairs,
                 subtractedPairs, xMarginalPairs, yMarginalPairs, featuresList);
 
+    /* If no border is applied, window on the borders need to be excluded because
+		no pixel pair are available. Same as matlab graycomatrix */
+    if(progArg.borderType == 0){
+    	originalImageRows -= windowData.side;
+    	originalImageCols -= windowData.side;
+    }
+
     // Slide windows on the image
-    for(int i = 0; i < realImageRows ; i++){
-        for(int j = 0; j < realImageCols ; j++){
+    for(int i = 0; i < originalImageRows ; i++){
+        for(int j = 0; j < originalImageCols ; j++){
             // Create local window information
             Window actualWindow {windowData.side, windowData.distance,
                                  progArg.directionType, windowData.symmetric};

@@ -295,15 +295,21 @@ __global__ void computeFeatures(unsigned int * pixels,
 
 	// Consider bordering and the consequent padding
 	int appliedBorders = img.getBorderSize();
-	int realImageRows = img.getRows() - 2 * appliedBorders;
-    int realImageCols = img.getColumns() - 2 * appliedBorders;
+	int originalImageRows = img.getRows() - 2 * appliedBorders;
+    int originalImageCols = img.getColumns() - 2 * appliedBorders;
 	
-	
+	/* If no border is applied, window on the borders need to be excluded because
+	no pixel pair are available. Same as matlab graycomatrix */
+    if(appliedBorders == 0){
+    	originalImageRows -= windowData.side;
+    	originalImageCols -= windowData.side;
+    }
+
 	// Create local window information
 	Window actualWindow {windowData.side, windowData.distance,
 								 windowData.directionType, windowData.symmetric};
-	for(int i = y; i < realImageRows; i+= rowsStride){
-		for(int j = x; j < realImageCols ; j+= colsStride){
+	for(int i = y; i < originalImageRows; i+= rowsStride){
+		for(int j = x; j < originalImageCols ; j+= colsStride){
 			// tell the window its relative offset (starting point) inside the image
 			actualWindow.setSpacialOffsets(i + appliedBorders, j + appliedBorders);
 			// Launch the computation of features on the window
