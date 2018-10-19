@@ -116,8 +116,12 @@ You must invoke the parallel tool with the following syntax:  ./CuFeat [<-s>] [<
 
 ### Command Options
 
-* `-s`
-* `-i`
-* `-d distance`
-* `-w windowSize`
-* `-n numberOfDirections`
+* `-s` create and save feature images from the values of the features
+* `-b border` decide what type of border/padding needs to be applied to the image: none (0), zero pixel (1), symmetric (2)
+* `-i inputImagePath` specify the path to the image that needs to be processed
+* `-o outputFolderPath` specify the name of the folders where the results will be saved
+* `- g` decide if the GLCM that will be created will be symmetric 
+* `-d distance` choose the modulus of the vector reference-neighbor
+* `-w windowSize` choose the side of each squared window that will be creted
+* `-t directionType` choose which direction to consider between 0° (1),45° (2),90° (3) and 135° (4)
+* `-h` display usage information
