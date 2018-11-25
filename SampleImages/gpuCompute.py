@@ -1,9 +1,9 @@
 import subprocess
 
 images = ['brain', 'prostate', 'uterine', 'fluorescence']
-windowSizes = [3, 5, 7, 11, 15, 23, 31]
+windowSizes = [3, 5, 9, 15, 23, 33]
 
-program = '../Implementations/C++/bin/./FeatureExtractor'
+program = '../Implementations/Cuda/bin/./CuFeat'
 optionWindowSize = '-w'
 optionSymmtrecity = '-g'
 optionInputFile = '-i'  
@@ -11,7 +11,7 @@ optionSave = '-s'
 
 for image in images:	
 	
-	for i in range(1,10):
+	for i in range(1, 15):
 		
 		actualImage = image + str(i) + '.tiff'
 
