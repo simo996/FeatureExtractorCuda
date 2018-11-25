@@ -177,7 +177,7 @@ private:
      * available memory
      */
     void insertElement(GrayPair* elements, GrayPair actualPair,
-            uint& lastInsertionPosition);
+            uint& lastInsertionPosition, bool symmetricity);
     /**
      * Method that inserts a AggregatedGrayPair in the pre-allocated memory
      * Uses that convention that AggregateGrayPair (k=0, frequency=0) means

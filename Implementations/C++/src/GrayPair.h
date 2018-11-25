@@ -36,12 +36,15 @@ public:
      * @return the frequency of the pair of gray levels in the glcm
      */
     frequencyType getFrequency() const;
+
     /**
      * method to determine equality based on the gray tones of the pair
      * @param other: graypair to compare
+     * @param symmetricity: true if principle must consider
+     * symmetricity (i == i' or i == j')
      * @return: true if both grayLevels of both items are the same
      */
-    bool compareTo(GrayPair other) const;
+    bool compareTo(GrayPair other, bool symmetricity) const;
     // Setter
     /**
      * DEPRECATED Setter. Use the ++ operator instad

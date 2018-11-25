@@ -25,12 +25,28 @@ __device__ void GrayPair::frequencyIncrease(){
     frequency+=1;
 }
 
-__device__ bool GrayPair::compareTo(GrayPair other) const{
-    if((grayLevelI == other.getGrayLevelI())
-    && (grayLevelJ == other.getGrayLevelJ()))
-        return true;
-    else
-        return false;
+__device__ bool GrayPair::compareTo(GrayPair other, bool symmetricity) const{
+    bool pairsAreEquals;
+    bool sameGrayLevels = (grayLevelI == other.getGrayLevelI())
+                          && (grayLevelJ == other.getGrayLevelJ());
+
+    bool symmetricGrayLevels = (grayLevelI == other.getGrayLevelJ())
+         && (grayLevelJ == other.getGrayLevelI());
+
+    if(symmetricity){
+        if(sameGrayLevels || symmetricGrayLevels)
+            pairsAreEquals = true;
+        else
+            pairsAreEquals = false;
+    }
+    else{
+        if(sameGrayLevels)
+            pairsAreEquals = true;
+        else
+            pairsAreEquals = false;
+    }
+    return pairsAreEquals;
+
 }
 
 __device__ void GrayPair::printPair()const {

@@ -125,10 +125,11 @@ inline int GLCM::getNeighborIndex(const int i, const int j,
  * Uses that convention that GrayPair ( i=0, j=0, frequency=0) means
  * available memory
  */
-inline void GLCM::insertElement(GrayPair* elements, const GrayPair actualPair, uint& lastInsertionPosition){
+inline void GLCM::insertElement(GrayPair* elements, const GrayPair actualPair,
+        uint& lastInsertionPosition, bool symmetricity){
     int position = 0;
     // Find if the element was already inserted, and where
-    while((!elements[position].compareTo(actualPair)) && (position < numberOfPairs))
+    while((!elements[position].compareTo(actualPair, symmetricity)) && (position < numberOfPairs))
         position++;
     // If found
     if((lastInsertionPosition > 0) // 0,0 as first element will increase insertion position
@@ -173,13 +174,7 @@ void GLCM::initializeGlcmElements() {
             neighborGrayLevel = pixels[neighborIndex];  // should be safe
 
             GrayPair actualPair(referenceGrayLevel, neighborGrayLevel);
-            insertElement(grayPairs, actualPair, lastInsertionPosition);
-
-            if(windowData.symmetric) // Create the symmetric counterpart
-            {
-                GrayPair simmetricPair(neighborGrayLevel, referenceGrayLevel);
-                insertElement(grayPairs, simmetricPair, lastInsertionPosition);
-            }
+            insertElement(grayPairs, actualPair, lastInsertionPosition, windowData.symmetric);
             
         }
     }
