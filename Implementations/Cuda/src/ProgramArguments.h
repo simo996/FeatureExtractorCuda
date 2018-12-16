@@ -35,7 +35,7 @@ public:
      */
     short int borderType;
     /**
-     * Optional symmetricity of the pairs of gray levels in each glcm
+     * Optional NON symmetricity of the pairs of gray levels in each glcm
      */
     bool symmetric;
     /**
@@ -86,7 +86,7 @@ public:
     ProgramArguments(short int windowSize = 4,
                      bool crop = false,
                      bool quantitize = false,
-                     bool symmetric = false,
+                     bool symmetric = true,
                      short int distance = 1,
                      short int dirType = 1,
                      short int dirNumber = 1,

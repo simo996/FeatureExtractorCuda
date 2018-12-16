@@ -173,9 +173,15 @@ __device__ void GLCM::initializeGlcmElements() {
             // Application limit: only up to 2^16 gray levels
             neighborGrayLevel = pixels[neighborIndex];  // should be safe
 
-            GrayPair actualPair(referenceGrayLevel, neighborGrayLevel);
+            GrayPair actualPair;
+            if((windowData.symmetric) && (referenceGrayLevel > neighborGrayLevel)){
+                actualPair = GrayPair(neighborGrayLevel, referenceGrayLevel);
+            }
+            else{
+                actualPair = GrayPair(referenceGrayLevel, neighborGrayLevel);
+            }
             insertElement(grayPairs, actualPair, lastInsertionPosition, windowData.symmetric);
-            
+
         }
     }
     effectiveNumberOfGrayPairs = lastInsertionPosition;

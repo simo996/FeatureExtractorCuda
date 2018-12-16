@@ -35,7 +35,7 @@ public:
      */
     short int borderType;
     /**
-     * Optional symmetricity of the pairs of gray levels in each glcm
+     * Optional NON symmetricity of the pairs of gray levels in each glcm
      */
     bool symmetric;
     /**
