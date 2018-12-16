@@ -44,7 +44,7 @@ ProgramArguments ProgramArguments::checkOptions(int argc, char* argv[]){
             }
             case 'g':{
                 // Make the glcm pairs symmetric
-                progArg.symmetric = true;
+                progArg.symmetric = false;
             }
             case 's':{
                 // Create images associated to features

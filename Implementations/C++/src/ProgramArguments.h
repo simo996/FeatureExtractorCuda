@@ -85,7 +85,7 @@ public:
      */
     ProgramArguments(short int windowSize = 4,
                      bool quantitize = false,
-                     bool symmetric = false,
+                     bool symmetric = true,
                      short int distance = 1,
                      short int dirType = 1,
                      short int dirNumber = 1,
